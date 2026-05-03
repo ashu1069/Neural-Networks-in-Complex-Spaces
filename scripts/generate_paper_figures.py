@@ -246,9 +246,7 @@ def _swept_bars(
     half_ci = [1.96 * s / np.sqrt(n_seeds) for s in stds]
     lo = [m - h for m, h in zip(means, half_ci, strict=True)]
     hi = [m + h for m, h in zip(means, half_ci, strict=True)]
-    params = [
-        selections[f]["selected_extra"]["parameter_count_mean"] for f in families
-    ]
+    params = [selections[f]["selected_extra"]["parameter_count_mean"] for f in families]
 
     fig, ax = plt.subplots(figsize=(8.0, 4.8))
     _family_bar(ax, families, means, lo, hi, params)
