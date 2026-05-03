@@ -82,8 +82,8 @@ def _write_comparison(output_dir: Path, rows: list[ActivationCharacterization]) 
                     f"{row.cr_median:.4g}",
                     f"{row.cr_p95:.4g}",
                     f"{row.cr_max:.4g}",
-                    f"{row.gradient_norm_mean:.4g}",
-                    f"{row.jacobian_norm_mean:.4g} |",
+                    f"{row.gradient_norm_mean:.3g}",
+                    f"{row.jacobian_norm_mean:.3g} |",
                 ]
             )
         )

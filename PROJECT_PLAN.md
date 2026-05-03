@@ -144,23 +144,27 @@ and seeds.
 
 **Goal:** make the comparisons defensible before running expensive benchmarks.
 
-- Verify PyTorch's complex autograd convention against hand-derived
+- [x] Verify PyTorch's complex autograd convention against hand-derived
   Wirtinger-gradient checks for a battery of real-valued losses.
-- Use stock `torch.optim.AdamW` / `SGD` as the primary optimizer baseline.
-- Add custom optimizer wrappers only if they test a concrete hypothesis not
+- [x] Use stock `torch.optim.AdamW` / `SGD` as the primary optimizer baseline.
+- [x] Add custom optimizer wrappers only if they test a concrete hypothesis not
   covered by stock PyTorch behavior.
-- Loss functions: complex MSE, magnitude MSE, phase-aware loss
+- [x] Loss functions: complex MSE, magnitude MSE, phase-aware loss
   (`|y - ŷ|² + λ · 1 - cos(arg y - arg ŷ)`).
-- Define baseline families:
+- [x] Define baseline families:
   - real network on stacked `(real, imag)` channels;
   - real network with matched scalar parameter count;
   - real network with matched FLOPs where feasible;
   - exact real reparameterization of the complex model for sanity checks.
-- Define tuning budget per model family before benchmark runs.
+- [x] Define tuning budget per model family before benchmark runs.
 
 **Exit criterion:** end-to-end training of a tiny complex MLP on a synthetic
 task converges and matches a closed-form solution to within tolerance; baseline
 rules and tuning budget are documented.
+
+**Local status:** `uv run python experiments/synthetic/complex_linear_regression.py`
+converges to the closed-form complex least-squares solution; baseline and
+optimizer rules are documented in `docs/baselines_and_optimization.md`.
 
 ---
 

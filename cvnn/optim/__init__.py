@@ -1,1 +1,13 @@
-"""Optimizer experiments will be added in Phase 3."""
+"""Optimizer validation helpers."""
+
+from cvnn.optim.wirtinger import (
+    AutogradConventionCheck,
+    pytorch_complex_gradient,
+    validate_pytorch_complex_autograd,
+)
+
+__all__ = [
+    "AutogradConventionCheck",
+    "pytorch_complex_gradient",
+    "validate_pytorch_complex_autograd",
+]

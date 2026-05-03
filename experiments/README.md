@@ -9,3 +9,18 @@ Initial priorities:
 
 Every completed run should write a result manifest to `results/` or to a
 configured output directory with the same schema.
+
+## Synthetic
+
+Phase 3 includes a tiny complex linear regression convergence check:
+
+```bash
+uv run python experiments/synthetic/complex_linear_regression.py
+```
+
+To write a result manifest:
+
+```bash
+uv run python experiments/synthetic/complex_linear_regression.py \
+  --output results/synthetic_complex_linear_regression.local.json
+```

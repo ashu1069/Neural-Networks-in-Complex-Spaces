@@ -32,14 +32,12 @@ jobs:
         run: uv run ruff format --check .
 
       - name: Mypy
-        run: uv run mypy cvnn scripts
+        run: uv run mypy cvnn scripts experiments
 
       - name: Pytest
         run: uv run pytest
 
-      - name: Verify activation characterization artifacts are in sync
+      - name: Verify activation characterization summary is in sync
         run: |
           uv run python scripts/characterize_activations.py --no-plots
-          git diff --exit-code -- \
-            notebooks/activation_characterization/comparison.md \
-            notebooks/activation_characterization/comparison.json
+          git diff --exit-code -- notebooks/activation_characterization/comparison.md

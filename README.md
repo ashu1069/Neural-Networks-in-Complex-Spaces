@@ -52,13 +52,14 @@ footnote.
 
 ## Status
 
-Phase 2 activation characterization is in place. The repo now has a `uv`-managed
+Phase 3 optimization validation is in place. The repo now has a `uv`-managed
 Python project, CI configuration, pre-commit hooks, a minimal `cvnn` package,
 complex tensor utilities, complex initializers, `ComplexLinear`,
 `ComplexDropout`, a minimal complex MLP builder, Phase 2 complex activations,
-script-backed activation characterization reports, result manifest helpers, and
-MPS/CUDA complex-tensor support audit tooling. Implementation milestones are
-tracked in [PROJECT_PLAN.md](PROJECT_PLAN.md).
+script-backed activation characterization reports, Phase 3 losses/autograd
+checks, a synthetic convergence experiment, result manifest helpers, and MPS/CUDA
+complex-tensor support audit tooling. Implementation milestones are tracked in
+[PROJECT_PLAN.md](PROJECT_PLAN.md).
 
 ## Planned repository layout
 
@@ -94,7 +95,7 @@ dependency management.
 uv sync --all-groups
 uv run pytest
 uv run ruff check .
-uv run mypy cvnn scripts
+uv run mypy cvnn scripts experiments
 ```
 
 Generate Phase 2 activation reports with:
@@ -105,6 +106,12 @@ uv run python scripts/characterize_activations.py
 
 The comparison table is written to
 [notebooks/activation_characterization/comparison.md](notebooks/activation_characterization/comparison.md).
+
+Run the Phase 3 synthetic optimization check with:
+
+```bash
+uv run python experiments/synthetic/complex_linear_regression.py
+```
 
 On Apple Silicon, audit local complex-tensor support with:
 
@@ -130,6 +137,8 @@ uv run python scripts/check_torch_complex_support.py --device cuda
 ## Background reading
 
 - Trabelsi et al., *Deep Complex Networks* (ICLR 2018)
+- Trabelsi et al. reference code:
+  [ChihebTrabelsi/deep_complex_networks](https://github.com/ChihebTrabelsi/deep_complex_networks)
 - Hirose, *Complex-Valued Neural Networks* (Springer)
 - Arjovsky et al., *Unitary Evolution Recurrent Neural Networks*
 - Virtue et al., *Complex-Valued CNNs for MRI Fingerprinting*

@@ -13,6 +13,6 @@ repos:
         types_or: [python, pyi]
       - id: mypy
         name: mypy
-        entry: uv run mypy cvnn scripts
+        entry: uv run mypy cvnn scripts experiments
         language: system
         pass_filenames: false
