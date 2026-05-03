@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Complex Spaces Result Manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "run_id",
+    "created_at",
+    "environment",
+    "config",
+    "seeds",
+    "metrics"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "environment": {
+      "type": "object",
+      "required": [
+        "python",
+        "platform",
+        "torch",
+        "device",
+        "dtype",
+        "git_commit"
+      ],
+      "properties": {
+        "python": {
+          "type": "string"
+        },
+        "platform": {
+          "type": "string"
+        },
+        "macos": {
+          "type": ["string", "null"]
+        },
+        "torch": {
+          "type": ["string", "null"]
+        },
+        "device": {
+          "type": "string"
+        },
+        "dtype": {
+          "type": "string"
+        },
+        "git_commit": {
+          "type": ["string", "null"]
+        },
+        "git_dirty": {
+          "type": ["boolean", "null"]
+        },
+        "mps_available": {
+          "type": ["boolean", "null"]
+        },
+        "cuda_available": {
+          "type": ["boolean", "null"]
+        },
+        "cuda_version": {
+          "type": ["string", "null"]
+        },
+        "cuda_device": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "dataset": {
+      "type": ["object", "null"]
+    },
+    "config": {
+      "type": "object"
+    },
+    "seeds": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "metrics": {
+      "type": "object"
+    },
+    "artifacts": {
+      "type": ["object", "null"]
+    },
+    "notes": {
+      "type": ["string", "null"]
+    }
+  },
+  "additionalProperties": false
+}
