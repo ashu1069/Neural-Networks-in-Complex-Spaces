@@ -216,7 +216,10 @@ def fig_rf_accuracy_vs_snr() -> Path:
         )
     ax.set_xlabel("SNR (dB)")
     ax.set_ylabel("Mean test accuracy")
-    ax.set_title("RF synthetic modulation (BPSK / QPSK / 8PSK) — preliminary")
+    ax.set_title(
+        "RF modulation per-SNR — flatten-MLP snapshot (1×3, preliminary)\n"
+        "Headline conv-architecture comparison: see rf_synthetic_modulation_swept.png"
+    )
     ax.grid(True, linestyle=":", alpha=0.4)
     ax.legend(frameon=False, loc="lower right", fontsize=9)
     fig.tight_layout()
@@ -226,12 +229,128 @@ def fig_rf_accuracy_vs_snr() -> Path:
     return out
 
 
+def _swept_bars(
+    summary_path: Path,
+    *,
+    title: str,
+    out_name: str,
+) -> Path:
+    """Bar chart of swept-selection test accuracies with 95% CI from std / √n."""
+
+    summary = load_json(summary_path)
+    selections = {s["family"]: s for s in summary["selections"]}
+    n_seeds = len(summary["config"]["seeds"])
+    families = [f for f in FAMILY_ORDER if f in selections]
+    means = [selections[f]["selected_test_accuracy_mean"] for f in families]
+    stds = [selections[f]["selected_test_accuracy_std"] for f in families]
+    half_ci = [1.96 * s / np.sqrt(n_seeds) for s in stds]
+    lo = [m - h for m, h in zip(means, half_ci, strict=True)]
+    hi = [m + h for m, h in zip(means, half_ci, strict=True)]
+    params = [
+        selections[f]["selected_extra"]["parameter_count_mean"] for f in families
+    ]
+
+    fig, ax = plt.subplots(figsize=(8.0, 4.8))
+    _family_bar(ax, families, means, lo, hi, params)
+    ymin = min(lo) - 0.01
+    ymax = max(hi) + 0.025
+    ax.set_ylim(ymin, ymax)
+    ax.set_title(title)
+    ax.grid(True, axis="y", linestyle=":", alpha=0.4)
+    fig.tight_layout()
+    out = FIG_DIR / out_name
+    fig.savefig(out, dpi=180)
+    plt.close(fig)
+    return out
+
+
+def fig_synthetic_phase_swept() -> Path:
+    return _swept_bars(
+        RESULTS / "synthetic_phase_classification_sweep" / "summary.json",
+        title=(
+            "Synthetic phase classification — selected configs\n"
+            "16 trials × 3 seeds  ·  error bars = 95% CI (std / √n)"
+        ),
+        out_name="synthetic_phase_classification_swept.png",
+    )
+
+
+def fig_rf_swept() -> Path:
+    summary_path = RESULTS / "rf_synthetic_modulation_sweep" / "summary.json"
+    summary = load_json(summary_path)
+    n_seeds = len(summary["config"]["seeds"])
+    return _swept_bars(
+        summary_path,
+        title=(
+            f"RF synthetic modulation (conv) — selected configs\n"
+            f"16 trials × {n_seeds} seeds  ·  "
+            "error bars = 95% CI (std / √n)\n"
+            "Complex wins at the smallest parameter count"
+        ),
+        out_name="rf_synthetic_modulation_swept.png",
+    )
+
+
+def fig_rf_sweep_pareto() -> Path:
+    sweep = load_json(RESULTS / "rf_synthetic_modulation_sweep" / "trials.json")
+    selections = {s["family"]: s for s in sweep["selections"]}
+    trials = sweep["trials"]
+    n_seeds = len(sweep["config"]["seeds"])
+
+    fig, ax = plt.subplots(figsize=(8.5, 5.0))
+    for fam in FAMILY_ORDER:
+        fam_trials = [t for t in trials if t["family"] == fam]
+        params = [t["extra"]["parameter_count_mean"] for t in fam_trials]
+        accs = [t["test_accuracy_mean"] for t in fam_trials]
+        ax.scatter(
+            params,
+            accs,
+            color=FAMILY_COLOR[fam],
+            alpha=0.55,
+            s=42,
+            label=FAMILY_LABEL[fam],
+            edgecolor="white",
+            linewidth=0.6,
+        )
+        sel = selections.get(fam)
+        if sel is not None:
+            ax.scatter(
+                [sel["selected_extra"]["parameter_count_mean"]],
+                [sel["selected_test_accuracy_mean"]],
+                color=FAMILY_COLOR[fam],
+                marker="*",
+                s=240,
+                edgecolor="black",
+                linewidth=0.8,
+                zorder=5,
+            )
+
+    ax.set_xscale("log")
+    ax.set_xlabel("Parameter count (log scale)")
+    ax.set_ylabel(f"Test accuracy (mean over {n_seeds} seeds)")
+    ax.set_title(
+        "Sweep on RF synthetic modulation — 16 trials × 4 families\n"
+        "★ = trial chosen by validation accuracy\n"
+        "Complex sits upper-left: higher accuracy, fewer parameters"
+    )
+    ax.grid(True, which="both", linestyle=":", alpha=0.4)
+    ax.legend(frameon=False, loc="lower right")
+    fig.tight_layout()
+    out = FIG_DIR / "rf_sweep_pareto.png"
+    fig.savefig(out, dpi=180)
+    plt.close(fig)
+    return out
+
+
 def main() -> None:
     figures = [
         fig_activation_tradeoff(),
         fig_synthetic_phase(),
+        fig_synthetic_phase_swept(),
         fig_sweep_pareto(),
         fig_rf_accuracy_vs_snr(),
+        fig_rf_swept(),
+        fig_rf_sweep_pareto(),
     ]
     for path in figures:
         print(f"wrote {path.relative_to(ROOT)}")
