@@ -92,14 +92,24 @@ def new_manifest(
     dataset: JsonObject | None = None,
     artifacts: JsonObject | None = None,
     notes: str | None = None,
+    environment: Environment | None = None,
 ) -> ResultManifest:
-    """Create a result manifest using the current environment."""
+    """Create a result manifest using the current environment.
 
+    Pass `environment` explicitly to capture state at the *start* of a run -
+    otherwise `git_dirty` will reflect any output files the experiment has
+    already written by the time `new_manifest` is called, which defeats the
+    intended "was the code dirty when run?" semantic.
+    """
+
+    resolved_environment = environment or collect_environment(
+        device=device, dtype=dtype
+    )
     return ResultManifest(
         schema_version="0.1.0",
         run_id=run_id,
         created_at=datetime.now(UTC).isoformat(),
-        environment=collect_environment(device=device, dtype=dtype),
+        environment=resolved_environment,
         config=config,
         seeds=seeds,
         metrics=metrics,

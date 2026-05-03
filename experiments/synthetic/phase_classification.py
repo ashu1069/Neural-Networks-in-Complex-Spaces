@@ -19,7 +19,7 @@ from torch import Tensor, nn
 from cvnn.activations import ComplexCardioid, CReLU, ModReLU, Siglog, ZReLU
 from cvnn.baselines import count_real_parameters
 from cvnn.nn import ComplexMLP
-from cvnn.repro import JsonObject, new_manifest
+from cvnn.repro import Environment, JsonObject, collect_environment, new_manifest
 
 ActivationName = Literal["crelu", "zrelu", "modrelu", "cardioid", "siglog"]
 ModelFamily = Literal[
@@ -492,8 +492,14 @@ def write_phase_benchmark_outputs(
     config: PhaseBenchmarkConfig,
     runs: Sequence[PhaseRunResult],
     summaries: Sequence[PhaseSummary],
+    environment: Environment | None = None,
 ) -> None:
-    """Write raw runs, aggregate summaries, and a manifest."""
+    """Write raw runs, aggregate summaries, and a manifest.
+
+    Pass `environment` captured at the start of the run so the manifest's
+    `git_dirty` reflects the code state, not the post-write tree state
+    (writing the other artifacts would otherwise dirty the tree).
+    """
 
     output_dir.mkdir(parents=True, exist_ok=True)
     raw_runs_path = output_dir / "raw_runs.json"
@@ -532,6 +538,7 @@ def write_phase_benchmark_outputs(
             "summary_json": str(summary_path),
             "summary_markdown": str(summary_markdown_path),
         },
+        environment=environment,
     )
     manifest.write_json(manifest_path)
 
@@ -912,12 +919,14 @@ def main() -> int:
         bootstrap_samples=args.bootstrap_samples,
         confidence=args.confidence,
     )
+    environment = collect_environment(device=config.device, dtype=config.dtype)
     runs, summaries = run_phase_classification_benchmark(config)
     write_phase_benchmark_outputs(
         args.output_dir,
         config=config,
         runs=runs,
         summaries=summaries,
+        environment=environment,
     )
     print(_format_summary_markdown(summaries, config=config))
     return 0

@@ -30,7 +30,7 @@ from torch import Tensor, nn
 from cvnn.activations import ComplexCardioid, CReLU, ModReLU, Siglog, ZReLU
 from cvnn.baselines import count_real_parameters
 from cvnn.nn import ComplexMLP
-from cvnn.repro import JsonObject, new_manifest
+from cvnn.repro import Environment, JsonObject, collect_environment, new_manifest
 from experiments.synthetic.phase_classification import bootstrap_mean_ci
 
 ActivationName = Literal["crelu", "zrelu", "modrelu", "cardioid", "siglog"]
@@ -546,8 +546,13 @@ def write_rf_benchmark_outputs(
     config: RFBenchmarkConfig,
     runs: Sequence[RFRunResult],
     summaries: Sequence[RFSummary],
+    environment: Environment | None = None,
 ) -> None:
-    """Write raw runs, aggregate summaries, manifest, and human summary."""
+    """Write raw runs, aggregate summaries, manifest, and human summary.
+
+    Pass `environment` captured at the start of the run so the manifest's
+    `git_dirty` reflects the code state, not the post-write tree state.
+    """
 
     output_dir.mkdir(parents=True, exist_ok=True)
     raw_runs_path = output_dir / "raw_runs.json"
@@ -588,6 +593,7 @@ def write_rf_benchmark_outputs(
             "summary_json": str(summary_path),
             "summary_markdown": str(summary_markdown_path),
         },
+        environment=environment,
     )
     manifest.write_json(manifest_path)
 
@@ -1064,12 +1070,14 @@ def main() -> int:
         bootstrap_samples=args.bootstrap_samples,
         confidence=args.confidence,
     )
+    environment = collect_environment(device=config.device, dtype=config.dtype)
     runs, summaries = run_rf_modulation_benchmark(config)
     write_rf_benchmark_outputs(
         args.output_dir,
         config=config,
         runs=runs,
         summaries=summaries,
+        environment=environment,
     )
     print(_format_summary_markdown(summaries, config=config))
     return 0
