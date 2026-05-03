@@ -1,0 +1,158 @@
+{
+  "config": {
+    "activation": "crelu",
+    "architecture": "conv",
+    "device": "cuda",
+    "dtype": "complex64",
+    "experiment": "rf_synthetic_modulation_sweep",
+    "kernel_size": 7,
+    "model_families": [
+      "complex",
+      "real_stacked",
+      "real_matched_params",
+      "real_matched_flops"
+    ],
+    "modulations": [
+      "bpsk",
+      "qpsk",
+      "8psk"
+    ],
+    "n_per_class_per_snr": 256,
+    "n_trials": 16,
+    "real_activation": "relu",
+    "sample_length": 128,
+    "search_space": {
+      "batch_size": [
+        "choice",
+        [
+          128,
+          256,
+          512
+        ]
+      ],
+      "hidden_features": [
+        "choice",
+        [
+          16,
+          32,
+          64
+        ]
+      ],
+      "learning_rate": [
+        "loguniform",
+        0.001,
+        0.05
+      ],
+      "steps": [
+        "choice",
+        [
+          200,
+          400,
+          800
+        ]
+      ]
+    },
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "snr_db_levels": [
+      -10,
+      -5,
+      0,
+      5,
+      10,
+      15,
+      20
+    ],
+    "sweep_seed": 20260503,
+    "val_fraction": 0.2
+  },
+  "selections": [
+    {
+      "family": "complex",
+      "selected_extra": {
+        "parameter_count_mean": 3974.0,
+        "parameter_count_per_seed": [
+          3974.0,
+          3974.0,
+          3974.0
+        ]
+      },
+      "selected_hyperparameters": {
+        "batch_size": 512,
+        "hidden_features": 16,
+        "learning_rate": 0.007903951605476266,
+        "steps": 800
+      },
+      "selected_test_accuracy_mean": 0.821733812491099,
+      "selected_test_accuracy_std": 0.019303318151400656,
+      "selected_trial_index": 1,
+      "selected_val_accuracy_mean": 0.8179696599642435
+    },
+    {
+      "family": "real_stacked",
+      "selected_extra": {
+        "parameter_count_mean": 2099.0,
+        "parameter_count_per_seed": [
+          2099.0,
+          2099.0,
+          2099.0
+        ]
+      },
+      "selected_hyperparameters": {
+        "batch_size": 512,
+        "hidden_features": 16,
+        "learning_rate": 0.007903951605476266,
+        "steps": 800
+      },
+      "selected_test_accuracy_mean": 0.7707570195198059,
+      "selected_test_accuracy_std": 0.029107808008384414,
+      "selected_trial_index": 1,
+      "selected_val_accuracy_mean": 0.7802411516507467
+    },
+    {
+      "family": "real_matched_params",
+      "selected_extra": {
+        "parameter_count_mean": 15033.0,
+        "parameter_count_per_seed": [
+          15033.0,
+          15033.0,
+          15033.0
+        ]
+      },
+      "selected_hyperparameters": {
+        "batch_size": 512,
+        "hidden_features": 32,
+        "learning_rate": 0.002444328215584386,
+        "steps": 800
+      },
+      "selected_test_accuracy_mean": 0.7918193141619364,
+      "selected_test_accuracy_std": 0.010534444978535855,
+      "selected_trial_index": 0,
+      "selected_val_accuracy_mean": 0.7880202333132426
+    },
+    {
+      "family": "real_matched_flops",
+      "selected_extra": {
+        "parameter_count_mean": 7779.0,
+        "parameter_count_per_seed": [
+          7779.0,
+          7779.0,
+          7779.0
+        ]
+      },
+      "selected_hyperparameters": {
+        "batch_size": 512,
+        "hidden_features": 16,
+        "learning_rate": 0.007903951605476266,
+        "steps": 800
+      },
+      "selected_test_accuracy_mean": 0.7939560413360596,
+      "selected_test_accuracy_std": 0.0033017825526837157,
+      "selected_trial_index": 1,
+      "selected_val_accuracy_mean": 0.7907429138819376
+    }
+  ]
+}
