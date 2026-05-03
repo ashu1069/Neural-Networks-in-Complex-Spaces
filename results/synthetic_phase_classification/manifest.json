@@ -32,7 +32,7 @@
     ],
     "steps": 400
   },
-  "created_at": "2026-05-03T03:57:40.629119+00:00",
+  "created_at": "2026-05-03T04:09:12.408728+00:00",
   "dataset": {
     "description": "balanced complex phase-sector classification",
     "name": "synthetic_phase_classification",
@@ -44,8 +44,8 @@
     "cuda_version": null,
     "device": "cpu",
     "dtype": "complex64",
-    "git_commit": "f85160dd201f4a2c6226a56f3bbc4ab15bea0582",
-    "git_dirty": true,
+    "git_commit": "a8cbd4dbbd93b6429d132f72fb2fc9e0aa0bde0f",
+    "git_dirty": false,
     "macos": "14.6",
     "mps_available": true,
     "platform": "macOS-14.6-arm64-arm-64bit",
@@ -94,7 +94,7 @@
         "test_accuracy_std": 0.005167483029423029,
         "test_loss_mean": 0.6055766344070435,
         "test_loss_std": 0.04543155044966087,
-        "train_seconds_mean": 0.2017864165827632
+        "train_seconds_mean": 0.20677061068514982
       },
       {
         "estimated_forward_madds": 160,
@@ -108,7 +108,7 @@
         "test_accuracy_std": 0.005011329530709848,
         "test_loss_mean": 0.5880265037218729,
         "test_loss_std": 0.03516941049834454,
-        "train_seconds_mean": 0.08063833322376013
+        "train_seconds_mean": 0.08198675016562144
       },
       {
         "estimated_forward_madds": 300,
@@ -122,7 +122,7 @@
         "test_accuracy_std": 0.0025837415147115144,
         "test_loss_mean": 0.6022266745567322,
         "test_loss_std": 0.03538901544839639,
-        "train_seconds_mean": 0.08696286131938298
+        "train_seconds_mean": 0.10497902830441792
       },
       {
         "estimated_forward_madds": 580,
@@ -136,7 +136,7 @@
         "test_accuracy_std": 0.0024576283968980304,
         "test_loss_mean": 0.6241073409716288,
         "test_loss_std": 0.03988470766294408,
-        "train_seconds_mean": 0.11819320855041344
+        "train_seconds_mean": 0.11782445820669334
       }
     ]
   },

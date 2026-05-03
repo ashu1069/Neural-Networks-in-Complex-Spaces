@@ -6,7 +6,7 @@ Activation (complex): `crelu`. Activation (real baselines): `relu`. Seeds: `[0, 
 
 | model | hidden | params | est. forward MAdds | accuracy mean | accuracy std | 95% CI | loss mean | train s/run |
 | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
-| `complex` | 16 | 336 | 576 | 0.7617 | 0.0052 | [0.7578, 0.7676] | 0.606 | 0.2 |
-| `real_stacked` | 16 | 184 | 160 | 0.7565 | 0.0050 | [0.7510, 0.7607] | 0.588 | 0.081 |
-| `real_matched_params` | 30 | 338 | 300 | 0.7588 | 0.0026 | [0.7568, 0.7617] | 0.602 | 0.087 |
+| `complex` | 16 | 336 | 576 | 0.7617 | 0.0052 | [0.7578, 0.7676] | 0.606 | 0.21 |
+| `real_stacked` | 16 | 184 | 160 | 0.7565 | 0.0050 | [0.7510, 0.7607] | 0.588 | 0.082 |
+| `real_matched_params` | 30 | 338 | 300 | 0.7588 | 0.0026 | [0.7568, 0.7617] | 0.602 | 0.1 |
 | `real_matched_flops` | 58 | 646 | 580 | 0.7601 | 0.0025 | [0.7578, 0.7627] | 0.624 | 0.12 |

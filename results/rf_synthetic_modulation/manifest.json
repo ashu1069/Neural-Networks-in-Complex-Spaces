@@ -1,0 +1,209 @@
+{
+  "artifacts": {
+    "raw_runs": "results/rf_synthetic_modulation/raw_runs.json",
+    "summary_json": "results/rf_synthetic_modulation/summary.json",
+    "summary_markdown": "results/rf_synthetic_modulation/summary.md"
+  },
+  "config": {
+    "activation": "crelu",
+    "batch_size": 256,
+    "bootstrap_samples": 2000,
+    "confidence": 0.95,
+    "device": "cpu",
+    "dtype": "complex64",
+    "experiment": "rf_synthetic_modulation",
+    "hidden_features": 64,
+    "learning_rate": 0.01,
+    "model_families": [
+      "complex",
+      "real_stacked",
+      "real_matched_params",
+      "real_matched_flops"
+    ],
+    "modulations": [
+      "bpsk",
+      "qpsk",
+      "8psk"
+    ],
+    "n_per_class_per_snr": 256,
+    "real_activation": "relu",
+    "sample_length": 128,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "snr_db_levels": [
+      -10,
+      -5,
+      0,
+      5,
+      10,
+      15,
+      20
+    ],
+    "steps": 400,
+    "train_fraction": 0.8
+  },
+  "created_at": "2026-05-03T04:09:16.477238+00:00",
+  "dataset": {
+    "description": "synthetic IQ PSK/QAM symbols + AWGN; stand-in for RadioML",
+    "name": "rf_synthetic_modulation",
+    "version": "0.1.0"
+  },
+  "environment": {
+    "cuda_available": false,
+    "cuda_device": null,
+    "cuda_version": null,
+    "device": "cpu",
+    "dtype": "complex64",
+    "git_commit": "a8cbd4dbbd93b6429d132f72fb2fc9e0aa0bde0f",
+    "git_dirty": false,
+    "macos": "14.6",
+    "mps_available": true,
+    "platform": "macOS-14.6-arm64-arm-64bit",
+    "python": "3.12.12",
+    "torch": "2.11.0"
+  },
+  "metrics": {
+    "config": {
+      "activation": "crelu",
+      "batch_size": 256,
+      "bootstrap_samples": 2000,
+      "confidence": 0.95,
+      "device": "cpu",
+      "dtype": "complex64",
+      "experiment": "rf_synthetic_modulation",
+      "hidden_features": 64,
+      "learning_rate": 0.01,
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_matched_params",
+        "real_matched_flops"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk"
+      ],
+      "n_per_class_per_snr": 256,
+      "real_activation": "relu",
+      "sample_length": 128,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "snr_db_levels": [
+        -10,
+        -5,
+        0,
+        5,
+        10,
+        15,
+        20
+      ],
+      "steps": 400,
+      "train_fraction": 0.8
+    },
+    "summaries": [
+      {
+        "accuracy_by_snr_db_mean": {
+          "-10": 0.3803418775399526,
+          "-5": 0.3888888855775197,
+          "0": 0.4294871687889099,
+          "10": 0.5192307730515798,
+          "15": 0.5470085342725118,
+          "20": 0.5170940359433492,
+          "5": 0.46581196784973145
+        },
+        "estimated_forward_madds": 49920,
+        "hidden_features": 64,
+        "model_family": "complex",
+        "n_runs": 3,
+        "parameter_count": 25222,
+        "test_accuracy_ci_high": 0.5045787692070007,
+        "test_accuracy_ci_low": 0.4194139242172241,
+        "test_accuracy_mean": 0.46398046612739563,
+        "test_accuracy_std": 0.04272087189062836,
+        "test_loss_mean": 4.496399720509847,
+        "train_seconds_mean": 0.3443892641613881
+      },
+      {
+        "accuracy_by_snr_db_mean": {
+          "-10": 0.3311965862909953,
+          "-5": 0.3995726505915324,
+          "0": 0.44017094373703003,
+          "10": 0.5512820482254028,
+          "15": 0.529914528131485,
+          "20": 0.5833333333333334,
+          "5": 0.5128205219904581
+        },
+        "estimated_forward_madds": 20672,
+        "hidden_features": 64,
+        "model_family": "real_stacked",
+        "n_runs": 3,
+        "parameter_count": 20803,
+        "test_accuracy_ci_high": 0.49175822734832764,
+        "test_accuracy_ci_low": 0.46794870495796204,
+        "test_accuracy_mean": 0.478327214717865,
+        "test_accuracy_std": 0.012194739416871998,
+        "test_loss_mean": 4.793030738830566,
+        "train_seconds_mean": 0.16430770823111138
+      },
+      {
+        "accuracy_by_snr_db_mean": {
+          "-10": 0.346153845389684,
+          "-5": 0.35470085342725116,
+          "0": 0.43376068274180096,
+          "10": 0.5235042572021484,
+          "15": 0.5769230723381042,
+          "20": 0.6025640964508057,
+          "5": 0.5235042671362559
+        },
+        "estimated_forward_madds": 25050,
+        "hidden_features": 75,
+        "model_family": "real_matched_params",
+        "n_runs": 3,
+        "parameter_count": 25203,
+        "test_accuracy_ci_high": 0.5,
+        "test_accuracy_ci_low": 0.4652014672756195,
+        "test_accuracy_mean": 0.4801587263743083,
+        "test_accuracy_std": 0.0179059953190943,
+        "test_loss_mean": 4.6038498878479,
+        "train_seconds_mean": 0.16225759778171778
+      },
+      {
+        "accuracy_by_snr_db_mean": {
+          "-10": 0.3440170884132385,
+          "-5": 0.38461538155873615,
+          "0": 0.4252136747042338,
+          "10": 0.564102570215861,
+          "15": 0.5790598392486572,
+          "20": 0.5982906023661295,
+          "5": 0.5427350401878357
+        },
+        "estimated_forward_madds": 50052,
+        "hidden_features": 129,
+        "model_family": "real_matched_flops",
+        "n_runs": 3,
+        "parameter_count": 50313,
+        "test_accuracy_ci_high": 0.4972527325153351,
+        "test_accuracy_ci_low": 0.4853479862213135,
+        "test_accuracy_mean": 0.4911477367083232,
+        "test_accuracy_std": 0.005958240269600811,
+        "test_loss_mean": 4.056813875834147,
+        "train_seconds_mean": 0.27833750005811453
+      }
+    ]
+  },
+  "notes": null,
+  "run_id": "rf-synthetic-modulation",
+  "schema_version": "0.1.0",
+  "seeds": [
+    0,
+    1,
+    2
+  ]
+}
