@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
-from cvnn.repro import Environment, ResultManifest
+from cvnn.repro import Environment, ResultManifest, _git_dirty
 
 
 def test_result_manifest_writes_json(tmp_path: Path) -> None:
@@ -35,3 +36,30 @@ def test_result_manifest_writes_json(tmp_path: Path) -> None:
     assert data["schema_version"] == "0.1.0"
     assert data["environment"]["device"] == "cpu"
     assert data["metrics"]["loss"] == 0.0
+
+
+def test_git_dirty_ignores_output_directories(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "test@example.com"], cwd=repo, check=True
+    )
+    subprocess.run(["git", "config", "user.name", "test"], cwd=repo, check=True)
+    (repo / "code.py").write_text("print('x')\n")
+    subprocess.run(["git", "add", "code.py"], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "-q", "-m", "init"], cwd=repo, check=True)
+
+    (repo / "results").mkdir()
+    (repo / "results" / "snapshot.json").write_text("{}\n")
+
+    import os
+
+    cwd = os.getcwd()
+    os.chdir(repo)
+    try:
+        assert _git_dirty() is False
+        (repo / "code.py").write_text("print('y')\n")
+        assert _git_dirty() is True
+    finally:
+        os.chdir(cwd)
