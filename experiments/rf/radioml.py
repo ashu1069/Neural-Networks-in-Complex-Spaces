@@ -19,8 +19,10 @@ benchmark uses), so the rest of the experiment harness works unchanged.
 
 from __future__ import annotations
 
+import ast
+import json
 import math
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -57,6 +59,30 @@ RADIOML_2018_01A_MODULATIONS: tuple[str, ...] = (
 
 RADIOML_2018_01A_SNR_DB: tuple[int, ...] = tuple(range(-20, 32, 2))
 
+_FIXED_CLASS_SIDECARS: tuple[str, ...] = ("classes-fixed.json", "classes-fixed.txt")
+
+_MODULATION_ALIASES: Mapping[str, str] = {
+    "ASK4": "4ASK",
+    "ASK8": "8ASK",
+    "PSK8": "8PSK",
+    "PSK16": "16PSK",
+    "PSK32": "32PSK",
+    "APSK16": "16APSK",
+    "APSK32": "32APSK",
+    "APSK64": "64APSK",
+    "APSK128": "128APSK",
+    "QAM16": "16QAM",
+    "QAM32": "32QAM",
+    "QAM64": "64QAM",
+    "QAM128": "128QAM",
+    "QAM256": "256QAM",
+    "AM_SSB_WC": "AM-SSB-WC",
+    "AM_SSB_SC": "AM-SSB-SC",
+    "AM_DSB_WC": "AM-DSB-WC",
+    "AM_DSB_SC": "AM-DSB-SC",
+    "OQPS": "OQPSK",
+}
+
 
 def load_radioml_2018_01a(
     path: str | Path,
@@ -68,6 +94,7 @@ def load_radioml_2018_01a(
     seed: int = 0,
     dtype: torch.dtype = torch.complex64,
     sample_length: int = 1024,
+    classes_path: str | Path | None = None,
 ) -> RFModulationData:
     """Load a (filtered) subset of RadioML 2018.01A from a local HDF5 file.
 
@@ -104,7 +131,7 @@ def load_radioml_2018_01a(
         msg = "sample_length must be positive"
         raise ValueError(msg)
 
-    requested_mods = (
+    requested_mods = _normalize_modulation_names(
         tuple(modulations) if modulations is not None else RADIOML_2018_01A_MODULATIONS
     )
     requested_snrs = (
@@ -118,11 +145,19 @@ def load_radioml_2018_01a(
         x_dataset = handle["X"]
         y_dataset = handle["Y"]
         z_dataset = handle["Z"]
-        archive_modulations = _resolve_archive_modulations(handle)
+        archive_modulations = _resolve_archive_modulations(
+            handle, archive_path=path, classes_path=classes_path
+        )
 
         mod_to_archive_index = {
             name: idx for idx, name in enumerate(archive_modulations)
         }
+        if len(mod_to_archive_index) != len(archive_modulations):
+            msg = (
+                "archive class names are not unique after alias normalization; "
+                f"resolved names: {archive_modulations}"
+            )
+            raise ValueError(msg)
         for mod in requested_mods:
             if mod not in mod_to_archive_index:
                 msg = (
@@ -213,21 +248,113 @@ def load_radioml_2018_01a(
     )
 
 
-def _resolve_archive_modulations(handle: Any) -> tuple[str, ...]:
+def _resolve_archive_modulations(
+    handle: Any,
+    *,
+    archive_path: Path,
+    classes_path: str | Path | None,
+) -> tuple[str, ...]:
     """Return the modulation names ordered by their one-hot index in `Y`.
 
-    DeepSig's official archive doesn't always carry an explicit class-name
-    list, so we fall back to the canonical 24-class order documented for
-    2018.01A.
+    DeepSig's original `classes.txt` is known to use the wrong order for
+    2018.01A. Prefer the fixed sidecars distributed with this project/dataset,
+    then fall back to an HDF5-embedded class list or the documented paper order.
     """
+
+    if classes_path is not None:
+        return _load_modulation_sidecar(Path(classes_path))
+
+    for sidecar_name in _FIXED_CLASS_SIDECARS:
+        candidate = archive_path.with_name(sidecar_name)
+        if candidate.exists():
+            return _load_modulation_sidecar(candidate)
 
     if "classes" in handle:
         raw = handle["classes"][:]
-        return tuple(
-            name.decode("utf-8") if isinstance(name, bytes) else str(name)
-            for name in raw
+        return _normalize_modulation_names(
+            tuple(
+                name.decode("utf-8") if isinstance(name, bytes) else str(name)
+                for name in raw
+            )
         )
     return RADIOML_2018_01A_MODULATIONS
+
+
+def _load_modulation_sidecar(path: Path) -> tuple[str, ...]:
+    if not path.exists():
+        msg = f"RadioML class sidecar not found at {path}"
+        raise FileNotFoundError(msg)
+
+    if path.suffix == ".json":
+        payload = json.loads(path.read_text())
+        return _modulation_names_from_payload(payload, path=path)
+    return _modulation_names_from_text(path.read_text(), path=path)
+
+
+def _modulation_names_from_payload(payload: Any, *, path: Path) -> tuple[str, ...]:
+    if isinstance(payload, Sequence) and not isinstance(payload, str | bytes):
+        return _coerce_modulation_names(payload, path=path)
+    if isinstance(payload, Mapping):
+        for key in ("classes", "modulations", "labels"):
+            value = payload.get(key)
+            if isinstance(value, Sequence) and not isinstance(value, str | bytes):
+                return _coerce_modulation_names(value, path=path)
+
+        numeric_items: list[tuple[int, Any]] = []
+        for key, value in payload.items():
+            try:
+                numeric_items.append((int(str(key)), value))
+            except ValueError:
+                numeric_items.clear()
+                break
+        if numeric_items:
+            return _coerce_modulation_names(
+                [value for _, value in sorted(numeric_items)], path=path
+            )
+
+    msg = f"could not parse RadioML class names from {path}"
+    raise ValueError(msg)
+
+
+def _modulation_names_from_text(text: str, *, path: Path) -> tuple[str, ...]:
+    try:
+        module = ast.parse(text, filename=str(path))
+    except SyntaxError:
+        module = None
+
+    if module is not None:
+        for node in module.body:
+            if not isinstance(node, ast.Assign):
+                continue
+            if any(
+                isinstance(target, ast.Name) and target.id == "classes"
+                for target in node.targets
+            ):
+                return _coerce_modulation_names(ast.literal_eval(node.value), path=path)
+
+    lines = [
+        line.strip().strip(",").strip("'\"")
+        for line in text.splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    return _coerce_modulation_names(lines, path=path)
+
+
+def _coerce_modulation_names(values: Sequence[Any], *, path: Path) -> tuple[str, ...]:
+    names = _normalize_modulation_names(tuple(str(value) for value in values))
+    if not names or any(not name for name in names):
+        msg = f"empty RadioML class name in {path}"
+        raise ValueError(msg)
+    return names
+
+
+def _normalize_modulation_names(names: Sequence[str]) -> tuple[str, ...]:
+    return tuple(_normalize_modulation_name(name) for name in names)
+
+
+def _normalize_modulation_name(name: str) -> str:
+    key = str(name).strip().upper()
+    return _MODULATION_ALIASES.get(key, key)
 
 
 def _argmax_one_hot(values: Any) -> torch.Tensor:

@@ -181,8 +181,9 @@ Paper-track tasks:
    checks with known decision boundaries or closed-form targets.
 2. [x] **Synthetic RF modulation classification.** Documented IQ + AWGN
    stand-in with per-SNR snapshot metrics and swept conv results.
-3. [ ] **Real RF modulation classification.** RadioML 2018.01A or a documented
-   local subset; metric is accuracy per SNR bucket.
+3. [ ] **Real RF modulation classification.** RadioML 2018.01A loader/sweep is
+   implemented for the local HDF5 archive; paper-quality numbers still need a
+   CUDA run with accuracy per SNR bucket.
 4. [ ] **Optional scale-up — Audio source separation on STFT.** MUSDB18 or a small
    subset; metric is SI-SDR. Compare CVNN U-Net vs. real-valued U-Net on
    `(real, imag)` stack.
@@ -207,7 +208,9 @@ confidence interval, and exact reproduction command.
 modulation benchmark are implemented. Swept results now distinguish the primary
 matched shared-trial comparison from independently tuned family winners, so
 parameter/FLOP matching is auditable from `summary.md` and `summary.json`.
-RadioML, audio, and MRI remain future real-data/scale-up tracks.
+RadioML ingestion is implemented against the local `GOLD_XYZ_OSC.0001_1024.hdf5`
+archive and fixed class sidecars; RadioML paper numbers, audio, and MRI remain
+future real-data/scale-up tracks.
 
 ---
 

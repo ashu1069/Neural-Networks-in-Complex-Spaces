@@ -1,14 +1,14 @@
 """Synthetic RF modulation classification benchmark.
 
-This is a **stand-in** for a future RadioML 2018.01A benchmark. It generates
+This is a **stand-in** for RadioML 2018.01A. It generates
 i.i.d. PSK/QAM symbols, adds AWGN at controlled SNRs, and trains the four
 baseline families on a per-sample classification task. It uses *symbol-level*
 inputs (no pulse shaping, no carrier offset, no fading), so absolute numbers
 are not comparable to RadioML literature - but the relative differences
 between baseline families are what this benchmark exists to measure.
 
-When the real RadioML loader lands, the four-family scaffolding here can be
-reused as-is.
+The real RadioML loader in `radioml.py` reuses the same four-family
+scaffolding once the gated HDF5 archive is available.
 """
 
 from __future__ import annotations
@@ -1143,7 +1143,7 @@ def _format_summary_markdown(
         "# Synthetic RF Modulation Classification",
         "",
         (
-            "Stand-in for a future RadioML 2018.01A benchmark. Inputs are "
+            "Stand-in for RadioML 2018.01A. Inputs are "
             "i.i.d. PSK/QAM symbols with AWGN at controlled SNR; no pulse "
             "shaping, no carrier offset, no fading. Numbers are not "
             "comparable to RadioML literature - they exist to compare "

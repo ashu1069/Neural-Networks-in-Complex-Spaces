@@ -1,11 +1,9 @@
 """RF modulation classification benchmarks.
 
-This package will eventually host a real-data benchmark on RadioML 2018.01A.
-Until that loader lands, the working benchmark is the synthetic IQ stand-in
-in `synthetic_modulation.py`, which uses i.i.d. PSK/QAM symbols + AWGN. The
-synthetic task exercises the full benchmark harness (per-SNR accuracy, all
-four baseline families, manifest, tuning log) on a sequence-shaped task,
-without depending on the RadioML download.
+The synthetic IQ stand-in in `synthetic_modulation.py` uses i.i.d. PSK/QAM
+symbols + AWGN and remains the fast, bundled benchmark. `radioml.py` adds
+local loading for RadioML 2018.01A, reusing the same benchmark harness once
+the gated HDF5 archive is available under `data/`.
 """
 
 from experiments.rf.synthetic_modulation import (

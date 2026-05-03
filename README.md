@@ -73,7 +73,9 @@ Everything below is **1-D only** — `ComplexLinear` and `ComplexConv1d`,
 benchmarks on scalar inputs and length-128 IQ sequences. No
 `ComplexConv2d`, no images, no audio STFT, no MRI yet. The synthetic RF
 benchmark is a stand-in for RadioML 2018.01A: i.i.d. PSK symbols with
-AWGN, no pulse shaping, no carrier offset, no fading. See
+AWGN, no pulse shaping, no carrier offset, no fading. A RadioML 2018.01A
+loader and sweep harness are available for the local HDF5 archive; real-data
+headline numbers still need a CUDA sweep. See
 [`docs/report.md`](docs/report.md#5-limitations) for the full limitations
 list.
 

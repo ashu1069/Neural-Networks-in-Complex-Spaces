@@ -17,12 +17,23 @@ public benchmark for over-the-air-style modulation classification.
 By default the loader looks for the file at:
 
 ```text
-data/radioml/GOLD_XYZ_OSC.0001_1024.hdf5
+data/GOLD_XYZ_OSC.0001_1024.hdf5
 ```
 
 Override with the `path` argument or the `--data-path` CLI flag where
 applicable. **Do not commit the file.** The repo's `.gitignore` excludes
 `data/`.
+
+Keep the fixed class sidecar next to the HDF5 when possible:
+
+```text
+data/classes-fixed.json
+```
+
+The original `classes.txt` distributed with the dataset is known to list the
+24 modulations in the wrong one-hot order. The loader therefore prefers
+`classes-fixed.json` or `classes-fixed.txt` next to the HDF5, then falls back to
+an HDF5-embedded class list or the canonical paper order.
 
 ## File layout
 
@@ -45,17 +56,21 @@ The archive contains three top-level HDF5 datasets:
 from experiments.rf.radioml import load_radioml_2018_01a
 
 # Full archive (heavy — minutes to load, GBs of memory)
-data = load_radioml_2018_01a("data/radioml/GOLD_XYZ_OSC.0001_1024.hdf5")
+data = load_radioml_2018_01a("data/GOLD_XYZ_OSC.0001_1024.hdf5")
 
 # Filtered subset for fast iteration
 data = load_radioml_2018_01a(
-    "data/radioml/GOLD_XYZ_OSC.0001_1024.hdf5",
+    "data/GOLD_XYZ_OSC.0001_1024.hdf5",
     modulations=["BPSK", "QPSK", "8PSK"],
     snr_db_levels=[-10, -5, 0, 5, 10, 15, 20],
     max_per_class_per_snr=256,
     sample_length=128,  # trim from 1024 down to first 128 samples
 )
 ```
+
+Common aliases such as `PSK8`, `QAM16`, `APSK16`, `ASK4`, and AM labels with
+underscores are accepted and normalized to the fixed RadioML names (`8PSK`,
+`16QAM`, `16APSK`, `4ASK`, `AM-SSB-WC`, etc.).
 
 The returned object is the same `RFModulationData` dataclass the synthetic
 benchmark produces, so the four-family scaffolding in
@@ -88,6 +103,10 @@ advantage survive the distortions you actually encounter."
   the upper end of the search space are multi-hour runs even on an A100.
   Start with a subset and a tractable sample length; scale up once the
   harness reproduces the sub-task numbers.
+- **Caching** is enabled for capped sweep subsets so repeated trial/family
+  runs reuse the same seed/filter split instead of re-scanning the HDF5 labels.
+  Uncapped full-archive runs disable this automatically; use `--no-cache-data`
+  if a capped subset is still too large for memory.
 
 ## Citation
 

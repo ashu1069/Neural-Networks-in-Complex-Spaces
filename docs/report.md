@@ -229,9 +229,9 @@ Three secondary observations:
 - **Synthetic data, not RadioML.** The RF benchmark uses i.i.d. PSK
   symbols with AWGN. Real RadioML 2018.01A includes pulse shaping, carrier
   frequency offset, and channel effects (fading, multipath) that this
-  stand-in lacks. The directory layout (`experiments/rf/`) is set up so a
-  RadioML loader can land alongside the synthetic generator and reuse the
-  four-family scaffolding.
+  stand-in lacks. A RadioML loader and sweep harness now live alongside the
+  synthetic generator, but the real-data results are not part of this report
+  until the CUDA sweep is run and audited.
 - **Three modulations only.** The benchmark uses BPSK, QPSK, and 8PSK
   (angle-only constellations). The QAM variants we initially included
   collapsed all families near chance because flatten-MLP and small conv
@@ -252,7 +252,7 @@ Three secondary observations:
 
 ## 6. Future work
 
-- Land the RadioML 2018.01A loader and re-run with real-data PSK + QAM
+- Run and audit the RadioML 2018.01A sweep with real-data PSK + QAM
   modulations.
 - `ComplexBatchNorm` (whitening 2x2 covariance, per Trabelsi et al.) and
   deeper conv stacks.

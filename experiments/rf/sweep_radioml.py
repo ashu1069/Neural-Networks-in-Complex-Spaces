@@ -15,7 +15,7 @@ upper end of the search space takes hours even on an A100. Start small.
 For GPU:
 
     uv run python experiments/rf/sweep_radioml.py --device cuda \\
-        --data-path data/radioml/GOLD_XYZ_OSC.0001_1024.hdf5
+        --data-path data/GOLD_XYZ_OSC.0001_1024.hdf5
 """
 
 from __future__ import annotations
@@ -48,6 +48,7 @@ from experiments.rf.synthetic_modulation import (
     DEFAULT_MODEL_FAMILIES,
     ArchitectureName,
     ModelFamily,
+    RFModulationData,
     _features_for_family,
     _make_model,
 )
@@ -62,6 +63,8 @@ def _train_one(
     seed: int,
     *,
     data_path: Path,
+    classes_path: Path | None,
+    data_cache: dict[tuple[Any, ...], RFModulationData] | None,
     architecture: ArchitectureName,
     kernel_size: int,
     modulations: Sequence[str],
@@ -78,13 +81,14 @@ def _train_one(
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
 
-    data = load_radioml_2018_01a(
-        data_path,
+    data = _load_data_for_run(
+        data_path=data_path,
+        classes_path=classes_path,
+        data_cache=data_cache,
         modulations=modulations,
         snr_db_levels=snr_db_levels,
         max_per_class_per_snr=max_per_class_per_snr,
         sample_length=sample_length,
-        train_fraction=0.8,
         seed=seed,
         dtype=dtype,
     )
@@ -99,6 +103,7 @@ def _train_one(
     val_labels = data.train_labels[-n_val:].to(device)
     test_inputs_complex = data.test_inputs.to(device)
     test_labels = data.test_labels.to(device)
+    test_snr_db = data.test_snr_db.to(device)
     n_classes = len(data.modulation_names)
 
     model_family = cast(ModelFamily, family)
@@ -138,19 +143,84 @@ def _train_one(
 
     model.eval()
     with torch.no_grad():
-        val_acc = float(
-            (model(val_inputs).argmax(dim=-1) == val_labels).float().mean().item()
-        )
-        test_acc = float(
-            (model(test_inputs).argmax(dim=-1) == test_labels).float().mean().item()
+        val_predictions = model(val_inputs).argmax(dim=-1)
+        test_predictions = model(test_inputs).argmax(dim=-1)
+        val_acc = float((val_predictions == val_labels).float().mean().item())
+        test_acc = float((test_predictions == test_labels).float().mean().item())
+        test_accuracy_by_snr_db = _accuracy_by_snr_db(
+            predictions=test_predictions,
+            labels=test_labels,
+            snr_db=test_snr_db,
+            snr_db_levels=data.snr_db_levels,
         )
     parameter_count = count_real_parameters(model)
     return TrialSeedOutcome(
         val_accuracy=val_acc,
         test_accuracy=test_acc,
         train_seconds=train_seconds,
-        extra={"parameter_count": parameter_count},
+        extra={
+            "parameter_count": parameter_count,
+            "test_accuracy_by_snr_db": test_accuracy_by_snr_db,
+        },
     )
+
+
+def _load_data_for_run(
+    *,
+    data_path: Path,
+    classes_path: Path | None,
+    data_cache: dict[tuple[Any, ...], RFModulationData] | None,
+    modulations: Sequence[str],
+    snr_db_levels: Sequence[int],
+    max_per_class_per_snr: int | None,
+    sample_length: int,
+    seed: int,
+    dtype: torch.dtype,
+) -> RFModulationData:
+    cache_key = (
+        str(data_path),
+        str(classes_path) if classes_path else None,
+        tuple(modulations),
+        tuple(int(snr) for snr in snr_db_levels),
+        max_per_class_per_snr,
+        sample_length,
+        seed,
+        str(dtype),
+    )
+    if data_cache is not None and cache_key in data_cache:
+        return data_cache[cache_key]
+
+    data = load_radioml_2018_01a(
+        data_path,
+        modulations=modulations,
+        snr_db_levels=snr_db_levels,
+        max_per_class_per_snr=max_per_class_per_snr,
+        sample_length=sample_length,
+        train_fraction=0.8,
+        seed=seed,
+        dtype=dtype,
+        classes_path=classes_path,
+    )
+    if data_cache is not None:
+        data_cache[cache_key] = data
+    return data
+
+
+def _accuracy_by_snr_db(
+    *,
+    predictions: torch.Tensor,
+    labels: torch.Tensor,
+    snr_db: torch.Tensor,
+    snr_db_levels: Sequence[int],
+) -> dict[str, float]:
+    accuracy_by_snr: dict[str, float] = {}
+    for snr in snr_db_levels:
+        mask = snr_db == int(snr)
+        if bool(mask.any().item()):
+            accuracy_by_snr[str(int(snr))] = float(
+                (predictions[mask] == labels[mask]).float().mean().item()
+            )
+    return accuracy_by_snr
 
 
 def _selection_table(selections: Sequence[FamilySelection]) -> list[str]:
@@ -224,6 +294,10 @@ def _summary_markdown(
         "",
     ]
     lines.extend(_selection_table(matched_selections))
+    per_snr_lines = _per_snr_table(matched_selections)
+    if per_snr_lines:
+        lines.extend(["", "## Matched per-SNR test accuracy", ""])
+        lines.extend(per_snr_lines)
     lines.extend(
         [
             "",
@@ -241,6 +315,44 @@ def _summary_markdown(
     return "\n".join(lines)
 
 
+def _per_snr_table(selections: Sequence[FamilySelection]) -> list[str]:
+    per_family: dict[str, dict[str, float]] = {}
+    for selection in selections:
+        accuracies = _mean_accuracy_by_snr(selection)
+        if accuracies:
+            per_family[selection.family] = accuracies
+    if not per_family:
+        return []
+    snr_keys = sorted(
+        {snr for accuracies in per_family.values() for snr in accuracies},
+        key=int,
+    )
+    lines = [
+        "| family | " + " | ".join(f"{snr} dB" for snr in snr_keys) + " |",
+        "| --- | " + " | ".join("---:" for _ in snr_keys) + " |",
+    ]
+    for family, accuracies in per_family.items():
+        cells = [
+            f"{accuracies[snr]:.3f}" if snr in accuracies else "-" for snr in snr_keys
+        ]
+        lines.append(f"| `{family}` | " + " | ".join(cells) + " |")
+    return lines
+
+
+def _mean_accuracy_by_snr(selection: FamilySelection) -> dict[str, float]:
+    per_seed = selection.selected_extra.get("test_accuracy_by_snr_db_per_seed")
+    if not isinstance(per_seed, list):
+        return {}
+    by_snr: dict[str, list[float]] = {}
+    for item in per_seed:
+        if not isinstance(item, dict):
+            continue
+        for snr, value in item.items():
+            if isinstance(value, int | float) and not isinstance(value, bool):
+                by_snr.setdefault(str(snr), []).append(float(value))
+    return {snr: sum(values) / len(values) for snr, values in by_snr.items() if values}
+
+
 def _format_value(value: Any) -> str:
     if isinstance(value, float):
         return f"{value:.4g}"
@@ -252,7 +364,16 @@ def main() -> int:
     parser.add_argument(
         "--data-path",
         type=Path,
-        default=Path("data/radioml/GOLD_XYZ_OSC.0001_1024.hdf5"),
+        default=Path("data/GOLD_XYZ_OSC.0001_1024.hdf5"),
+    )
+    parser.add_argument(
+        "--classes-path",
+        type=Path,
+        default=None,
+        help=(
+            "optional fixed class-order sidecar; defaults to classes-fixed.json "
+            "or classes-fixed.txt next to the HDF5"
+        ),
     )
     parser.add_argument("--n-trials", type=int, default=16)
     parser.add_argument("--seeds", nargs="+", type=int, default=[0, 1, 2])
@@ -276,6 +397,14 @@ def main() -> int:
         type=int,
         default=256,
         help="cap per (modulation, SNR) bucket; pass 0 to disable",
+    )
+    parser.add_argument(
+        "--no-cache-data",
+        action="store_true",
+        help=(
+            "reload the HDF5 subset for every run; by default capped subsets "
+            "are cached per seed/filter split"
+        ),
     )
     parser.add_argument("--sample-length", type=int, default=128)
     parser.add_argument("--val-fraction", type=float, default=0.2)
@@ -301,6 +430,10 @@ def main() -> int:
     max_per_class = (
         None if args.max_per_class_per_snr <= 0 else args.max_per_class_per_snr
     )
+    cache_data = (not args.no_cache_data) and max_per_class is not None
+    data_cache: dict[tuple[Any, ...], RFModulationData] | None = (
+        {} if cache_data else None
+    )
 
     if architecture == "conv":
         hidden_choices = [16, 32, 64]
@@ -321,6 +454,8 @@ def main() -> int:
             hp,
             seed,
             data_path=args.data_path,
+            classes_path=args.classes_path,
+            data_cache=data_cache,
             architecture=architecture,
             kernel_size=args.kernel_size,
             modulations=args.modulations,
@@ -349,12 +484,14 @@ def main() -> int:
     sweep_config: JsonObject = {
         "experiment": "radioml_modulation_sweep",
         "data_path": str(args.data_path),
+        "classes_path": str(args.classes_path) if args.classes_path else None,
         "n_trials": args.n_trials,
         "seeds": list(args.seeds),
         "model_families": list(args.model_families),
         "modulations": list(args.modulations),
         "snr_db_levels": list(args.snr_db_levels),
         "max_per_class_per_snr": args.max_per_class_per_snr,
+        "cache_data": cache_data,
         "sample_length": args.sample_length,
         "val_fraction": args.val_fraction,
         "architecture": args.architecture,

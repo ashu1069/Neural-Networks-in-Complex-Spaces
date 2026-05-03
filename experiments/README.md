@@ -73,10 +73,17 @@ uv run python experiments/rf/sweep_synthetic_modulation.py --device cuda
 
 ## RF
 
-The current RF benchmark is synthetic IQ + AWGN, not RadioML:
+The paper-track RF results currently use synthetic IQ + AWGN:
 
 ```bash
 uv run python experiments/rf/synthetic_modulation.py
+```
+
+The real RadioML 2018.01A loader expects the local archive at
+`data/GOLD_XYZ_OSC.0001_1024.hdf5` and the fixed class-order sidecar next to it:
+
+```bash
+uv run python experiments/rf/sweep_radioml.py --device cuda
 ```
 
 The full RF sweep is GPU-oriented. CPU smoke runs should reduce

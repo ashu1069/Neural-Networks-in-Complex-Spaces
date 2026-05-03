@@ -142,8 +142,8 @@ This *isn't*:
 
 - A claim about RadioML 2018.01A. The RF task is a synthetic stand-in.
   Real-world data has pulse shaping, carrier offset, fading, and labeled
-  modulations beyond PSK; none of that is in this benchmark yet. The
-  directory layout is set up to swap it in.
+  modulations beyond PSK; the loader exists now, but the CUDA sweep still
+  needs to be run and audited before it becomes a result.
 - A claim about deep architectures. The conv stacks here are two layers
   with global mean pool. ComplexBatchNorm and ComplexLayerNorm aren't
   written yet.

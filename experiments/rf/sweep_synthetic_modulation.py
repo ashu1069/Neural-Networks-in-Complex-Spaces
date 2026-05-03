@@ -197,8 +197,8 @@ def _summary_markdown(
             "Random-search sweep of "
             f"`{sweep_config['n_trials']}` trials x "
             f"`{len(cast(list[int], sweep_config['seeds']))}` seeds, following "
-            "`docs/tuning_budget.md`. Stand-in for a future RadioML 2018.01A "
-            "benchmark; numbers reflect the synthetic IQ + AWGN distribution, "
+            "`docs/tuning_budget.md`. Stand-in for RadioML 2018.01A; "
+            "numbers reflect the synthetic IQ + AWGN distribution, "
             "not the real dataset."
         ),
         "",

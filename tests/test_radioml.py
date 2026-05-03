@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import numpy as np
@@ -103,6 +104,36 @@ def test_load_radioml_max_per_class_per_snr(tmp_path: Path) -> None:
     assert data.test_inputs.shape[0] == 4
 
 
+def test_load_radioml_prefers_fixed_sidecar_and_accepts_aliases(
+    tmp_path: Path,
+) -> None:
+    h5py = pytest.importorskip("h5py")
+    archive = tmp_path / "tiny.hdf5"
+    _write_synthetic_radioml(
+        archive,
+        modulations=["8PSK"],
+        snr_db_levels=[0],
+        n_per_class_per_snr=8,
+    )
+    with h5py.File(archive, "a") as handle:
+        wrong_classes = np.asarray([f"WRONG_{idx}" for idx in range(24)], dtype="S16")
+        handle.create_dataset("classes", data=wrong_classes)
+    (tmp_path / "classes-fixed.json").write_text(
+        json.dumps(list(RADIOML_2018_01A_MODULATIONS))
+    )
+
+    data = load_radioml_2018_01a(
+        archive,
+        modulations=["PSK8"],
+        snr_db_levels=[0],
+        sample_length=128,
+    )
+
+    assert data.modulation_names == ("8PSK",)
+    assert set(data.train_labels.tolist()) == {0}
+    assert set(data.test_snr_db.tolist()) == {0}
+
+
 def test_load_radioml_raises_on_missing_file(tmp_path: Path) -> None:
     with pytest.raises(FileNotFoundError):
         load_radioml_2018_01a(tmp_path / "nope.hdf5")
@@ -138,6 +169,14 @@ def test_load_radioml_raises_when_no_examples_match(tmp_path: Path) -> None:
 
 def test_radioml_constants_are_canonical_24_and_26() -> None:
     assert len(RADIOML_2018_01A_MODULATIONS) == 24
+    assert RADIOML_2018_01A_MODULATIONS[:6] == (
+        "OOK",
+        "4ASK",
+        "8ASK",
+        "BPSK",
+        "QPSK",
+        "8PSK",
+    )
     assert len(RADIOML_2018_01A_SNR_DB) == 26
     assert RADIOML_2018_01A_SNR_DB[0] == -20
     assert RADIOML_2018_01A_SNR_DB[-1] == 30
