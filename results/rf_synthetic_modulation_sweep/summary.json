@@ -55,7 +55,10 @@
     "seeds": [
       0,
       1,
-      2
+      2,
+      3,
+      4,
+      5
     ],
     "snr_db_levels": [
       -10,
@@ -77,6 +80,9 @@
         "parameter_count_per_seed": [
           3974.0,
           3974.0,
+          3974.0,
+          3974.0,
+          3974.0,
           3974.0
         ]
       },
@@ -86,16 +92,19 @@
         "learning_rate": 0.007903951605476266,
         "steps": 800
       },
-      "selected_test_accuracy_mean": 0.821733812491099,
-      "selected_test_accuracy_std": 0.019303318151400656,
+      "selected_test_accuracy_mean": 0.8191392024358114,
+      "selected_test_accuracy_std": 0.016296774297532363,
       "selected_trial_index": 1,
-      "selected_val_accuracy_mean": 0.8179696599642435
+      "selected_val_accuracy_mean": 0.8164138595263163
     },
     {
       "family": "real_stacked",
       "selected_extra": {
         "parameter_count_mean": 2099.0,
         "parameter_count_per_seed": [
+          2099.0,
+          2099.0,
+          2099.0,
           2099.0,
           2099.0,
           2099.0
@@ -107,16 +116,19 @@
         "learning_rate": 0.007903951605476266,
         "steps": 800
       },
-      "selected_test_accuracy_mean": 0.7707570195198059,
-      "selected_test_accuracy_std": 0.029107808008384414,
+      "selected_test_accuracy_mean": 0.7739621500174204,
+      "selected_test_accuracy_std": 0.022590790947496758,
       "selected_trial_index": 1,
-      "selected_val_accuracy_mean": 0.7802411516507467
+      "selected_val_accuracy_mean": 0.7697394092877706
     },
     {
       "family": "real_matched_params",
       "selected_extra": {
         "parameter_count_mean": 15033.0,
         "parameter_count_per_seed": [
+          15033.0,
+          15033.0,
+          15033.0,
           15033.0,
           15033.0,
           15033.0
@@ -128,31 +140,34 @@
         "learning_rate": 0.002444328215584386,
         "steps": 800
       },
-      "selected_test_accuracy_mean": 0.7918193141619364,
-      "selected_test_accuracy_std": 0.010534444978535855,
+      "selected_test_accuracy_mean": 0.791361411412557,
+      "selected_test_accuracy_std": 0.012681288006004371,
       "selected_trial_index": 0,
-      "selected_val_accuracy_mean": 0.7880202333132426
+      "selected_val_accuracy_mean": 0.7872423330942789
     },
     {
       "family": "real_matched_flops",
       "selected_extra": {
-        "parameter_count_mean": 7779.0,
+        "parameter_count_mean": 29891.0,
         "parameter_count_per_seed": [
-          7779.0,
-          7779.0,
-          7779.0
+          29891.0,
+          29891.0,
+          29891.0,
+          29891.0,
+          29891.0,
+          29891.0
         ]
       },
       "selected_hyperparameters": {
         "batch_size": 512,
-        "hidden_features": 16,
-        "learning_rate": 0.007903951605476266,
+        "hidden_features": 32,
+        "learning_rate": 0.002444328215584386,
         "steps": 800
       },
-      "selected_test_accuracy_mean": 0.7939560413360596,
-      "selected_test_accuracy_std": 0.0033017825526837157,
-      "selected_trial_index": 1,
-      "selected_val_accuracy_mean": 0.7907429138819376
+      "selected_test_accuracy_mean": 0.7864774167537689,
+      "selected_test_accuracy_std": 0.015939516720569234,
+      "selected_trial_index": 0,
+      "selected_val_accuracy_mean": 0.7798522114753723
     }
   ]
 }
