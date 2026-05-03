@@ -27,9 +27,10 @@ Last local audit: May 3, 2026
 | activation_siglog | pass | pass | 5.961e-08 |  |
 | activation_cardioid | pass | pass | 1.201e-07 |  |
 
-Phase 1 should implement `ComplexLinear` so it has an explicit CPU reference
-and an MPS fallback or split-real implementation, rather than relying on native
-MPS complex linear support.
+Phase 1 implements `ComplexLinear` with explicit complex matmul rather than
+native `torch.nn.functional.linear`. Local CPU/MPS agreement tests pass through
+that path, so the native MPS complex-linear gap is documented but no longer
+blocks minimal local model prototyping.
 
 PyTorch issue #119088 was fixed upstream via PR #119318 for mixed real/complex
 scalar binary operations on MPS. It explains why `x.to("mps") * 1j` is now a

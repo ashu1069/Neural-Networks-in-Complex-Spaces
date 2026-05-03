@@ -75,6 +75,10 @@ MPS, for example multiplying an MPS tensor by `1j`. That upstream issue was
 closed by PyTorch PR #119318. The current bottleneck for this project is a
 separate operation-level gap: native MPS complex `linear`.
 
+The project `ComplexLinear` layer intentionally uses explicit complex matmul
+instead of `torch.nn.functional.linear`. On the current local setup, this path
+passes CPU/MPS agreement tests and avoids the native MPS complex-linear gap.
+
 ## Dtype Guidance
 
 - Use `torch.complex64` for local MPS throughput checks.

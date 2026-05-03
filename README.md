@@ -52,10 +52,12 @@ footnote.
 
 ## Status
 
-Phase 0 scaffolding is in place. The repo now has a `uv`-managed Python
-project, CI configuration, pre-commit hooks, a minimal `cvnn` package, result
-manifest helpers, and an Apple Silicon complex-tensor support audit script.
-Implementation milestones are tracked in [PROJECT_PLAN.md](PROJECT_PLAN.md).
+Phase 1 minimal-core scaffolding is in place. The repo now has a `uv`-managed
+Python project, CI configuration, pre-commit hooks, a minimal `cvnn` package,
+complex tensor utilities, complex initializers, `ComplexLinear`,
+`ComplexDropout`, a minimal complex MLP builder, result manifest helpers, and
+MPS/CUDA complex-tensor support audit tooling. Implementation milestones are
+tracked in [PROJECT_PLAN.md](PROJECT_PLAN.md).
 
 ## Planned repository layout
 
@@ -66,6 +68,8 @@ Implementation milestones are tracked in [PROJECT_PLAN.md](PROJECT_PLAN.md).
 │   ├── init/              # Phase 1 complex-aware initializers
 │   ├── layers/            # Phase 1 complex-valued layers
 │   ├── optim/             # Phase 3 optimizer experiments
+│   ├── nn.py              # minimal complex MLP builder
+│   ├── utils.py           # complex tensor conversion/splitting helpers
 │   └── repro.py           # result manifest helpers
 ├── docs/                  # hardware notes, schemas, support-gap tracking
 ├── experiments/           # task-specific training scripts + configs

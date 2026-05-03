@@ -77,11 +77,11 @@ controlled experiments. Breadth comes later.
 
 Initial components:
 
-- `ComplexLinear`
-- Minimal complex MLP builder
-- Utilities: `to_complex`, `as_real_pair`, magnitude/phase splitters
-- Complex weight initializers: Glorot/He variants in rectangular and polar form
-- `ComplexDropout`
+- [x] `ComplexLinear`
+- [x] Minimal complex MLP builder
+- [x] Utilities: `to_complex`, `as_real_pair`, magnitude/phase splitters
+- [x] Complex weight initializers: Glorot/He variants in rectangular and polar form
+- [x] `ComplexDropout`
 
 Deferred until a benchmark requires them:
 
@@ -91,16 +91,19 @@ Deferred until a benchmark requires them:
 
 **Tests:**
 
-- Shape and dtype tests for every layer.
-- Numerical-gradient checks via `torch.autograd.gradcheck` against
+- [x] Shape and dtype tests for every layer.
+- [x] Numerical-gradient checks via `torch.autograd.gradcheck` against
   `torch.complex128` parameters.
-- Equivalence test: a `ComplexLinear` with real-only weights should match a
+- [x] Equivalence test: a `ComplexLinear` with real-only weights should match a
   real `nn.Linear`.
-- CPU vs MPS/CUDA agreement tests for supported ops, with explicit skips for
+- [x] CPU vs MPS/CUDA agreement tests for supported ops, with explicit skips for
   documented unsupported paths.
 
 **Exit criterion:** the minimal MLP stack is covered by unit tests; `gradcheck`
 passes on CPU; supported accelerator paths agree with CPU within tolerance.
+
+**Local status:** CPU and MPS tests pass. CUDA is wired into the tests and audit
+script, but still needs to be run on a CUDA server before large sweeps.
 
 ---
 
