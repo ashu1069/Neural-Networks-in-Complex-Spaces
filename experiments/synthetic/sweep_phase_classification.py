@@ -28,6 +28,7 @@ from experiments._sweep import (
     TrialSeedOutcome,
     random_search,
     select_best_per_family,
+    select_reference_trial_for_all_families,
     write_tuning_log,
 )
 from experiments.synthetic.phase_classification import (
@@ -127,27 +128,8 @@ def _train_one(
     )
 
 
-def _summary_markdown(
-    selections: Sequence[FamilySelection], *, sweep_config: JsonObject
-) -> str:
+def _selection_table(selections: Sequence[FamilySelection]) -> list[str]:
     lines = [
-        "# Synthetic Phase Classification (Swept)",
-        "",
-        (
-            "Selected configuration per model family from a random-search "
-            f"sweep of `{sweep_config['n_trials']}` trials x "
-            f"`{len(cast(list[int], sweep_config['seeds']))}` seeds, following "
-            "`docs/tuning_budget.md`. See `tuning_log.md` for the per-trial "
-            "log and `trials.json` for the full record."
-        ),
-        "",
-        (
-            f"Activation (complex): `{sweep_config['activation']}`. "
-            f"Activation (real baselines): `{sweep_config['real_activation']}`. "
-            f"`n_classes={sweep_config['n_classes']}`, "
-            f"`noise_std={sweep_config['noise_std']}`."
-        ),
-        "",
         (
             "| family | trial | val acc | test acc (mean) | test std | params | "
             "hyperparameters |"
@@ -176,6 +158,58 @@ def _summary_markdown(
                 ]
             )
         )
+    return lines
+
+
+def _summary_markdown(
+    matched_selections: Sequence[FamilySelection],
+    *,
+    independent_selections: Sequence[FamilySelection],
+    sweep_config: JsonObject,
+) -> str:
+    lines = [
+        "# Synthetic Phase Classification (Swept)",
+        "",
+        (
+            "Random-search sweep of "
+            f"`{sweep_config['n_trials']}` trials x "
+            f"`{len(cast(list[int], sweep_config['seeds']))}` seeds, following "
+            "`docs/tuning_budget.md`. See `tuning_log.md` for the per-trial "
+            "log and `trials.json` for the full record."
+        ),
+        "",
+        (
+            f"Activation (complex): `{sweep_config['activation']}`. "
+            f"Activation (real baselines): `{sweep_config['real_activation']}`. "
+            f"`n_classes={sweep_config['n_classes']}`, "
+            f"`noise_std={sweep_config['noise_std']}`."
+        ),
+        "",
+        "## Matched shared-trial comparison",
+        "",
+        (
+            "Primary paper table. The trial index is selected by the complex "
+            "family's mean validation accuracy, then every real baseline is "
+            "reported at that same trial index so parameter/FLOP matching is "
+            "with respect to the selected complex model."
+        ),
+        "",
+    ]
+    lines.extend(_selection_table(matched_selections))
+    lines.extend(
+        [
+            "",
+            "## Independent family winners",
+            "",
+            (
+                "Diagnostic only. These rows show each family's own best "
+                "validation trial, so their parameter counts are not guaranteed "
+                "to be matched to the selected complex model."
+            ),
+            "",
+        ]
+    )
+    lines.extend(_selection_table(independent_selections))
     return "\n".join(lines)
 
 
@@ -249,7 +283,8 @@ def main() -> int:
         sweep_seed=args.sweep_seed,
         train_fn=train_fn,
     )
-    selections = select_best_per_family(trials)
+    independent_selections = select_best_per_family(trials)
+    matched_selections = select_reference_trial_for_all_families(trials)
 
     sweep_config: JsonObject = {
         "experiment": "synthetic_phase_classification_sweep",
@@ -277,14 +312,20 @@ def main() -> int:
         task_name="Synthetic Phase Classification",
         sweep_config=sweep_config,
         trials=trials,
-        selections=selections,
+        selections=independent_selections,
     )
-    summary_md = _summary_markdown(selections, sweep_config=sweep_config)
+    summary_md = _summary_markdown(
+        matched_selections,
+        independent_selections=independent_selections,
+        sweep_config=sweep_config,
+    )
     (args.output_dir / "summary.md").write_text(summary_md + "\n")
 
     summary_json: JsonObject = {
         "config": sweep_config,
-        "selections": [sel.to_dict() for sel in selections],
+        "reference_family": "complex",
+        "selections": [sel.to_dict() for sel in matched_selections],
+        "independent_selections": [sel.to_dict() for sel in independent_selections],
     }
     (args.output_dir / "summary.json").write_text(
         json.dumps(summary_json, indent=2, sort_keys=True) + "\n"
@@ -294,7 +335,11 @@ def main() -> int:
         run_id="synthetic-phase-classification-sweep",
         config=sweep_config,
         seeds=list(args.seeds),
-        metrics={"selections": [sel.to_dict() for sel in selections]},
+        metrics={
+            "reference_family": "complex",
+            "selections": [sel.to_dict() for sel in matched_selections],
+            "independent_selections": [sel.to_dict() for sel in independent_selections],
+        },
         device=args.device,
         dtype=args.dtype,
         dataset={

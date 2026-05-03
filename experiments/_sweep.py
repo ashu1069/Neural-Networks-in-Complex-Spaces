@@ -276,6 +276,63 @@ def select_best_per_family(
     return selections
 
 
+def select_reference_trial_for_all_families(
+    trials: Sequence[TrialResult],
+    *,
+    reference_family: str = "complex",
+) -> list[FamilySelection]:
+    """Select one shared trial index, chosen by the reference family.
+
+    `select_best_per_family` is useful for reporting independently tuned
+    family winners, but those winners may come from different trial indices.
+    For capacity-matched comparisons, the matched real baselines must be read
+    at the same trial index as the selected complex reference; otherwise the
+    reported rows are no longer matched to the selected complex model.
+    """
+
+    by_family: dict[str, dict[int, TrialResult]] = {}
+    for trial in trials:
+        by_family.setdefault(trial.family, {})[trial.trial_index] = trial
+    if reference_family not in by_family:
+        msg = f"reference family is absent from trials: {reference_family}"
+        raise ValueError(msg)
+
+    reference_best = max(
+        by_family[reference_family].values(),
+        key=lambda trial: trial.val_accuracy_mean,
+    )
+    trial_index = reference_best.trial_index
+
+    selections: list[FamilySelection] = []
+    for family, family_trials in by_family.items():
+        if trial_index not in family_trials:
+            msg = f"family {family!r} has no trial index {trial_index}"
+            raise ValueError(msg)
+        selections.append(_selection_from_trial(family_trials[trial_index]))
+    return selections
+
+
+def _selection_from_trial(trial: TrialResult) -> FamilySelection:
+    test_mean = trial.test_accuracy_mean
+    if len(trial.test_accuracy_per_seed) >= 2:
+        mean = test_mean
+        variance = sum(
+            (value - mean) ** 2 for value in trial.test_accuracy_per_seed
+        ) / (len(trial.test_accuracy_per_seed) - 1)
+        test_std = math.sqrt(variance)
+    else:
+        test_std = 0.0
+    return FamilySelection(
+        family=trial.family,
+        selected_trial_index=trial.trial_index,
+        selected_val_accuracy_mean=trial.val_accuracy_mean,
+        selected_test_accuracy_mean=test_mean,
+        selected_test_accuracy_std=test_std,
+        selected_hyperparameters=dict(trial.hyperparameters),
+        selected_extra=dict(trial.extra),
+    )
+
+
 def write_tuning_log(
     output_dir: Path,
     *,
@@ -399,5 +456,6 @@ __all__ = [
     "TrialSeedOutcome",
     "random_search",
     "select_best_per_family",
+    "select_reference_trial_for_all_families",
     "write_tuning_log",
 ]

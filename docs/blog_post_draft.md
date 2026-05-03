@@ -68,7 +68,9 @@ benchmark numbers were trusted:
   forward FLOPs.
 - A budgeted random-search harness that draws the *same* hyperparameter
   trials for every family — no family lucks into a wider distribution. 16
-  trials, 3-6 seeds per trial, selection by validation accuracy.
+  trials, 3-6 seeds per trial. For the paper table, the complex validation
+  winner chooses the shared trial index; independent family winners are kept
+  as diagnostics.
 - Manifests on every result that record the git commit, environment, and
   whether the working tree was dirty when it ran. CI refuses commits with
   dirty manifests.
@@ -108,26 +110,28 @@ A real 2-D network can learn the same decision boundaries with the same
 budget. This is the result you should expect, and seeing it is what makes
 the next result believable.
 
-## Result B: RF modulation classification — complex wins, with the smallest model
+## Result B: RF modulation classification — complex wins at matched capacity
 
 After a 16×6 sweep with a small `ComplexConv1d` stack (and equivalent real
-1-D conv stacks for the baselines), the complex network reached **81.91%**
-test accuracy. The next-best baseline reached **79.14%**. The CIs don't
-overlap; a Welch t-test gives `p < 0.01`.
+1-D conv stacks for the baselines), the matched shared-trial comparison puts
+the complex network at **81.91%** test accuracy. The next-best real baseline
+in that matched table reached **78.10%**. The CIs don't overlap; Welch
+t-tests against the matched-parameter and matched-FLOP baselines both give
+`p < 0.01`.
 
 ![rf_synthetic_modulation_swept](../results/figures/rf_synthetic_modulation_swept.png)
 
 The parameter-efficiency story is sharper than the accuracy story. The
-selected complex configuration used **3,974** parameters. The
-parameter-matched real baseline used **15,033** — and lost. The
-FLOP-matched baseline used **29,891** (7.5× more parameters than the
-complex model) — and also lost. Here's the same data as a pareto:
+selected complex configuration used **3,974** parameters. The nearest
+parameter-matched real baseline used **3,809** — and lost. The FLOP-matched
+baseline used **7,779** parameters — and also lost. Here's the same data as
+a pareto:
 
 ![rf_sweep_pareto](../results/figures/rf_sweep_pareto.png)
 
-The blue CVNN star sits visibly above and to the left of every other
-selected trial. **Higher accuracy at lower parameter count.** That's what
-the inductive bias buys you, on a task where it has something to bite on.
+The blue CVNN star sits visibly above the capacity-matched real baselines.
+**Higher accuracy at a comparable parameter count.** That's what the
+inductive bias buys you, on a task where it has something to bite on.
 
 ## What this is and isn't
 
@@ -159,8 +163,7 @@ answer, and it is task-dependent in a way you can characterize:
 
 For 1-D scalar phase classification, the complex network buys you nothing
 over a 2-D real network. For sequence-shaped IQ-like data, it buys you
-~3 percentage points and a 4× to 8× reduction in parameters at fixed
-accuracy.
+~4 percentage points at comparable parameter count.
 
 The thought experiment was right that there's no clean activation. It was
 incomplete in implying that this means the whole enterprise is stuck. The

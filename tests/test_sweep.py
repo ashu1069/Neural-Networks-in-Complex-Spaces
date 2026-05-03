@@ -11,6 +11,7 @@ from experiments._sweep import (
     TrialSeedOutcome,
     random_search,
     select_best_per_family,
+    select_reference_trial_for_all_families,
     write_tuning_log,
 )
 
@@ -87,6 +88,39 @@ def test_select_best_picks_highest_val_accuracy_per_family() -> None:
     by_family = {sel.family: sel for sel in selections}
     assert by_family["good"].selected_hyperparameters["x"] == 0.3
     assert by_family["bad"].selected_hyperparameters["x"] == 0.1
+
+
+def test_select_reference_trial_uses_one_shared_trial_index() -> None:
+    space = SearchSpace(distributions={"x": ("choice", [0.1, 0.2, 0.3])})
+
+    def train_fn(family: str, hp: dict, seed: int) -> TrialSeedOutcome:
+        val = hp["x"] if family == "complex" else (0.4 - hp["x"])
+        return TrialSeedOutcome(
+            val_accuracy=val,
+            test_accuracy=val + 0.05,
+            train_seconds=0.0,
+        )
+
+    trials = random_search(
+        families=["complex", "real"],
+        search_space=space,
+        seeds=[0],
+        n_trials=10,
+        sweep_seed=7,
+        train_fn=train_fn,
+    )
+
+    independent = select_best_per_family(trials)
+    shared = select_reference_trial_for_all_families(trials)
+
+    by_family_independent = {sel.family: sel for sel in independent}
+    by_family_shared = {sel.family: sel for sel in shared}
+    assert by_family_independent["complex"].selected_trial_index != (
+        by_family_independent["real"].selected_trial_index
+    )
+    assert by_family_shared["complex"].selected_trial_index == (
+        by_family_shared["real"].selected_trial_index
+    )
 
 
 def test_write_tuning_log_writes_markdown_and_json(tmp_path: Path) -> None:

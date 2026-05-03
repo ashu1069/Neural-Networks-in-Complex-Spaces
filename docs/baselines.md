@@ -28,14 +28,16 @@ deeper architectures).
 
 ### 2. Matched-parameter real
 
-A real network whose total real parameter count equals the complex model's,
-counted via `cvnn.baselines.count_real_parameters` (which doubles every
-complex parameter's `numel`).
+A real network whose total real parameter count is the closest feasible match
+to the complex model's, counted via `cvnn.baselines.count_real_parameters`
+(which doubles every complex parameter's `numel`). Exact equality is possible
+for some layer widths but not guaranteed for discrete hidden-channel choices.
 
-- **How to match:** start from the naive-real shape and shrink the hidden
-  width(s) until `count_real_parameters(real_model) == count_real_parameters(complex_model)`.
-  Resolve ties by rounding hidden width *down* (favoring the complex model
-  is the safer bias when reporting wins).
+- **How to match:** start from the naive-real shape and choose hidden width(s)
+  that minimize
+  `abs(count_real_parameters(real_model) - count_real_parameters(complex_model))`.
+  Always report the actual counts in the result table so the residual mismatch
+  is visible.
 - **Why we run it:** controls for "the complex model only wins because it
   effectively has more parameters."
 
@@ -86,6 +88,16 @@ The naive-real-stacked and exact-reparam columns are optional but encouraged.
 
 Report `count_real_parameters` and total forward FLOPs in every row, so the
 matching is verifiable from the table alone.
+
+For swept experiments, distinguish two tables:
+
+- **Matched shared-trial comparison:** choose the reference complex trial by
+  validation accuracy, then report every real baseline at that same trial
+  index. This is the primary paper comparison because the matched baselines are
+  tied to the selected complex model.
+- **Independent family winners:** choose each family's best validation trial
+  independently. This is useful as a diagnostic, but those rows are not
+  necessarily matched to the selected complex model.
 
 ## What to record
 

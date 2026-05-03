@@ -179,13 +179,14 @@ Paper-track tasks:
 
 1. [x] **Synthetic — phase classification / controlled complex regression.** Sanity
    checks with known decision boundaries or closed-form targets.
-2. [ ] **RF modulation classification.** RadioML 2018.01A or a documented local
-   subset; metric is accuracy
-   per SNR bucket.
-3. [ ] **Optional scale-up — Audio source separation on STFT.** MUSDB18 or a small
+2. [x] **Synthetic RF modulation classification.** Documented IQ + AWGN
+   stand-in with per-SNR snapshot metrics and swept conv results.
+3. [ ] **Real RF modulation classification.** RadioML 2018.01A or a documented
+   local subset; metric is accuracy per SNR bucket.
+4. [ ] **Optional scale-up — Audio source separation on STFT.** MUSDB18 or a small
    subset; metric is SI-SDR. Compare CVNN U-Net vs. real-valued U-Net on
    `(real, imag)` stack.
-4. [ ] **Optional scale-up — MRI reconstruction (single-coil).** fastMRI knee
+5. [ ] **Optional scale-up — MRI reconstruction (single-coil).** fastMRI knee
    subset; metric is SSIM/PSNR on magnitude images.
 
 For each task:
@@ -202,11 +203,11 @@ For each task:
 params, real-matched-FLOPs} with metric, training time, parameter count,
 confidence interval, and exact reproduction command.
 
-**Local status:** the synthetic phase-classification benchmark is implemented in
-`experiments/synthetic/phase_classification.py`. It records raw per-seed rows,
-mean/std/bootstrap confidence intervals, parameter counts, estimated forward
-multiply-adds, training time, and a manifest. CPU smoke tests pass locally; RF
-dataset work and CUDA confirmation runs remain pending.
+**Local status:** the synthetic phase-classification benchmark and synthetic RF
+modulation benchmark are implemented. Swept results now distinguish the primary
+matched shared-trial comparison from independently tuned family winners, so
+parameter/FLOP matching is auditable from `summary.md` and `summary.json`.
+RadioML, audio, and MRI remain future real-data/scale-up tracks.
 
 ---
 
@@ -215,13 +216,13 @@ dataset work and CUDA confirmation runs remain pending.
 **Goal:** consolidate findings into a paper-style technical report before
 extracting a general-purpose library API.
 
-- Activation comparison: which one wins where, and does the holomorphy
+- [x] Activation comparison: which one wins where, and does the holomorphy
   defect actually correlate with worse training?
-- Parameter-efficiency analysis across tasks.
-- Failure-mode catalog (what breaks, what diverges, what overfits).
-- Threats to validity: hardware limits, dataset subset bias, tuning budget,
+- [x] Parameter-efficiency analysis across tasks.
+- [x] Failure-mode catalog (what breaks, what diverges, what overfits).
+- [x] Threats to validity: hardware limits, dataset subset bias, tuning budget,
   stochastic variation, and baseline capacity.
-- A paper-style technical report (`docs/report.md`) and a follow-up blog post
+- [x] A paper-style technical report (`docs/report.md`) and a follow-up blog post
   that closes the loop on the original thought experiment.
 
 **Exit criterion:** report + blog draft committed; reproducibility instructions
@@ -234,10 +235,10 @@ verified by running every experiment from a clean checkout.
 **Goal:** convert the experimentally validated components into a clean library
 without disrupting the paper evidence trail.
 
-- Promote stable experiment code into public `cvnn` APIs.
+- [x] Promote stable experiment code into public `cvnn` APIs.
 - Keep paper configs and result manifests immutable.
-- Add examples based on the validated synthetic and RF tasks.
-- Write API docs only for components used in successful experiments.
+- [x] Add examples based on the validated synthetic and RF tasks.
+- [ ] Write API docs only for components used in successful experiments.
 
 **Exit criterion:** a reader can install the package, reproduce the paper
 experiments, and reuse the validated components in a new script.

@@ -1,8 +1,23 @@
 # Synthetic Phase Classification (Swept)
 
-Selected configuration per model family from a random-search sweep of `16` trials x `3` seeds, following `docs/tuning_budget.md`. See `tuning_log.md` for the per-trial log and `trials.json` for the full record.
+Random-search sweep of `16` trials x `3` seeds, following `docs/tuning_budget.md`. See `tuning_log.md` for the per-trial log and `trials.json` for the full record.
 
 Activation (complex): `crelu`. Activation (real baselines): `relu`. `n_classes=8`, `noise_std=0.3`.
+
+## Matched shared-trial comparison
+
+Primary paper table. The trial index is selected by the complex family's mean validation accuracy, then every real baseline is reported at that same trial index so parameter/FLOP matching is with respect to the selected complex model.
+
+| family | trial | val acc | test acc (mean) | test std | params | hyperparameters |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| `complex` | 4 | 0.7870 | 0.7656 | 0.0145 | 176 | hidden_features=8, learning_rate=0.005517, steps=400 |
+| `real_stacked` | 4 | 0.7772 | 0.7630 | 0.0116 | 96 | hidden_features=8, learning_rate=0.005517, steps=400 |
+| `real_matched_params` | 4 | 0.7805 | 0.7666 | 0.0136 | 173 | hidden_features=8, learning_rate=0.005517, steps=400 |
+| `real_matched_flops` | 4 | 0.7821 | 0.7620 | 0.0176 | 327 | hidden_features=8, learning_rate=0.005517, steps=400 |
+
+## Independent family winners
+
+Diagnostic only. These rows show each family's own best validation trial, so their parameter counts are not guaranteed to be matched to the selected complex model.
 
 | family | trial | val acc | test acc (mean) | test std | params | hyperparameters |
 | --- | ---: | ---: | ---: | ---: | ---: | --- |

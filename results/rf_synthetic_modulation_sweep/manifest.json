@@ -99,7 +99,7 @@
     "torch": "2.11.0+cu130"
   },
   "metrics": {
-    "selections": [
+    "independent_selections": [
       {
         "family": "complex",
         "selected_extra": {
@@ -196,9 +196,108 @@
         "selected_trial_index": 0,
         "selected_val_accuracy_mean": 0.7798522114753723
       }
+    ],
+    "reference_family": "complex",
+    "selections": [
+      {
+        "family": "complex",
+        "selected_extra": {
+          "parameter_count_mean": 3974.0,
+          "parameter_count_per_seed": [
+            3974.0,
+            3974.0,
+            3974.0,
+            3974.0,
+            3974.0,
+            3974.0
+          ]
+        },
+        "selected_hyperparameters": {
+          "batch_size": 512,
+          "hidden_features": 16,
+          "learning_rate": 0.007903951605476266,
+          "steps": 800
+        },
+        "selected_test_accuracy_mean": 0.8191392024358114,
+        "selected_test_accuracy_std": 0.016296774297532363,
+        "selected_trial_index": 1,
+        "selected_val_accuracy_mean": 0.8164138595263163
+      },
+      {
+        "family": "real_stacked",
+        "selected_extra": {
+          "parameter_count_mean": 2099.0,
+          "parameter_count_per_seed": [
+            2099.0,
+            2099.0,
+            2099.0,
+            2099.0,
+            2099.0,
+            2099.0
+          ]
+        },
+        "selected_hyperparameters": {
+          "batch_size": 512,
+          "hidden_features": 16,
+          "learning_rate": 0.007903951605476266,
+          "steps": 800
+        },
+        "selected_test_accuracy_mean": 0.7739621500174204,
+        "selected_test_accuracy_std": 0.022590790947496758,
+        "selected_trial_index": 1,
+        "selected_val_accuracy_mean": 0.7697394092877706
+      },
+      {
+        "family": "real_matched_params",
+        "selected_extra": {
+          "parameter_count_mean": 3809.0,
+          "parameter_count_per_seed": [
+            3809.0,
+            3809.0,
+            3809.0,
+            3809.0,
+            3809.0,
+            3809.0
+          ]
+        },
+        "selected_hyperparameters": {
+          "batch_size": 512,
+          "hidden_features": 16,
+          "learning_rate": 0.007903951605476266,
+          "steps": 800
+        },
+        "selected_test_accuracy_mean": 0.7768620351950327,
+        "selected_test_accuracy_std": 0.018710622648780158,
+        "selected_trial_index": 1,
+        "selected_val_accuracy_mean": 0.7753792405128479
+      },
+      {
+        "family": "real_matched_flops",
+        "selected_extra": {
+          "parameter_count_mean": 7779.0,
+          "parameter_count_per_seed": [
+            7779.0,
+            7779.0,
+            7779.0,
+            7779.0,
+            7779.0,
+            7779.0
+          ]
+        },
+        "selected_hyperparameters": {
+          "batch_size": 512,
+          "hidden_features": 16,
+          "learning_rate": 0.007903951605476266,
+          "steps": 800
+        },
+        "selected_test_accuracy_mean": 0.7809829115867615,
+        "selected_test_accuracy_std": 0.01953291478362106,
+        "selected_trial_index": 1,
+        "selected_val_accuracy_mean": 0.7777129511038462
+      }
     ]
   },
-  "notes": null,
+  "notes": "Sweep summary regenerated from existing trials.json to separate matched shared-trial comparison from independently tuned family winners; no training was rerun.",
   "run_id": "rf-synthetic-modulation-sweep",
   "schema_version": "0.1.0",
   "seeds": [

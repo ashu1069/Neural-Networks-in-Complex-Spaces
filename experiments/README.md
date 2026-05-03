@@ -5,7 +5,8 @@ Paper-track experiment code will live here.
 Initial priorities:
 
 1. Synthetic phase classification and controlled complex regression.
-2. RF modulation classification once dataset access is settled.
+2. Synthetic RF modulation classification as a stand-in for RadioML.
+3. Real RF modulation classification once dataset access is settled.
 
 Every completed run should write a result manifest to `results/` or to a
 configured output directory with the same schema.
@@ -58,3 +59,25 @@ Each run writes:
 - `summary.json`: aggregate mean/std/bootstrap confidence intervals.
 - `summary.md`: paper-table-style markdown.
 - `manifest.json`: environment, config, seed, metric, and artifact metadata.
+
+## Sweeps
+
+Budgeted sweeps use shared hyperparameter samples across families. The primary
+paper table uses the matched shared-trial comparison; independent family winners
+are diagnostic only.
+
+```bash
+uv run python experiments/synthetic/sweep_phase_classification.py
+uv run python experiments/rf/sweep_synthetic_modulation.py --device cuda
+```
+
+## RF
+
+The current RF benchmark is synthetic IQ + AWGN, not RadioML:
+
+```bash
+uv run python experiments/rf/synthetic_modulation.py
+```
+
+The full RF sweep is GPU-oriented. CPU smoke runs should reduce
+`--sample-length`, `--n-per-class-per-snr`, and/or `--n-trials`.

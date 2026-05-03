@@ -29,6 +29,12 @@ For each Phase 4 benchmark, unless an experiment-specific README overrides:
   exist in one of the families (e.g. `modrelu_init_bias` only applies to
   complex models that use `ModReLU`); even then, document the asymmetry.
 
+For capacity-matched paper tables, the primary comparison uses a shared trial
+index: choose the complex reference trial by validation accuracy, then report
+all real baselines at that same trial index. Independently selected family
+winners may be reported as diagnostics, but they are not the matched-capacity
+comparison because they can come from different complex reference widths.
+
 ## What counts against the budget
 
 - Every distinct `(hyperparameter sample, seed)` training run consumes 1 of

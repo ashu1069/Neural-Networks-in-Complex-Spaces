@@ -101,8 +101,11 @@ families running on the same task with the same shared search space:
 a comparison to draw from the *same* shared search space and consume the
 same trial × seed budget. The sweep harness enforces this by sampling the
 hyperparameter list once and running it against each family in turn. The
-selection rule is "best mean validation accuracy across seeds"; the
-reported test number is the test accuracy of that selected trial.
+primary matched comparison chooses the complex reference trial by mean
+validation accuracy, then reports every real baseline at that same trial
+index. Independently selected family winners are still written to the result
+artifacts as diagnostics, but they are not used as the matched-capacity paper
+table because they can come from different reference widths.
 
 ## 3. Findings
 
@@ -131,15 +134,15 @@ swept bars
 [`synthetic_phase_classification_swept.png`](../results/figures/synthetic_phase_classification_swept.png),
 sweep pareto [`sweep_pareto.png`](../results/figures/sweep_pareto.png).]
 
-After a 16×3 budgeted sweep, all four families land at ~76.4% test
-accuracy with overlapping CIs:
+After a 16×3 budgeted sweep, the matched shared-trial comparison puts all
+four families at ~76.2-76.7% test accuracy with overlapping CIs:
 
 | family | test acc | std | params |
 |---|---:|---:|---:|
 | `complex` | 0.7656 | 0.0145 | 176 |
-| `real_stacked` | 0.7643 | 0.0156 | 184 |
-| `real_matched_params` | 0.7630 | 0.0006 | 657 |
-| `real_matched_flops` | 0.7650 | 0.0153 | 327 |
+| `real_stacked` | 0.7630 | 0.0116 | 96 |
+| `real_matched_params` | 0.7666 | 0.0136 | 173 |
+| `real_matched_flops` | 0.7620 | 0.0176 | 327 |
 
 The pareto plot makes the same point visually: the four selected trials
 sit on top of each other. **On 1-D phase classification, the complex
@@ -157,25 +160,28 @@ sweep pareto [`rf_sweep_pareto.png`](../results/figures/rf_sweep_pareto.png).]
 
 After a 16×6 budgeted sweep with the conv architecture (`ComplexConv1d` →
 activation → `ComplexConv1d` → activation → global mean pool →
-`ComplexLinear` → `|·|`):
+`ComplexLinear` → `|·|`), the matched shared-trial comparison is:
 
 | family | test acc | std | params | 95% CI (std/√n) |
 |---|---:|---:|---:|---|
 | **`complex`** | **0.8191** | 0.0163 | **3,974** | **[0.8061, 0.8322]** |
 | `real_stacked` | 0.7740 | 0.0226 | 2,099 | [0.7559, 0.7920] |
-| `real_matched_params` | 0.7914 | 0.0127 | 15,033 | [0.7812, 0.8015] |
-| `real_matched_flops` | 0.7865 | 0.0159 | 29,891 | [0.7737, 0.7992] |
+| `real_matched_params` | 0.7769 | 0.0187 | 3,809 | [0.7619, 0.7918] |
+| `real_matched_flops` | 0.7810 | 0.0195 | 7,779 | [0.7654, 0.7966] |
 
-**Complex beats every real baseline by ≥2.8 percentage points, and does so
-at the smallest parameter count.** The CIs do not overlap — complex's lower
-bound (0.8061) sits above matched-params' upper bound (0.8015). A Welch
-two-sample t-test on complex vs `real_matched_params` gives
-`t ≈ 3.3, df ≈ 9, p < 0.01`.
+**Complex beats every real baseline by ≥3.8 percentage points.** The CIs do
+not overlap — complex's lower bound (0.8061) sits above the strongest real
+baseline's upper bound (0.7966). Welch two-sample t-tests give
+`t ≈ 4.2, df ≈ 9.8` versus `real_matched_params` and
+`t ≈ 3.7, df ≈ 9.7` versus `real_matched_flops` (`p < 0.01` in both cases).
 
 The pareto plot tells the parameter-efficiency half of the story: the blue
-CVNN star sits visibly above and to the left of every other selected
-trial. `real_matched_flops` had to grow to 29,891 parameters (7.5× the
-complex model) to be competitive on FLOPs and *still loses on accuracy*.
+CVNN star sits above the real baselines at roughly matched parameter count
+(`real_matched_params` is 3,809 parameters versus 3,974 for complex) and less
+than half the parameter count of the FLOP-matched real baseline. The
+independently tuned real-family winners remain in `summary.md` as diagnostics;
+they are not the matched comparison because some choose a different reference
+width.
 
 Reported in
 [`results/rf_synthetic_modulation_sweep/summary.md`](../results/rf_synthetic_modulation_sweep/summary.md).

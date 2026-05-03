@@ -149,7 +149,10 @@ def fig_synthetic_phase() -> Path:
 
 def fig_sweep_pareto() -> Path:
     sweep = load_json(RESULTS / "synthetic_phase_classification_sweep" / "trials.json")
-    selections = {s["family"]: s for s in sweep["selections"]}
+    summary = load_json(
+        RESULTS / "synthetic_phase_classification_sweep" / "summary.json"
+    )
+    selections = {s["family"]: s for s in summary["selections"]}
     trials = sweep["trials"]
 
     fig, ax = plt.subplots(figsize=(8.5, 5.0))
@@ -266,7 +269,7 @@ def fig_synthetic_phase_swept() -> Path:
     return _swept_bars(
         RESULTS / "synthetic_phase_classification_sweep" / "summary.json",
         title=(
-            "Synthetic phase classification — selected configs\n"
+            "Synthetic phase classification — matched shared-trial configs\n"
             "16 trials × 3 seeds  ·  error bars = 95% CI (std / √n)"
         ),
         out_name="synthetic_phase_classification_swept.png",
@@ -280,10 +283,10 @@ def fig_rf_swept() -> Path:
     return _swept_bars(
         summary_path,
         title=(
-            f"RF synthetic modulation (conv) — selected configs\n"
+            f"RF synthetic modulation (conv) — matched shared-trial configs\n"
             f"16 trials × {n_seeds} seeds  ·  "
             "error bars = 95% CI (std / √n)\n"
-            "Complex wins at the smallest parameter count"
+            "Complex wins at comparable parameter count"
         ),
         out_name="rf_synthetic_modulation_swept.png",
     )
@@ -291,7 +294,8 @@ def fig_rf_swept() -> Path:
 
 def fig_rf_sweep_pareto() -> Path:
     sweep = load_json(RESULTS / "rf_synthetic_modulation_sweep" / "trials.json")
-    selections = {s["family"]: s for s in sweep["selections"]}
+    summary = load_json(RESULTS / "rf_synthetic_modulation_sweep" / "summary.json")
+    selections = {s["family"]: s for s in summary["selections"]}
     trials = sweep["trials"]
     n_seeds = len(sweep["config"]["seeds"])
 
@@ -329,7 +333,7 @@ def fig_rf_sweep_pareto() -> Path:
     ax.set_title(
         "Sweep on RF synthetic modulation — 16 trials × 4 families\n"
         "★ = trial chosen by validation accuracy\n"
-        "Complex sits upper-left: higher accuracy, fewer parameters"
+        "Primary stars use the matched shared-trial comparison"
     )
     ax.grid(True, which="both", linestyle=":", alpha=0.4)
     ax.legend(frameon=False, loc="lower right")

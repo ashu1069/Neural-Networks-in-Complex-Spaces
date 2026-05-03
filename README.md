@@ -40,6 +40,43 @@ compromises rather than principled solutions.
 This repo treats that tension as the **central research question**, not a
 footnote.
 
+## Headline findings
+
+Two budgeted benchmarks, four model families each, sweeps following
+[`docs/tuning_budget.md`](docs/tuning_budget.md). Full write-up in
+[`docs/report.md`](docs/report.md); blog draft in
+[`docs/blog_post_draft.md`](docs/blog_post_draft.md).
+
+- **Activation characterization** ([`activation_tradeoff.png`](results/figures/activation_tradeoff.png)) —
+  the Liouville bind is empirically visible: every candidate activation
+  trades holomorphy for boundedness or vice versa.
+- **Synthetic phase classification — null** ([`synthetic_phase_classification_swept.png`](results/figures/synthetic_phase_classification_swept.png)) —
+  all four families converge to ~76% with overlapping CIs after 16×3
+  sweep. The complex inductive bias offers no measurable advantage when
+  the task carries no structure for `ℂ`-multiplication to exploit.
+- **Synthetic RF modulation — complex wins, with the smallest model**
+  ([`rf_synthetic_modulation_swept.png`](results/figures/rf_synthetic_modulation_swept.png),
+  [`rf_sweep_pareto.png`](results/figures/rf_sweep_pareto.png)) — after a
+  16×6 GPU sweep with a `ComplexConv1d` stack, the complex network
+  reaches 0.819 test accuracy at 3,974 parameters; the next-best real
+  baseline reaches 0.781 at 7,779 parameters. CIs do not overlap,
+  Welch t-test gives `p < 0.01`. Pareto plot: complex sits visibly
+  upper-left.
+
+The headline thesis: **the complex inductive bias pays for itself when the
+task carries structure that complex multiplication naturally encodes, and
+is neutral otherwise.**
+
+## Scope and caveats
+
+Everything below is **1-D only** — `ComplexLinear` and `ComplexConv1d`,
+benchmarks on scalar inputs and length-128 IQ sequences. No
+`ComplexConv2d`, no images, no audio STFT, no MRI yet. The synthetic RF
+benchmark is a stand-in for RadioML 2018.01A: i.i.d. PSK symbols with
+AWGN, no pulse shaping, no carrier offset, no fading. See
+[`docs/report.md`](docs/report.md#5-limitations) for the full limitations
+list.
+
 ## Goals
 
 1. Provide clean PyTorch implementations of complex-valued layers, activations,
@@ -52,15 +89,17 @@ footnote.
 
 ## Status
 
-Phase 4 synthetic benchmarking is in place. The repo now has a `uv`-managed
+Paper-track synthetic benchmarking and write-up artifacts are in place. The
+repo now has a `uv`-managed
 Python project, CI configuration, pre-commit hooks, a minimal `cvnn` package,
 complex tensor utilities, complex initializers, `ComplexLinear`,
-`ComplexDropout`, a minimal complex MLP builder, Phase 2 complex activations,
-script-backed activation characterization reports, Phase 3 losses/autograd
-checks, a synthetic convergence experiment, a Phase 4 phase-classification
-benchmark with real-valued matched baselines, result manifest helpers, and
-MPS/CUDA complex-tensor support audit tooling. Implementation milestones are
-tracked in [PROJECT_PLAN.md](PROJECT_PLAN.md).
+`ComplexConv1d`, `ComplexDropout`, a minimal complex MLP builder, Phase 2
+complex activations, script-backed activation characterization reports, Phase 3
+losses/autograd checks, synthetic phase-classification and RF-modulation
+benchmarks with matched real baselines, sweep/result artifacts, a report/blog
+draft, result manifest helpers, and MPS/CUDA complex-tensor support audit
+tooling. Implementation milestones are tracked in
+[PROJECT_PLAN.md](PROJECT_PLAN.md).
 
 ## Planned repository layout
 
@@ -123,6 +162,18 @@ uv run python experiments/synthetic/phase_classification.py
 The benchmark writes raw per-seed rows, aggregate summaries, and a manifest to
 `results/synthetic_phase_classification/` by default. Use `--device cuda` on a
 CUDA server after the CPU smoke run is green.
+
+Run the synthetic RF modulation benchmark with:
+
+```bash
+uv run python experiments/rf/synthetic_modulation.py
+```
+
+Regenerate the paper figures from committed artifacts with:
+
+```bash
+uv run python scripts/generate_paper_figures.py
+```
 
 On Apple Silicon, audit local complex-tensor support with:
 
