@@ -4,6 +4,19 @@ Honors `docs/tuning_budget.md`: shared search space across all four model
 families, 3 seeds per trial, selection by mean validation accuracy. Default
 architecture is `conv` (the natural fit for sequence-shaped IQ inputs);
 `mlp` remains supported for direct comparison against the snapshot run.
+
+## Cost note
+
+Defaults target a GPU run. On CPU each conv trial seed can take ~2 minutes
+at the upper end of the search space, so a full 16x3x4 sweep is multi-hour.
+For a tractable CPU smoke run, override:
+
+    uv run python experiments/rf/sweep_synthetic_modulation.py \\
+        --sample-length 64 --n-per-class-per-snr 128
+
+For GPU:
+
+    uv run python experiments/rf/sweep_synthetic_modulation.py --device cuda
 """
 
 from __future__ import annotations
