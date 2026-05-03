@@ -29,6 +29,7 @@ from torch import Tensor, nn
 
 from cvnn.activations import ComplexCardioid, CReLU, ModReLU, Siglog, ZReLU
 from cvnn.baselines import count_real_parameters
+from cvnn.layers import ComplexConv1d, ComplexLinear
 from cvnn.nn import ComplexMLP
 from cvnn.repro import Environment, JsonObject, collect_environment, new_manifest
 from experiments.synthetic.phase_classification import bootstrap_mean_ci
@@ -42,6 +43,7 @@ ModelFamily = Literal[
     "real_matched_flops",
 ]
 ModulationName = Literal["bpsk", "qpsk", "8psk", "qam16", "qam64"]
+ArchitectureName = Literal["mlp", "conv"]
 
 DEFAULT_MODEL_FAMILIES: tuple[ModelFamily, ...] = (
     "complex",
@@ -89,6 +91,8 @@ class RFBenchmarkConfig:
     learning_rate: float
     activation: ActivationName
     real_activation: RealActivationName
+    architecture: ArchitectureName
+    kernel_size: int
     device: str
     dtype: str
     bootstrap_samples: int
@@ -110,6 +114,8 @@ class RFBenchmarkConfig:
             "learning_rate": self.learning_rate,
             "activation": self.activation,
             "real_activation": self.real_activation,
+            "architecture": self.architecture,
+            "kernel_size": self.kernel_size,
             "device": self.device,
             "dtype": self.dtype,
             "bootstrap_samples": self.bootstrap_samples,
@@ -228,6 +234,107 @@ class RealRFClassifier(nn.Module):
 
     def forward(self, input: Tensor) -> Tensor:
         output: Tensor = self.network(input)
+        return output
+
+
+class ComplexRFConvClassifier(nn.Module):
+    """Two-block complex 1D conv classifier with magnitude logits.
+
+    Architecture: `ComplexConv1d -> activation -> ComplexConv1d -> activation
+    -> global mean over time -> ComplexLinear -> |z|`. Uses the same
+    `|z_c|`-magnitude logit convention as `ComplexRFClassifier`. Inputs are
+    `(B, sample_length)` complex tensors; the temporal axis is preserved
+    through the conv stack and collapsed by global mean pooling.
+    """
+
+    def __init__(
+        self,
+        *,
+        hidden_channels: int,
+        n_classes: int,
+        kernel_size: int,
+        activation: ActivationName,
+        device: torch.device | str,
+        dtype: torch.dtype,
+    ) -> None:
+        super().__init__()
+        padding = kernel_size // 2
+        self.conv1 = ComplexConv1d(
+            1,
+            hidden_channels,
+            kernel_size=kernel_size,
+            padding=padding,
+            device=device,
+            dtype=dtype,
+        )
+        self.act1 = _complex_activation_factory(activation)()
+        self.conv2 = ComplexConv1d(
+            hidden_channels,
+            hidden_channels,
+            kernel_size=kernel_size,
+            padding=padding,
+            device=device,
+            dtype=dtype,
+        )
+        self.act2 = _complex_activation_factory(activation)()
+        self.head = ComplexLinear(
+            hidden_channels, n_classes, device=device, dtype=dtype
+        )
+
+    def forward(self, input: Tensor) -> Tensor:
+        x = input.unsqueeze(1)
+        x = self.act1(self.conv1(x))
+        x = self.act2(self.conv2(x))
+        x = x.mean(dim=-1)
+        output: Tensor = self.head(x).abs()
+        return output
+
+
+class RealRFConvClassifier(nn.Module):
+    """Two-block real 1D conv classifier on stacked real/imag IQ.
+
+    Inputs are `(B, sample_length)` complex tensors; converted to
+    `(B, 2, sample_length)` real with real/imag as channels.
+    """
+
+    def __init__(
+        self,
+        *,
+        hidden_channels: int,
+        n_classes: int,
+        kernel_size: int,
+        activation: RealActivationName,
+        device: torch.device | str,
+        dtype: torch.dtype,
+    ) -> None:
+        super().__init__()
+        padding = kernel_size // 2
+        self.conv1 = nn.Conv1d(
+            2,
+            hidden_channels,
+            kernel_size=kernel_size,
+            padding=padding,
+            device=device,
+            dtype=dtype,
+        )
+        self.act1 = _real_activation_module(activation)
+        self.conv2 = nn.Conv1d(
+            hidden_channels,
+            hidden_channels,
+            kernel_size=kernel_size,
+            padding=padding,
+            device=device,
+            dtype=dtype,
+        )
+        self.act2 = _real_activation_module(activation)
+        self.head = nn.Linear(hidden_channels, n_classes, device=device, dtype=dtype)
+
+    def forward(self, input: Tensor) -> Tensor:
+        x = torch.stack([input.real, input.imag], dim=1)
+        x = self.act1(self.conv1(x))
+        x = self.act2(self.conv2(x))
+        x = x.mean(dim=-1)
+        output: Tensor = self.head(x)
         return output
 
 
@@ -350,6 +457,8 @@ def train_rf_classifier(
     learning_rate: float = 0.01,
     activation: ActivationName = "crelu",
     real_activation: RealActivationName = "relu",
+    architecture: ArchitectureName = "mlp",
+    kernel_size: int = 7,
     device: torch.device | str = "cpu",
     dtype: torch.dtype = torch.complex64,
 ) -> RFRunResult:
@@ -382,17 +491,23 @@ def train_rf_classifier(
     n_classes = len(data.modulation_names)
     model, effective_hidden, estimated_madds = _make_model(
         model_family,
+        architecture=architecture,
         sample_length=sample_length,
         complex_hidden_features=hidden_features,
         n_classes=n_classes,
         activation=activation,
         real_activation=real_activation,
+        kernel_size=kernel_size,
         device=device_obj,
         dtype=dtype,
     )
     parameter_count = count_real_parameters(model)
-    train_inputs = _features_for_family(data.train_inputs.to(device_obj), model_family)
-    test_inputs = _features_for_family(data.test_inputs.to(device_obj), model_family)
+    train_inputs = _features_for_family(
+        data.train_inputs.to(device_obj), model_family, architecture
+    )
+    test_inputs = _features_for_family(
+        data.test_inputs.to(device_obj), model_family, architecture
+    )
     train_labels = data.train_labels.to(device_obj)
     test_labels = data.test_labels.to(device_obj)
     test_snr_db = data.test_snr_db
@@ -474,6 +589,8 @@ def run_rf_modulation_benchmark(
                     learning_rate=config.learning_rate,
                     activation=config.activation,
                     real_activation=config.real_activation,
+                    architecture=config.architecture,
+                    kernel_size=config.kernel_size,
                     device=config.device,
                     dtype=dtype,
                 )
@@ -663,74 +780,136 @@ def _add_awgn(
 def _make_model(
     model_family: ModelFamily,
     *,
+    architecture: ArchitectureName,
     sample_length: int,
     complex_hidden_features: int,
     n_classes: int,
     activation: ActivationName,
     real_activation: RealActivationName,
+    kernel_size: int,
     device: torch.device,
     dtype: torch.dtype,
 ) -> tuple[nn.Module, int, int]:
-    if model_family == "complex":
-        model: nn.Module = ComplexRFClassifier(
-            sample_length=sample_length,
-            hidden_features=complex_hidden_features,
-            n_classes=n_classes,
-            activation=activation,
-            device=device,
-            dtype=dtype,
-        )
-        madds = _complex_mlp_madds(
+    real_dtype = torch.float64 if dtype == torch.complex128 else torch.float32
+
+    if architecture == "mlp":
+        complex_param_budget = _complex_mlp_parameter_count(
             in_features=sample_length,
             hidden_features=complex_hidden_features,
             out_features=n_classes,
         )
-        return model, complex_hidden_features, madds
-
-    complex_madds = _complex_mlp_madds(
-        in_features=sample_length,
-        hidden_features=complex_hidden_features,
-        out_features=n_classes,
-    )
-    complex_parameter_budget = _complex_mlp_parameter_count(
-        in_features=sample_length,
-        hidden_features=complex_hidden_features,
-        out_features=n_classes,
-    )
-    if model_family == "real_stacked":
-        real_hidden = complex_hidden_features
-    elif model_family == "real_matched_params":
-        real_hidden = _choose_real_hidden_for_parameter_budget(
-            sample_length=sample_length,
-            n_classes=n_classes,
-            budget=complex_parameter_budget,
+        complex_madds_budget = _complex_mlp_madds(
+            in_features=sample_length,
+            hidden_features=complex_hidden_features,
+            out_features=n_classes,
         )
-    elif model_family == "real_matched_flops":
-        real_hidden = _choose_real_hidden_for_madds_budget(
+        if model_family == "complex":
+            model: nn.Module = ComplexRFClassifier(
+                sample_length=sample_length,
+                hidden_features=complex_hidden_features,
+                n_classes=n_classes,
+                activation=activation,
+                device=device,
+                dtype=dtype,
+            )
+            return model, complex_hidden_features, complex_madds_budget
+
+        if model_family == "real_stacked":
+            real_hidden = complex_hidden_features
+        elif model_family == "real_matched_params":
+            real_hidden = _choose_real_mlp_hidden_for_parameter_budget(
+                sample_length=sample_length,
+                n_classes=n_classes,
+                budget=complex_param_budget,
+            )
+        elif model_family == "real_matched_flops":
+            real_hidden = _choose_real_mlp_hidden_for_madds_budget(
+                sample_length=sample_length,
+                n_classes=n_classes,
+                budget=complex_madds_budget,
+            )
+        else:
+            msg = f"unsupported model family: {model_family}"
+            raise ValueError(msg)
+
+        model = RealRFClassifier(
             sample_length=sample_length,
+            hidden_features=real_hidden,
             n_classes=n_classes,
-            budget=complex_madds,
+            activation=real_activation,
+            device=device,
+            dtype=real_dtype,
         )
-    else:
-        msg = f"unsupported model family: {model_family}"
-        raise ValueError(msg)
+        madds = _real_mlp_madds(
+            sample_length=sample_length,
+            hidden_features=real_hidden,
+            n_classes=n_classes,
+        )
+        return model, real_hidden, madds
 
-    real_dtype = torch.float64 if dtype == torch.complex128 else torch.float32
-    model = RealRFClassifier(
-        sample_length=sample_length,
-        hidden_features=real_hidden,
-        n_classes=n_classes,
-        activation=real_activation,
-        device=device,
-        dtype=real_dtype,
-    )
-    madds = _real_mlp_madds(
-        sample_length=sample_length, hidden_features=real_hidden, n_classes=n_classes
-    )
-    return model, real_hidden, madds
+    if architecture == "conv":
+        complex_param_budget = _complex_conv_parameter_count(
+            hidden_channels=complex_hidden_features,
+            n_classes=n_classes,
+            kernel_size=kernel_size,
+        )
+        complex_madds_budget = _complex_conv_madds(
+            sample_length=sample_length,
+            hidden_channels=complex_hidden_features,
+            n_classes=n_classes,
+            kernel_size=kernel_size,
+        )
+        if model_family == "complex":
+            model = ComplexRFConvClassifier(
+                hidden_channels=complex_hidden_features,
+                n_classes=n_classes,
+                kernel_size=kernel_size,
+                activation=activation,
+                device=device,
+                dtype=dtype,
+            )
+            return model, complex_hidden_features, complex_madds_budget
+
+        if model_family == "real_stacked":
+            real_hidden = complex_hidden_features
+        elif model_family == "real_matched_params":
+            real_hidden = _choose_real_conv_hidden_for_parameter_budget(
+                n_classes=n_classes,
+                kernel_size=kernel_size,
+                budget=complex_param_budget,
+            )
+        elif model_family == "real_matched_flops":
+            real_hidden = _choose_real_conv_hidden_for_madds_budget(
+                sample_length=sample_length,
+                n_classes=n_classes,
+                kernel_size=kernel_size,
+                budget=complex_madds_budget,
+            )
+        else:
+            msg = f"unsupported model family: {model_family}"
+            raise ValueError(msg)
+
+        model = RealRFConvClassifier(
+            hidden_channels=real_hidden,
+            n_classes=n_classes,
+            kernel_size=kernel_size,
+            activation=real_activation,
+            device=device,
+            dtype=real_dtype,
+        )
+        madds = _real_conv_madds(
+            sample_length=sample_length,
+            hidden_channels=real_hidden,
+            n_classes=n_classes,
+            kernel_size=kernel_size,
+        )
+        return model, real_hidden, madds
+
+    msg = f"unsupported architecture: {architecture}"
+    raise ValueError(msg)
 
 
-def _choose_real_hidden_for_parameter_budget(
+def _choose_real_mlp_hidden_for_parameter_budget(
     *,
     sample_length: int,
     n_classes: int,
@@ -750,7 +929,7 @@ def _choose_real_hidden_for_parameter_budget(
     )
 
 
-def _choose_real_hidden_for_madds_budget(
+def _choose_real_mlp_hidden_for_madds_budget(
     *,
     sample_length: int,
     n_classes: int,
@@ -764,6 +943,48 @@ def _choose_real_hidden_for_madds_budget(
                 sample_length=sample_length,
                 hidden_features=hidden,
                 n_classes=n_classes,
+            )
+            - budget
+        ),
+    )
+
+
+def _choose_real_conv_hidden_for_parameter_budget(
+    *,
+    n_classes: int,
+    kernel_size: int,
+    budget: int,
+    max_hidden: int = 4096,
+) -> int:
+    return min(
+        range(1, max_hidden + 1),
+        key=lambda hidden: abs(
+            _real_conv_parameter_count(
+                hidden_channels=hidden,
+                n_classes=n_classes,
+                kernel_size=kernel_size,
+            )
+            - budget
+        ),
+    )
+
+
+def _choose_real_conv_hidden_for_madds_budget(
+    *,
+    sample_length: int,
+    n_classes: int,
+    kernel_size: int,
+    budget: int,
+    max_hidden: int = 4096,
+) -> int:
+    return min(
+        range(1, max_hidden + 1),
+        key=lambda hidden: abs(
+            _real_conv_madds(
+                sample_length=sample_length,
+                hidden_channels=hidden,
+                n_classes=n_classes,
+                kernel_size=kernel_size,
             )
             - budget
         ),
@@ -818,7 +1039,62 @@ def _real_mlp_madds(*, sample_length: int, hidden_features: int, n_classes: int)
     )
 
 
-def _features_for_family(inputs: Tensor, model_family: ModelFamily) -> Tensor:
+def _complex_conv_parameter_count(
+    *, hidden_channels: int, n_classes: int, kernel_size: int
+) -> int:
+    complex_slots = (
+        1 * hidden_channels * kernel_size
+        + hidden_channels
+        + hidden_channels * hidden_channels * kernel_size
+        + hidden_channels
+        + hidden_channels * n_classes
+        + n_classes
+    )
+    return 2 * complex_slots
+
+
+def _real_conv_parameter_count(
+    *, hidden_channels: int, n_classes: int, kernel_size: int
+) -> int:
+    return (
+        2 * hidden_channels * kernel_size
+        + hidden_channels
+        + hidden_channels * hidden_channels * kernel_size
+        + hidden_channels
+        + hidden_channels * n_classes
+        + n_classes
+    )
+
+
+def _complex_conv_madds(
+    *, sample_length: int, hidden_channels: int, n_classes: int, kernel_size: int
+) -> int:
+    return 4 * (
+        sample_length * 1 * hidden_channels * kernel_size
+        + sample_length * hidden_channels * hidden_channels * kernel_size
+        + hidden_channels * n_classes
+    )
+
+
+def _real_conv_madds(
+    *, sample_length: int, hidden_channels: int, n_classes: int, kernel_size: int
+) -> int:
+    return (
+        sample_length * 2 * hidden_channels * kernel_size
+        + sample_length * hidden_channels * hidden_channels * kernel_size
+        + hidden_channels * n_classes
+    )
+
+
+def _features_for_family(
+    inputs: Tensor,
+    model_family: ModelFamily,
+    architecture: ArchitectureName,
+) -> Tensor:
+    if architecture == "conv":
+        # Conv classifiers consume the raw complex sequence and do their own
+        # real/imag handling internally.
+        return inputs
     if model_family == "complex":
         return inputs
     return torch.cat([inputs.real, inputs.imag], dim=-1)
@@ -997,6 +1273,13 @@ def _parse_real_activation(value: str) -> RealActivationName:
     return cast(RealActivationName, value)
 
 
+def _parse_architecture(value: str) -> ArchitectureName:
+    if value not in {"mlp", "conv"}:
+        msg = f"unsupported architecture: {value}"
+        raise ValueError(msg)
+    return cast(ArchitectureName, value)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--seeds", nargs="+", type=int, default=[0, 1, 2])
@@ -1036,6 +1319,18 @@ def main() -> int:
         default="relu",
         help="activation for real baselines (asymmetric vs --activation)",
     )
+    parser.add_argument(
+        "--architecture",
+        choices=["mlp", "conv"],
+        default="mlp",
+        help="mlp = flatten-then-MLP, conv = 1D conv stack with global pool",
+    )
+    parser.add_argument(
+        "--kernel-size",
+        type=int,
+        default=7,
+        help="conv kernel size (ignored when --architecture mlp)",
+    )
     parser.add_argument("--device", default="cpu")
     parser.add_argument(
         "--dtype",
@@ -1065,6 +1360,8 @@ def main() -> int:
         learning_rate=args.learning_rate,
         activation=_parse_activation(args.activation),
         real_activation=_parse_real_activation(args.real_activation),
+        architecture=_parse_architecture(args.architecture),
+        kernel_size=args.kernel_size,
         device=args.device,
         dtype=args.dtype,
         bootstrap_samples=args.bootstrap_samples,

@@ -14,7 +14,7 @@ from cvnn.baselines import (
     complex_to_real_reparam,
     count_real_parameters,
 )
-from cvnn.layers import ComplexDropout, ComplexLinear
+from cvnn.layers import ComplexConv1d, ComplexDropout, ComplexLinear
 from cvnn.losses import complex_mse_loss, magnitude_mse_loss, phase_aware_loss
 from cvnn.nn import ComplexMLP
 from cvnn.optim import validate_pytorch_complex_autograd
@@ -23,6 +23,7 @@ from cvnn.repro import Environment, ResultManifest, collect_environment, new_man
 __all__ = [
     "CReLU",
     "ComplexCardioid",
+    "ComplexConv1d",
     "ComplexTanh",
     "ComplexDropout",
     "ComplexLinear",

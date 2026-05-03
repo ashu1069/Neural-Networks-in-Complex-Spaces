@@ -128,6 +128,8 @@ def test_rf_smoke_run_reports_per_snr_breakdown() -> None:
         learning_rate=0.01,
         activation="crelu",
         real_activation="relu",
+        architecture="mlp",
+        kernel_size=7,
         device="cpu",
         dtype="complex64",
         bootstrap_samples=100,
@@ -142,6 +144,25 @@ def test_rf_smoke_run_reports_per_snr_breakdown() -> None:
         assert 0.0 <= run.accuracy_by_snr_db["20"] <= 1.0
     for summary in summaries:
         assert set(summary.accuracy_by_snr_db_mean.keys()) == {"0", "10", "20"}
+
+
+def test_rf_conv_architecture_runs() -> None:
+    result = train_rf_classifier(
+        seed=0,
+        model_family="complex",
+        modulations=("bpsk", "qpsk", "8psk"),
+        snr_db_levels=(0, 10),
+        n_per_class_per_snr=16,
+        sample_length=32,
+        hidden_features=8,
+        steps=20,
+        batch_size=32,
+        architecture="conv",
+        kernel_size=5,
+    )
+
+    assert result.parameter_count > 0
+    assert 0.0 <= result.test_accuracy <= 1.0
 
 
 def test_rf_classification_script_writes_evidence_files(tmp_path: Path) -> None:
