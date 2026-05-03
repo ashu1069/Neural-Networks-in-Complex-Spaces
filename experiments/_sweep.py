@@ -137,12 +137,17 @@ def random_search(
     n_trials: int,
     sweep_seed: int,
     train_fn: TrialFn,
+    progress: bool = True,
 ) -> list[TrialResult]:
     """Run a shared-budget random search across all families.
 
     The same hyperparameter samples are drawn once and reused across families,
     so every family sees the *same* trials - no family can luck into a
     better-suited search distribution.
+
+    Progress: when `progress=True` (default), shows a tqdm bar over total
+    `(family, trial)` pairs and prints a one-line summary after each trial.
+    Disable for tests or non-TTY logs.
     """
 
     if n_trials <= 0:
@@ -160,6 +165,9 @@ def random_search(
         search_space.sample(rng) for _ in range(n_trials)
     ]
 
+    total_runs = len(families) * n_trials * len(seeds)
+    bar = _maybe_tqdm(total_runs, enabled=progress)
+
     trials: list[TrialResult] = []
     for family in families:
         for trial_index, hyperparameters in enumerate(sampled_trials):
@@ -173,22 +181,64 @@ def random_search(
                 test_per_seed.append(outcome.test_accuracy)
                 seconds_per_seed.append(outcome.train_seconds)
                 extra_per_seed.append(outcome.extra)
+                if bar is not None:
+                    bar.set_postfix_str(
+                        f"{family} t{trial_index}/{n_trials - 1} s{seed} "
+                        f"val={outcome.val_accuracy:.3f}",
+                        refresh=False,
+                    )
+                    bar.update(1)
             aggregated_extra: JsonObject = (
                 _aggregate_extras(extra_per_seed) if extra_per_seed else {}
             )
-            trials.append(
-                TrialResult(
-                    family=family,
-                    trial_index=trial_index,
-                    hyperparameters=hyperparameters,
-                    seeds=list(seeds),
-                    val_accuracy_per_seed=val_per_seed,
-                    test_accuracy_per_seed=test_per_seed,
-                    train_seconds_per_seed=seconds_per_seed,
-                    extra=aggregated_extra,
-                )
+            trial_result = TrialResult(
+                family=family,
+                trial_index=trial_index,
+                hyperparameters=hyperparameters,
+                seeds=list(seeds),
+                val_accuracy_per_seed=val_per_seed,
+                test_accuracy_per_seed=test_per_seed,
+                train_seconds_per_seed=seconds_per_seed,
+                extra=aggregated_extra,
             )
+            trials.append(trial_result)
+            if progress:
+                _print_trial_line(trial_result, n_trials=n_trials)
+    if bar is not None:
+        bar.close()
     return trials
+
+
+def _maybe_tqdm(total: int, *, enabled: bool) -> Any:
+    if not enabled:
+        return None
+    try:
+        from tqdm.auto import tqdm  # type: ignore[import-untyped]
+    except ImportError:
+        return None
+    return tqdm(total=total, desc="sweep", dynamic_ncols=True, leave=True)
+
+
+def _print_trial_line(trial: TrialResult, *, n_trials: int) -> None:
+    hp_str = ", ".join(
+        f"{key}={_format_hp_value(value)}"
+        for key, value in sorted(trial.hyperparameters.items())
+    )
+    seconds_total = sum(trial.train_seconds_per_seed)
+    print(
+        f"  [{trial.family:>22}] "
+        f"trial {trial.trial_index + 1:>2}/{n_trials} "
+        f"val={trial.val_accuracy_mean:.4f} "
+        f"test={trial.test_accuracy_mean:.4f} "
+        f"({seconds_total:.1f}s) {hp_str}",
+        flush=True,
+    )
+
+
+def _format_hp_value(value: Any) -> str:
+    if isinstance(value, float):
+        return f"{value:.4g}"
+    return str(value)
 
 
 def select_best_per_family(
