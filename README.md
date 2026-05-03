@@ -52,14 +52,15 @@ footnote.
 
 ## Status
 
-Phase 3 optimization validation is in place. The repo now has a `uv`-managed
+Phase 4 synthetic benchmarking is in place. The repo now has a `uv`-managed
 Python project, CI configuration, pre-commit hooks, a minimal `cvnn` package,
 complex tensor utilities, complex initializers, `ComplexLinear`,
 `ComplexDropout`, a minimal complex MLP builder, Phase 2 complex activations,
 script-backed activation characterization reports, Phase 3 losses/autograd
-checks, a synthetic convergence experiment, result manifest helpers, and MPS/CUDA
-complex-tensor support audit tooling. Implementation milestones are tracked in
-[PROJECT_PLAN.md](PROJECT_PLAN.md).
+checks, a synthetic convergence experiment, a Phase 4 phase-classification
+benchmark with real-valued matched baselines, result manifest helpers, and
+MPS/CUDA complex-tensor support audit tooling. Implementation milestones are
+tracked in [PROJECT_PLAN.md](PROJECT_PLAN.md).
 
 ## Planned repository layout
 
@@ -112,6 +113,16 @@ Run the Phase 3 synthetic optimization check with:
 ```bash
 uv run python experiments/synthetic/complex_linear_regression.py
 ```
+
+Run the Phase 4 synthetic phase-classification benchmark with:
+
+```bash
+uv run python experiments/synthetic/phase_classification.py
+```
+
+The benchmark writes raw per-seed rows, aggregate summaries, and a manifest to
+`results/synthetic_phase_classification/` by default. Use `--device cuda` on a
+CUDA server after the CPU smoke run is green.
 
 On Apple Silicon, audit local complex-tensor support with:
 

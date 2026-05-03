@@ -177,15 +177,15 @@ protocol.
 
 Paper-track tasks:
 
-1. **Synthetic — phase classification / controlled complex regression.** Sanity
+1. [x] **Synthetic — phase classification / controlled complex regression.** Sanity
    checks with known decision boundaries or closed-form targets.
-2. **RF modulation classification.** RadioML 2018.01A or a documented local
+2. [ ] **RF modulation classification.** RadioML 2018.01A or a documented local
    subset; metric is accuracy
    per SNR bucket.
-3. **Optional scale-up — Audio source separation on STFT.** MUSDB18 or a small
+3. [ ] **Optional scale-up — Audio source separation on STFT.** MUSDB18 or a small
    subset; metric is SI-SDR. Compare CVNN U-Net vs. real-valued U-Net on
    `(real, imag)` stack.
-4. **Optional scale-up — MRI reconstruction (single-coil).** fastMRI knee
+4. [ ] **Optional scale-up — MRI reconstruction (single-coil).** fastMRI knee
    subset; metric is SSIM/PSNR on magnitude images.
 
 For each task:
@@ -201,6 +201,12 @@ For each task:
 **Exit criterion:** for each chosen task, a table of {CVNN, real-matched-
 params, real-matched-FLOPs} with metric, training time, parameter count,
 confidence interval, and exact reproduction command.
+
+**Local status:** the synthetic phase-classification benchmark is implemented in
+`experiments/synthetic/phase_classification.py`. It records raw per-seed rows,
+mean/std/bootstrap confidence intervals, parameter counts, estimated forward
+multiply-adds, training time, and a manifest. CPU smoke tests pass locally; RF
+dataset work and CUDA confirmation runs remain pending.
 
 ---
 
