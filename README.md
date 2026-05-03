@@ -52,10 +52,11 @@ footnote.
 
 ## Status
 
-Phase 1 minimal-core scaffolding is in place. The repo now has a `uv`-managed
+Phase 2 activation characterization is in place. The repo now has a `uv`-managed
 Python project, CI configuration, pre-commit hooks, a minimal `cvnn` package,
 complex tensor utilities, complex initializers, `ComplexLinear`,
-`ComplexDropout`, a minimal complex MLP builder, result manifest helpers, and
+`ComplexDropout`, a minimal complex MLP builder, Phase 2 complex activations,
+script-backed activation characterization reports, result manifest helpers, and
 MPS/CUDA complex-tensor support audit tooling. Implementation milestones are
 tracked in [PROJECT_PLAN.md](PROJECT_PLAN.md).
 
@@ -64,6 +65,7 @@ tracked in [PROJECT_PLAN.md](PROJECT_PLAN.md).
 ```text
 .
 ├── cvnn/                  # core package and reproducibility helpers
+│   ├── analysis/          # script-backed characterization utilities
 │   ├── activations/       # Phase 2 activation implementations
 │   ├── init/              # Phase 1 complex-aware initializers
 │   ├── layers/            # Phase 1 complex-valued layers
@@ -94,6 +96,15 @@ uv run pytest
 uv run ruff check .
 uv run mypy cvnn scripts
 ```
+
+Generate Phase 2 activation reports with:
+
+```bash
+uv run python scripts/characterize_activations.py
+```
+
+The comparison table is written to
+[notebooks/activation_characterization/comparison.md](notebooks/activation_characterization/comparison.md).
 
 On Apple Silicon, audit local complex-tensor support with:
 

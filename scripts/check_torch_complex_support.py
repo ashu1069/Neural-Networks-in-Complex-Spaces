@@ -24,6 +24,8 @@ import torch
 import torch.nn.functional as F
 from torch import Tensor
 
+from cvnn.activations import complex_cardioid, crelu, siglog
+
 type CheckFn = Callable[[torch.device, torch.dtype], tuple[Tensor, Tensor]]
 
 
@@ -212,15 +214,15 @@ def _cardioid(device: torch.device, dtype: torch.dtype) -> tuple[Tensor, Tensor]
 
 
 def _crelu_impl(inputs: Tensor) -> Tensor:
-    return torch.complex(torch.relu(inputs.real), torch.relu(inputs.imag))
+    return crelu(inputs)
 
 
 def _siglog_impl(inputs: Tensor) -> Tensor:
-    return inputs / (1 + inputs.abs())
+    return siglog(inputs)
 
 
 def _cardioid_impl(inputs: Tensor) -> Tensor:
-    return 0.5 * (1 + torch.cos(torch.angle(inputs))) * inputs
+    return complex_cardioid(inputs)
 
 
 def _available_target(device_name: str) -> tuple[torch.device | None, str | None]:
