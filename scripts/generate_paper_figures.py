@@ -566,6 +566,154 @@ def fig_radioml_activation_ablation() -> Path | None:
     return out
 
 
+TELEMETRY_DIR = RESULTS / "radioml_telemetry"
+
+
+def _load_telemetry_records(
+    activation: str, family: str, seed: int
+) -> tuple[dict[str, Any], list[dict[str, Any]]] | None:
+    path = TELEMETRY_DIR / activation / f"{family}_seed{seed}.jsonl"
+    if not path.exists():
+        return None
+    lines = path.read_text().splitlines()
+    summary = json.loads(lines[0])["summary"]
+    records = [json.loads(line) for line in lines[1:]]
+    return summary, records
+
+
+def _telemetry_present(activations: list[str]) -> list[str]:
+    """Return activations whose telemetry JSONL files exist for all families."""
+
+    available: list[str] = []
+    for activation in activations:
+        ok = True
+        for family in FAMILY_ORDER:
+            for seed in (0, 1, 2):
+                if _load_telemetry_records(activation, family, seed) is None:
+                    ok = False
+                    break
+            if not ok:
+                break
+        if ok:
+            available.append(activation)
+    return available
+
+
+def fig_telemetry_loss_curves() -> Path | None:
+    """Per-step loss curves, one panel per activation, 4 family lines."""
+
+    activations = _telemetry_present(list(RADIOML_ABLATION_ACTIVATIONS))
+    if len(activations) < 2:
+        print(
+            f"skipping radioml_telemetry_loss.png: telemetry for "
+            f"{len(activations)} activations only"
+        )
+        return None
+
+    n = len(activations)
+    cols = min(n, 3)
+    rows = (n + cols - 1) // cols
+    fig, axes = plt.subplots(rows, cols, figsize=(4.6 * cols, 3.4 * rows))
+    axes_flat = axes.flatten() if n > 1 else [axes]
+
+    for idx, activation in enumerate(activations):
+        ax = axes_flat[idx]
+        for family in FAMILY_ORDER:
+            for seed in (0, 1, 2):
+                payload = _load_telemetry_records(activation, family, seed)
+                if payload is None:
+                    continue
+                _, records = payload
+                steps = [r["step"] for r in records]
+                losses = [r["train_loss"] for r in records]
+                ax.plot(
+                    steps,
+                    losses,
+                    color=FAMILY_COLOR[family],
+                    alpha=0.55,
+                    linewidth=1.0,
+                    label=FAMILY_LABEL[family] if seed == 0 else None,
+                )
+        ax.axhline(np.log(3), linestyle=":", color="grey", linewidth=0.8)
+        ax.set_yscale("log")
+        ax.set_xlabel("step")
+        ax.set_ylabel("train loss (log)")
+        ax.set_title(f"{activation}")
+        ax.grid(True, which="both", linestyle=":", alpha=0.3)
+        if idx == 0:
+            ax.legend(frameon=False, loc="upper right", fontsize=8)
+    for idx in range(len(activations), len(axes_flat)):
+        axes_flat[idx].axis("off")
+    fig.suptitle(
+        "RadioML telemetry — train loss (3 seeds per family per activation)\n"
+        "Dotted line = ln(3) chance level for 3-class CE; "
+        "lines collapsing onto it are dead seeds",
+        fontsize=11,
+    )
+    fig.tight_layout()
+    out = FIG_DIR / "radioml_telemetry_loss.png"
+    fig.savefig(out, dpi=180)
+    plt.close(fig)
+    return out
+
+
+def fig_telemetry_grad_norms() -> Path | None:
+    """Total gradient norm per step, log y, one panel per activation."""
+
+    activations = _telemetry_present(list(RADIOML_ABLATION_ACTIVATIONS))
+    if len(activations) < 2:
+        print(
+            f"skipping radioml_telemetry_grad.png: telemetry for "
+            f"{len(activations)} activations only"
+        )
+        return None
+
+    n = len(activations)
+    cols = min(n, 3)
+    rows = (n + cols - 1) // cols
+    fig, axes = plt.subplots(rows, cols, figsize=(4.6 * cols, 3.4 * rows))
+    axes_flat = axes.flatten() if n > 1 else [axes]
+
+    for idx, activation in enumerate(activations):
+        ax = axes_flat[idx]
+        for family in FAMILY_ORDER:
+            for seed in (0, 1, 2):
+                payload = _load_telemetry_records(activation, family, seed)
+                if payload is None:
+                    continue
+                _, records = payload
+                steps = [r["step"] for r in records]
+                grads = [max(r["total_grad_norm"], 1e-6) for r in records]
+                ax.plot(
+                    steps,
+                    grads,
+                    color=FAMILY_COLOR[family],
+                    alpha=0.55,
+                    linewidth=1.0,
+                    label=FAMILY_LABEL[family] if seed == 0 else None,
+                )
+        ax.set_yscale("log")
+        ax.set_xlabel("step")
+        ax.set_ylabel("total grad norm (log)")
+        ax.set_title(f"{activation}")
+        ax.grid(True, which="both", linestyle=":", alpha=0.3)
+        if idx == 0:
+            ax.legend(frameon=False, loc="upper right", fontsize=8)
+    for idx in range(len(activations), len(axes_flat)):
+        axes_flat[idx].axis("off")
+    fig.suptitle(
+        "RadioML telemetry — total gradient norm (post-backward)\n"
+        "Real-baseline spikes at step 1 under crelu/cardioid/siglog mark the "
+        "explosion-into-dead-region failure mode",
+        fontsize=11,
+    )
+    fig.tight_layout()
+    out = FIG_DIR / "radioml_telemetry_grad.png"
+    fig.savefig(out, dpi=180)
+    plt.close(fig)
+    return out
+
+
 def main() -> None:
     figures: list[Path | None] = [
         fig_activation_tradeoff(),
@@ -579,6 +727,8 @@ def main() -> None:
         fig_radioml_per_snr(),
         fig_radioml_sweep_pareto(),
         fig_radioml_activation_ablation(),
+        fig_telemetry_loss_curves(),
+        fig_telemetry_grad_norms(),
     ]
     for path in figures:
         if path is None:

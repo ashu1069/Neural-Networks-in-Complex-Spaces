@@ -1,0 +1,326 @@
+[
+  {
+    "activation": "cardioid",
+    "family": "complex",
+    "final_train_loss": 0.6206482648849487,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/cardioid/complex_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.6490384340286255
+  },
+  {
+    "activation": "cardioid",
+    "family": "complex",
+    "final_train_loss": 0.590151846408844,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/cardioid/complex_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.6730769276618958
+  },
+  {
+    "activation": "cardioid",
+    "family": "complex",
+    "final_train_loss": 0.6674729585647583,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/cardioid/complex_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.6410256624221802
+  },
+  {
+    "activation": "cardioid",
+    "family": "real_stacked",
+    "final_train_loss": 0.7285231351852417,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/cardioid/real_stacked_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.5881410241127014
+  },
+  {
+    "activation": "cardioid",
+    "family": "real_stacked",
+    "final_train_loss": 0.8085525631904602,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/cardioid/real_stacked_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.5737179517745972
+  },
+  {
+    "activation": "cardioid",
+    "family": "real_stacked",
+    "final_train_loss": 1.099037766456604,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/cardioid/real_stacked_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.3333333432674408
+  },
+  {
+    "activation": "cardioid",
+    "family": "real_matched_params",
+    "final_train_loss": 0.7156457901000977,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/cardioid/real_matched_params_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.5905448794364929
+  },
+  {
+    "activation": "cardioid",
+    "family": "real_matched_params",
+    "final_train_loss": 0.7497227191925049,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/cardioid/real_matched_params_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.6073718070983887
+  },
+  {
+    "activation": "cardioid",
+    "family": "real_matched_params",
+    "final_train_loss": 1.0989744663238525,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/cardioid/real_matched_params_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.3333333432674408
+  },
+  {
+    "activation": "cardioid",
+    "family": "real_matched_flops",
+    "final_train_loss": 0.7050334811210632,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/cardioid/real_matched_flops_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.6089743375778198
+  },
+  {
+    "activation": "cardioid",
+    "family": "real_matched_flops",
+    "final_train_loss": 0.7290821671485901,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/cardioid/real_matched_flops_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.5544871687889099
+  },
+  {
+    "activation": "cardioid",
+    "family": "real_matched_flops",
+    "final_train_loss": 1.059705376625061,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/cardioid/real_matched_flops_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.48637819290161133
+  },
+  {
+    "activation": "siglog",
+    "family": "complex",
+    "final_train_loss": 0.6602360606193542,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/siglog/complex_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.6995192170143127
+  },
+  {
+    "activation": "siglog",
+    "family": "complex",
+    "final_train_loss": 0.6293696761131287,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/siglog/complex_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.7115384340286255
+  },
+  {
+    "activation": "siglog",
+    "family": "complex",
+    "final_train_loss": 0.6194082498550415,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/siglog/complex_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.6979166865348816
+  },
+  {
+    "activation": "siglog",
+    "family": "real_stacked",
+    "final_train_loss": 1.0987164974212646,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/siglog/real_stacked_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.3333333432674408
+  },
+  {
+    "activation": "siglog",
+    "family": "real_stacked",
+    "final_train_loss": 0.6967751979827881,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/siglog/real_stacked_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.6290063858032227
+  },
+  {
+    "activation": "siglog",
+    "family": "real_stacked",
+    "final_train_loss": 0.7006718516349792,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/siglog/real_stacked_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.5801281929016113
+  },
+  {
+    "activation": "siglog",
+    "family": "real_matched_params",
+    "final_train_loss": 1.0987024307250977,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/siglog/real_matched_params_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.3333333432674408
+  },
+  {
+    "activation": "siglog",
+    "family": "real_matched_params",
+    "final_train_loss": 0.6750581860542297,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/siglog/real_matched_params_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.6530448794364929
+  },
+  {
+    "activation": "siglog",
+    "family": "real_matched_params",
+    "final_train_loss": 0.7575365900993347,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/siglog/real_matched_params_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.5600961446762085
+  },
+  {
+    "activation": "siglog",
+    "family": "real_matched_flops",
+    "final_train_loss": 1.0987229347229004,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/siglog/real_matched_flops_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.3333333432674408
+  },
+  {
+    "activation": "siglog",
+    "family": "real_matched_flops",
+    "final_train_loss": 0.6557564735412598,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/siglog/real_matched_flops_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.6217948794364929
+  },
+  {
+    "activation": "siglog",
+    "family": "real_matched_flops",
+    "final_train_loss": 1.0038872957229614,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/siglog/real_matched_flops_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.4214743673801422
+  },
+  {
+    "activation": "zrelu",
+    "family": "complex",
+    "final_train_loss": 0.6348954439163208,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/zrelu/complex_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.6442307829856873
+  },
+  {
+    "activation": "zrelu",
+    "family": "complex",
+    "final_train_loss": 0.6265378594398499,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/zrelu/complex_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.6626602411270142
+  },
+  {
+    "activation": "zrelu",
+    "family": "complex",
+    "final_train_loss": 0.6014704704284668,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/zrelu/complex_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.6378205418586731
+  },
+  {
+    "activation": "zrelu",
+    "family": "real_stacked",
+    "final_train_loss": 0.7339954376220703,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/zrelu/real_stacked_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.5729166865348816
+  },
+  {
+    "activation": "zrelu",
+    "family": "real_stacked",
+    "final_train_loss": 0.7387378215789795,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/zrelu/real_stacked_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.5777243375778198
+  },
+  {
+    "activation": "zrelu",
+    "family": "real_stacked",
+    "final_train_loss": 0.7012271881103516,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/zrelu/real_stacked_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.5881410241127014
+  },
+  {
+    "activation": "zrelu",
+    "family": "real_matched_params",
+    "final_train_loss": 0.7267284989356995,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/zrelu/real_matched_params_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.5600961446762085
+  },
+  {
+    "activation": "zrelu",
+    "family": "real_matched_params",
+    "final_train_loss": 0.6937897205352783,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/zrelu/real_matched_params_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.5953525900840759
+  },
+  {
+    "activation": "zrelu",
+    "family": "real_matched_params",
+    "final_train_loss": 0.699219822883606,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/zrelu/real_matched_params_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.5777243375778198
+  },
+  {
+    "activation": "zrelu",
+    "family": "real_matched_flops",
+    "final_train_loss": 0.7073269486427307,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/zrelu/real_matched_flops_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.5849359035491943
+  },
+  {
+    "activation": "zrelu",
+    "family": "real_matched_flops",
+    "final_train_loss": 0.6877662539482117,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/zrelu/real_matched_flops_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.5809294581413269
+  },
+  {
+    "activation": "zrelu",
+    "family": "real_matched_flops",
+    "final_train_loss": 0.6984738111495972,
+    "n_steps": 200,
+    "output_path": "results/radioml_telemetry/zrelu/real_matched_flops_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.5873397588729858
+  }
+]

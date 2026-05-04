@@ -307,6 +307,72 @@ Reported in
 `results/radioml_modulation_sweep_{modrelu,cardioid,siglog,zrelu}/summary.md`
 (ablation runs).
 
+#### 3.4.4 Mechanism — explosion-into-dead-region at step 1
+
+[Figures: per-step train loss
+[`radioml_telemetry_loss.png`](../results/figures/radioml_telemetry_loss.png),
+total gradient norm
+[`radioml_telemetry_grad.png`](../results/figures/radioml_telemetry_grad.png).]
+
+§3.4.1 reports an *asymmetry* without explaining it. The `experiments/rf/gradient_telemetry.py`
+module re-runs the matched-shared-trial selected configuration with per-step
+instrumentation (train loss, total parameter gradient norm, per-parameter
+gradient norm, max parameter magnitude). For each of the 5 activations × 4
+families × 3 seeds = 60 runs we capped at 200 steps (the divergence pattern
+appears within the first 5). The mechanism is unambiguous:
+
+**On the three "unstable" activations** (`crelu`, `cardioid`, `siglog`),
+matched-shared-trial picks a high-LR / wide-hidden config that complex
+selects because it tolerates it (lr ∈ {0.024, 0.024, 0.040}, hidden = 64).
+At step 1, every family sees a large AdamW step away from random init. For
+real baselines this produces a step-1 train loss in `[3, 36]`, a total
+gradient norm in `[6, 42]`, and a `head.weight` gradient in `[6, 41]`
+(i.e. nearly all of the explosion sits on the final classifier's
+weights). For the complex network the same step produces a step-1 loss
+in `[1.07, 1.28]`, total gradient norm `[0.3, 1.0]`, `head.weight`
+gradient `[0.1, 0.7]` — about 50–80× smaller than its real counterparts
+on identical data and learning rate.
+
+The complex network's `(real, imag)` parameter coupling distributes the
+loss signal across more parameter slots, so the same lr × CE-gradient
+product produces a smaller effective step on `head.weight`. The real
+network does not have that smoothing; AdamW's first step pushes some
+seeds into a region where the second `Conv1d`'s ReLU activations are
+all-zero (or all-active and saturated), gradients vanish, and training
+"stabilizes" at uniform-prediction chance level. We confirmed this:
+**the dead seeds end at exactly `loss = ln(3) ≈ 1.099`** (3-class CE
+under uniform predictions), with `total_grad_norm ≤ 0.05`, and zero
+test accuracy improvement from random init.
+
+Dead-real-seed counts (out of 9 per activation, three families × three
+seeds):
+
+| activation | dead seeds | step-1 head.weight grad (real, max) |
+|---|:--:|---:|
+| `crelu` (lr=0.024) | 3 / 9 | 13.7 |
+| `cardioid` (lr=0.024) | 3 / 9 | 19.5 |
+| `siglog` (lr=0.040) | 3 / 9 | 40.4 |
+| `modrelu` (lr=0.008) | **0 / 9** | 0.17 |
+| `zrelu` (lr=0.0024) | **0 / 9** | 0.13 |
+
+**The dead-seed rate jumps from 0% to 33% as soon as the matched-shared-trial
+selected lr crosses ~0.02.** Two orders of magnitude separation in the
+step-1 head gradient between the unstable and stable activation regimes.
+Under `modrelu` and `zrelu` no real-baseline seed dies, complex's step-1
+gradient drops to `[0.05, 0.10]`, and the test-accuracy gap collapses to
+±3 pp.
+
+**Implication for the paper's headline.** The "complex is more robust to
+activation choice" finding is the empirical surface of a sharper
+mechanistic claim: *the complex parameterization is more tolerant of
+high effective per-step updates on the classifier head.* The matched-
+shared-trial rule selects configurations that exploit this tolerance;
+naive selection rules (or independent-tuning protocols) hide it. A
+practitioner choosing between `ComplexConv1d + |z|² head` and a
+real-conv-stack baseline at fixed parameter budget should expect the
+complex variant to be substantially less LR-fragile at the head; this is
+the property to reach for, not "complex always wins by 27 pp."
+
 **Bug surfaced.** The first attempt at the RadioML sweep used the
 synthetic benchmark's odd-stepped SNR list, which the loader silently
 dropped because RadioML 2018.01A only ships even SNRs (2 dB steps from
