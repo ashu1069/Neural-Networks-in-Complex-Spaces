@@ -108,6 +108,63 @@ advantage survive the distortions you actually encounter."
   Uncapped full-archive runs disable this automatically; use `--no-cache-data`
   if a capped subset is still too large for memory.
 
+## Sweep presets
+
+The `--preset` flag on `experiments/rf/sweep_radioml.py` selects a coherent
+default bundle (modulations + SNR levels + sample length + search space).
+Individual flags still override the preset.
+
+### `--preset subset` (default)
+
+3 PSK modulations (BPSK / QPSK / 8PSK), 8 even SNR levels
+(-10, -6, -2, 2, 6, 10, 14, 18 dB), `max_per_class_per_snr=256`,
+`sample_length=128`. Search space: hidden ∈ {16, 32, 64} (conv) /
+{32, 64, 128} (mlp), batch ∈ {128, 256, 512}, steps ∈ {200, 400, 800}.
+This is the regime the §3.4 RadioML headline used; runs in ~20-30 min on
+A100. Output goes to `results/radioml_modulation_sweep_<activation>/`.
+
+### `--preset full`
+
+All 24 modulations, all 26 even SNR levels (-20 to +30 in 2 dB steps),
+`max_per_class_per_snr=256` (≈160k samples after filtering),
+`sample_length=1024` (RadioML's native length). Search space: hidden ∈
+{32, 64, 128, 256} (conv), batch ∈ {256, 512, 1024}, steps ∈
+{400, 800, 1600}. This brings the sweep into the RadioML literature's
+evaluation regime. **Expect 5-15 hours on a single A100** for the default
+16 trials × 3 seeds × 4 families = 192 runs, depending on which trial
+samples land at the upper end of the search space. Output goes to
+`results/radioml_modulation_sweep_full_<activation>/` to avoid clobbering
+subset snapshots.
+
+To halve cost: pass `--max-per-class-per-snr 128` (cuts samples 2×),
+`--snr-db-levels -10 -6 -2 2 6 10 14 18` (cuts SNRs ~3×), or
+`--seeds 0 1` (cuts seeds 1.5×).
+
+### Recommended GPU command for the full scale-up
+
+```bash
+# Pull latest, confirm clean tree (CI dirty-manifest guard warns either way)
+git pull && git status
+
+# Full 24-class run on the headline activation (CReLU)
+uv run python experiments/rf/sweep_radioml.py --device cuda \
+    --preset full --activation crelu --seeds 0 1 2
+
+# Optional: ablate a stable activation (zrelu) on the full task to test
+# whether the robustness asymmetry survives at scale
+uv run python experiments/rf/sweep_radioml.py --device cuda \
+    --preset full --activation zrelu --seeds 0 1 2
+```
+
+When done:
+
+```bash
+grep '"git_dirty"' results/radioml_modulation_sweep_full_*/manifest.json
+git add results/radioml_modulation_sweep_full_*/
+git commit -m "Phase 5+: RadioML full-archive sweep (24 classes, 26 SNRs, 1024 samples)"
+git push
+```
+
 ## Citation
 
 If you publish RadioML results, cite:

@@ -60,6 +60,36 @@ DEFAULT_MODULATIONS_RADIOML: tuple[str, ...] = ("BPSK", "QPSK", "8PSK")
 # raise here.
 DEFAULT_SNR_DB_RADIOML: tuple[int, ...] = (-10, -6, -2, 2, 6, 10, 14, 18)
 
+# Full-archive preset: all 24 modulations, all 26 even SNRs (-20 to +30 in
+# 2 dB steps), full sample length 1024. Use --preset full to switch.
+FULL_MODULATIONS_RADIOML: tuple[str, ...] = (
+    "OOK",
+    "4ASK",
+    "8ASK",
+    "BPSK",
+    "QPSK",
+    "8PSK",
+    "16PSK",
+    "32PSK",
+    "16APSK",
+    "32APSK",
+    "64APSK",
+    "128APSK",
+    "16QAM",
+    "32QAM",
+    "64QAM",
+    "128QAM",
+    "256QAM",
+    "AM-SSB-WC",
+    "AM-SSB-SC",
+    "AM-DSB-WC",
+    "AM-DSB-SC",
+    "FM",
+    "GMSK",
+    "OQPSK",
+)
+FULL_SNR_DB_RADIOML: tuple[int, ...] = tuple(range(-20, 32, 2))
+
 
 def _train_one(
     family: str,
@@ -389,6 +419,18 @@ def main() -> int:
             "or classes-fixed.txt next to the HDF5"
         ),
     )
+    parser.add_argument(
+        "--preset",
+        choices=["subset", "full"],
+        default=None,
+        help=(
+            "preset overrides for modulations/snrs/sample_length/search_space:"
+            " `subset` = 3 PSK mods × 8 SNRs × sample_length 128 (current"
+            " defaults), `full` = all 24 mods × all 26 even SNRs × sample"
+            " length 1024 with a wider hidden / batch search space."
+            " Individual flags still override the preset."
+        ),
+    )
     parser.add_argument("--n-trials", type=int, default=16)
     parser.add_argument("--seeds", nargs="+", type=int, default=[0, 1, 2])
     parser.add_argument(
@@ -438,6 +480,24 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    # Apply preset overrides first; explicit per-flag values always win because
+    # argparse tags absent flags with their parser defaults, which we detect by
+    # comparing to the preset-driven expected values.
+    is_full = args.preset == "full"
+    if is_full:
+        if args.modulations == list(DEFAULT_MODULATIONS_RADIOML):
+            args.modulations = list(FULL_MODULATIONS_RADIOML)
+        if tuple(args.snr_db_levels) == DEFAULT_SNR_DB_RADIOML:
+            args.snr_db_levels = list(FULL_SNR_DB_RADIOML)
+        if args.sample_length == 128:
+            args.sample_length = 1024
+        # The default output dir clashes between presets; route full into its
+        # own root so subset snapshots are not clobbered.
+        if args.output_dir == Path("results/radioml_modulation_sweep"):
+            args.output_dir = Path(
+                f"results/radioml_modulation_sweep_full_{args.activation}"
+            )
+
     dtype = torch.complex64 if args.dtype == "complex64" else torch.complex128
     device = torch.device(args.device)
     architecture = cast(ArchitectureName, args.architecture)
@@ -449,16 +509,30 @@ def main() -> int:
         {} if cache_data else None
     )
 
-    if architecture == "conv":
+    # Wider search space for the full preset: 24 classes need more capacity
+    # than 3, and the larger train set tolerates bigger batches. Subset stays
+    # on the original lighter spec.
+    if is_full:
+        if architecture == "conv":
+            hidden_choices = [32, 64, 128, 256]
+        else:
+            hidden_choices = [64, 128, 256]
+        batch_choices = [256, 512, 1024]
+        steps_choices = [400, 800, 1600]
+    elif architecture == "conv":
         hidden_choices = [16, 32, 64]
+        batch_choices = [128, 256, 512]
+        steps_choices = [200, 400, 800]
     else:
         hidden_choices = [32, 64, 128]
+        batch_choices = [128, 256, 512]
+        steps_choices = [200, 400, 800]
     space = SearchSpace(
         distributions={
             "learning_rate": ("loguniform", 1e-3, 5e-2),
             "hidden_features": ("choice", hidden_choices),
-            "steps": ("choice", [200, 400, 800]),
-            "batch_size": ("choice", [128, 256, 512]),
+            "steps": ("choice", steps_choices),
+            "batch_size": ("choice", batch_choices),
         }
     )
 
