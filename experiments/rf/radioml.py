@@ -95,6 +95,7 @@ def load_radioml_2018_01a(
     dtype: torch.dtype = torch.complex64,
     sample_length: int = 1024,
     classes_path: str | Path | None = None,
+    strict_snr: bool = True,
 ) -> RFModulationData:
     """Load a (filtered) subset of RadioML 2018.01A from a local HDF5 file.
 
@@ -177,12 +178,14 @@ def load_radioml_2018_01a(
         test_labels_chunks: list[torch.Tensor] = []
         test_snr_chunks: list[torch.Tensor] = []
 
+        empty_buckets: list[tuple[str, int]] = []
         for output_label, mod in enumerate(requested_mods):
             archive_label = mod_to_archive_index[mod]
             for snr in requested_snrs:
                 mask = (labels_full == archive_label) & (snrs_full == snr)
                 indices = torch.nonzero(mask, as_tuple=False).flatten()
                 if indices.numel() == 0:
+                    empty_buckets.append((mod, int(snr)))
                     continue
                 if max_per_class_per_snr is not None:
                     cap = min(max_per_class_per_snr, int(indices.numel()))
@@ -225,6 +228,24 @@ def load_radioml_2018_01a(
             f"snr_db_levels={list(requested_snrs)} are present in the archive"
         )
         raise ValueError(msg)
+
+    if empty_buckets:
+        # RadioML 2018.01A only has even SNRs (-20, -18, ..., +28, +30). Asking
+        # for an odd SNR like -5 silently used to drop the bucket and produced
+        # a per-SNR table with mysteriously missing rows. Either raise so the
+        # user catches the typo, or merely warn and continue.
+        bucket_str = ", ".join(f"({mod}, {snr} dB)" for mod, snr in empty_buckets)
+        msg = (
+            f"requested (mod, SNR) buckets had zero examples in the archive: "
+            f"{bucket_str}. RadioML 2018.01A uses 2 dB steps starting from -20 "
+            f"so odd SNRs do not exist. Pass strict_snr=False to silently skip "
+            f"empty buckets instead of raising."
+        )
+        if strict_snr:
+            raise ValueError(msg)
+        import warnings
+
+        warnings.warn(msg, stacklevel=2)
 
     train_inputs = torch.cat(train_inputs_chunks, dim=0)
     train_labels = torch.cat(train_labels_chunks, dim=0)

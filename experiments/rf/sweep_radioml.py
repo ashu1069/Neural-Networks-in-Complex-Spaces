@@ -55,7 +55,10 @@ from experiments.rf.synthetic_modulation import (
 )
 
 DEFAULT_MODULATIONS_RADIOML: tuple[str, ...] = ("BPSK", "QPSK", "8PSK")
-DEFAULT_SNR_DB_RADIOML: tuple[int, ...] = (-10, -5, 0, 5, 10, 15, 20)
+# RadioML 2018.01A only ships even SNR levels (-20 to +30 in 2 dB steps); odd
+# values are silently absent. The synthetic stand-in's odd-step default would
+# raise here.
+DEFAULT_SNR_DB_RADIOML: tuple[int, ...] = (-10, -6, -2, 2, 6, 10, 14, 18)
 
 
 def _train_one(

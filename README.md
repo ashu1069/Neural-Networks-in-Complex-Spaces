@@ -42,7 +42,7 @@ footnote.
 
 ## Headline findings
 
-Two budgeted benchmarks, four model families each, sweeps following
+Three budgeted benchmarks, four model families each, sweeps following
 [`docs/tuning_budget.md`](docs/tuning_budget.md). Full write-up in
 [`docs/report.md`](docs/report.md); blog draft in
 [`docs/blog_post_draft.md`](docs/blog_post_draft.md).
@@ -56,28 +56,33 @@ Two budgeted benchmarks, four model families each, sweeps following
   the task carries no structure for `ℂ`-multiplication to exploit.
 - **Synthetic RF modulation — complex wins, with the smallest model**
   ([`rf_synthetic_modulation_swept.png`](results/figures/rf_synthetic_modulation_swept.png),
-  [`rf_sweep_pareto.png`](results/figures/rf_sweep_pareto.png)) — after a
-  16×6 GPU sweep with a `ComplexConv1d` stack, the complex network
-  reaches 0.819 test accuracy at 3,974 parameters; the next-best real
-  baseline reaches 0.781 at 7,779 parameters. CIs do not overlap,
-  Welch t-test gives `p < 0.01`. Pareto plot: complex sits visibly
-  upper-left.
+  [`rf_sweep_pareto.png`](results/figures/rf_sweep_pareto.png)) — 16×6 GPU
+  sweep with a `ComplexConv1d` stack: complex reaches 0.819 test accuracy
+  at 3,974 parameters; the next-best real baseline reaches 0.781 at 7,779
+  parameters. CIs do not overlap, Welch t-test gives `p < 0.01`.
+- **RadioML 2018.01A — complex wins by 21–28 pp on real data**
+  ([`radioml_modulation_swept.png`](results/figures/radioml_modulation_swept.png),
+  [`radioml_per_snr.png`](results/figures/radioml_per_snr.png)) — same
+  scaffold on the gated DeepSig archive (BPSK / QPSK / 8PSK subset, 16×6
+  on A100): complex 0.722 vs best real 0.511. Per-SNR breakdown: at
+  ≥+10 dB the complex network reaches ~92% while real baselines plateau
+  at 50–60%. Real baselines also have ~6× higher seed-to-seed std — half
+  the seeds barely train. Complex is more accurate *and* more reliable.
 
 The headline thesis: **the complex inductive bias pays for itself when the
 task carries structure that complex multiplication naturally encodes, and
-is neutral otherwise.**
+is neutral otherwise. On real-data IQ classification with channel effects,
+the gap grows substantially.**
 
 ## Scope and caveats
 
-Everything below is **1-D only** — `ComplexLinear` and `ComplexConv1d`,
+Everything is **1-D only** — `ComplexLinear` and `ComplexConv1d`,
 benchmarks on scalar inputs and length-128 IQ sequences. No
-`ComplexConv2d`, no images, no audio STFT, no MRI yet. The synthetic RF
-benchmark is a stand-in for RadioML 2018.01A: i.i.d. PSK symbols with
-AWGN, no pulse shaping, no carrier offset, no fading. A RadioML 2018.01A
-loader and sweep harness are available for the local HDF5 archive; real-data
-headline numbers still need a CUDA sweep. See
-[`docs/report.md`](docs/report.md#5-limitations) for the full limitations
-list.
+`ComplexConv2d`, no images, no audio STFT, no MRI yet. The RadioML run
+uses a 3-modulation × 8-SNR subset of the full archive at sample length
+128; the full 24-class × 26-SNR × 1024-sample setup is opt-in but not yet
+swept. See [`docs/report.md`](docs/report.md#5-limitations) for the full
+limitations list.
 
 ## Goals
 

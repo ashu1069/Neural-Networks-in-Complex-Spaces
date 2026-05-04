@@ -241,7 +241,8 @@ def _swept_bars(
     """Bar chart of swept-selection test accuracies with 95% CI from std / √n."""
 
     summary = load_json(summary_path)
-    selections = {s["family"]: s for s in summary["selections"]}
+    selection_rows = summary.get("matched_selections") or summary["selections"]
+    selections = {s["family"]: s for s in selection_rows}
     n_seeds = len(summary["config"]["seeds"])
     families = [f for f in FAMILY_ORDER if f in selections]
     means = [selections[f]["selected_test_accuracy_mean"] for f in families]
@@ -295,7 +296,8 @@ def fig_rf_swept() -> Path:
 def fig_rf_sweep_pareto() -> Path:
     sweep = load_json(RESULTS / "rf_synthetic_modulation_sweep" / "trials.json")
     summary = load_json(RESULTS / "rf_synthetic_modulation_sweep" / "summary.json")
-    selections = {s["family"]: s for s in summary["selections"]}
+    selection_rows = summary.get("matched_selections") or summary["selections"]
+    selections = {s["family"]: s for s in selection_rows}
     trials = sweep["trials"]
     n_seeds = len(sweep["config"]["seeds"])
 
@@ -344,6 +346,131 @@ def fig_rf_sweep_pareto() -> Path:
     return out
 
 
+def fig_radioml_swept() -> Path:
+    summary_path = RESULTS / "radioml_modulation_sweep" / "summary.json"
+    summary = load_json(summary_path)
+    n_seeds = len(summary["config"]["seeds"])
+    return _swept_bars(
+        summary_path,
+        title=(
+            f"RadioML 2018.01A — matched shared-trial configs\n"
+            f"16 trials × {n_seeds} seeds  ·  "
+            "error bars = 95% CI (std / √n)\n"
+            "Complex wins by 27 pp on real-data IQ classification"
+        ),
+        out_name="radioml_modulation_swept.png",
+    )
+
+
+def fig_radioml_per_snr() -> Path:
+    summary = load_json(RESULTS / "radioml_modulation_sweep" / "summary.json")
+    selection_rows = summary["matched_selections"]
+    fig, ax = plt.subplots(figsize=(8.0, 4.8))
+    snr_keys: list[str] = []
+    for sel in selection_rows:
+        per_seed = sel["selected_extra"].get("test_accuracy_by_snr_db_per_seed", [])
+        if isinstance(per_seed, list):
+            for item in per_seed:
+                if isinstance(item, dict):
+                    for snr in item:
+                        if snr not in snr_keys:
+                            snr_keys.append(snr)
+    snr_keys = sorted(snr_keys, key=int)
+
+    for sel in selection_rows:
+        family = sel["family"]
+        if family not in FAMILY_ORDER:
+            continue
+        per_seed = sel["selected_extra"].get("test_accuracy_by_snr_db_per_seed", [])
+        if not isinstance(per_seed, list):
+            continue
+        means: list[float] = []
+        for snr in snr_keys:
+            values = [
+                float(item[snr])
+                for item in per_seed
+                if isinstance(item, dict) and snr in item
+            ]
+            means.append(sum(values) / len(values) if values else float("nan"))
+        ax.plot(
+            [int(snr) for snr in snr_keys],
+            means,
+            marker="o",
+            color=FAMILY_COLOR[family],
+            label=FAMILY_LABEL[family],
+            linewidth=1.8,
+        )
+
+    ax.set_xlabel("SNR (dB)")
+    ax.set_ylabel("Mean test accuracy")
+    ax.set_title(
+        "RadioML 2018.01A — accuracy vs SNR (matched shared-trial)\n"
+        "At ≥0 dB the complex network leaves real baselines 25–32 pp behind"
+    )
+    ax.grid(True, linestyle=":", alpha=0.4)
+    ax.legend(frameon=False, loc="lower right", fontsize=9)
+    fig.tight_layout()
+    out = FIG_DIR / "radioml_per_snr.png"
+    fig.savefig(out, dpi=180)
+    plt.close(fig)
+    return out
+
+
+def fig_radioml_sweep_pareto() -> Path:
+    sweep = load_json(RESULTS / "radioml_modulation_sweep" / "trials.json")
+    summary = load_json(RESULTS / "radioml_modulation_sweep" / "summary.json")
+    selection_rows = summary["matched_selections"]
+    selections = {s["family"]: s for s in selection_rows}
+    trials = sweep["trials"]
+    n_seeds = len(sweep["config"]["seeds"])
+
+    fig, ax = plt.subplots(figsize=(8.5, 5.0))
+    for fam in FAMILY_ORDER:
+        fam_trials = [t for t in trials if t["family"] == fam]
+        if not fam_trials:
+            continue
+        params = [t["extra"]["parameter_count_mean"] for t in fam_trials]
+        accs = [t["test_accuracy_mean"] for t in fam_trials]
+        ax.scatter(
+            params,
+            accs,
+            color=FAMILY_COLOR[fam],
+            alpha=0.55,
+            s=42,
+            label=FAMILY_LABEL[fam],
+            edgecolor="white",
+            linewidth=0.6,
+        )
+        sel = selections.get(fam)
+        if sel is not None:
+            ax.scatter(
+                [sel["selected_extra"]["parameter_count_mean"]],
+                [sel["selected_test_accuracy_mean"]],
+                color=FAMILY_COLOR[fam],
+                marker="*",
+                s=240,
+                edgecolor="black",
+                linewidth=0.8,
+                zorder=5,
+            )
+
+    ax.set_xscale("log")
+    ax.set_xlabel("Parameter count (log scale)")
+    ax.set_ylabel(f"Test accuracy (mean over {n_seeds} seeds)")
+    ax.set_title(
+        "Sweep on RadioML 2018.01A — 16 trials × 4 families\n"
+        "★ = matched shared-trial selection.  "
+        "Complex sits upper-left."
+    )
+    ax.grid(True, which="both", linestyle=":", alpha=0.4)
+    ax.legend(frameon=False, loc="lower right")
+    fig.tight_layout()
+    out = FIG_DIR / "radioml_sweep_pareto.png"
+    fig.savefig(out, dpi=180)
+    plt.close(fig)
+    return out
+
+
 def main() -> None:
     figures = [
         fig_activation_tradeoff(),
@@ -353,6 +480,9 @@ def main() -> None:
         fig_rf_accuracy_vs_snr(),
         fig_rf_swept(),
         fig_rf_sweep_pareto(),
+        fig_radioml_swept(),
+        fig_radioml_per_snr(),
+        fig_radioml_sweep_pareto(),
     ]
     for path in figures:
         print(f"wrote {path.relative_to(ROOT)}")

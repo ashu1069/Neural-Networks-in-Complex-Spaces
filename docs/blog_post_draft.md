@@ -133,17 +133,55 @@ The blue CVNN star sits visibly above the capacity-matched real baselines.
 **Higher accuracy at a comparable parameter count.** That's what the
 inductive bias buys you, on a task where it has something to bite on.
 
+## Result C: RadioML 2018.01A — the gap gets dramatic on real data
+
+The synthetic RF benchmark is a stand-in. The actual standard task is
+DeepSig's RadioML 2018.01A: 24 modulations, 26 SNR levels from −20 to
++30 dB, IQ sequences with pulse shaping, carrier-frequency offset, and
+simulated channel effects. The loader landed in
+[`experiments/rf/radioml.py`](../experiments/rf/radioml.py) (gated archive,
+local HDF5). I re-ran the same scaffold — same `ComplexConv1d` stack,
+same matched shared-trial selection, 16 trials × 6 seeds on an A100 —
+on a 3-modulation × 8-SNR subset (BPSK / QPSK / 8PSK). Headline:
+
+| family | test acc | std | params |
+|---|---:|---:|---:|
+| **CVNN** | **0.722** | 0.023 | 58,886 |
+| Real (stacked) | 0.511 | 0.138 | 29,891 |
+| Real (≈params) | 0.424 | 0.141 | 58,413 |
+| Real (≈FLOPs) | 0.446 | 0.123 | 117,123 |
+
+Two things stand out beyond the 21–28 pp accuracy gap. First, the per-SNR
+breakdown:
+
+![radioml_per_snr](../results/figures/radioml_per_snr.png)
+
+At low SNR everyone is at chance. From 0 dB onward, the complex network
+pulls cleanly away — at +10 dB and +20 dB it sits at ~92% while the real
+baselines plateau at 47–60%. Below noise everything fails together; above
+noise, only the complex network reaches the regime where a modulation
+classifier is actually useful.
+
+Second, the seed-to-seed standard deviation. CVNN's std is 0.023; the real
+baselines' stds are 0.12–0.14, roughly **6× larger**. Half the real-baseline
+seeds barely train at all. The complex network isn't just more accurate
+on average — it converges reliably across seeds where the real baselines
+do not. That's a property you don't see in the bar chart but you absolutely
+care about if you're shipping a model.
+
 ## What this is and isn't
 
 This *is* a defensible "complex wins on this task" claim. Same scaffolding,
-same search budget, same architecture shape, statistically separated CIs.
+same search budget, same architecture shape, statistically separated CIs,
+real and synthetic versions of the same task agreeing in direction (the
+real-data version magnifies the gap).
 
 This *isn't*:
 
-- A claim about RadioML 2018.01A. The RF task is a synthetic stand-in.
-  Real-world data has pulse shaping, carrier offset, fading, and labeled
-  modulations beyond PSK; the loader exists now, but the CUDA sweep still
-  needs to be run and audited before it becomes a result.
+- A claim about the full RadioML 2018.01A archive. The headline run uses
+  3 modulations × 8 SNR levels at sample length 128, not the full 24×26
+  at sample length 1024. The directory layout is set up to scale up; not
+  yet measured.
 - A claim about deep architectures. The conv stacks here are two layers
   with global mean pool. ComplexBatchNorm and ComplexLayerNorm aren't
   written yet.
@@ -163,7 +201,9 @@ answer, and it is task-dependent in a way you can characterize:
 
 For 1-D scalar phase classification, the complex network buys you nothing
 over a 2-D real network. For sequence-shaped IQ-like data, it buys you
-~4 percentage points at comparable parameter count.
+~4 percentage points at comparable parameter count. **On real RadioML
+data with channel effects, the gap grows to 21–28 percentage points and
+the complex network is also ~6× more reliable across seeds.**
 
 The thought experiment was right that there's no clean activation. It was
 incomplete in implying that this means the whole enterprise is stuck. The

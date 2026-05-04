@@ -180,3 +180,49 @@ def test_radioml_constants_are_canonical_24_and_26() -> None:
     assert len(RADIOML_2018_01A_SNR_DB) == 26
     assert RADIOML_2018_01A_SNR_DB[0] == -20
     assert RADIOML_2018_01A_SNR_DB[-1] == 30
+
+
+def test_load_radioml_raises_on_partial_empty_buckets_by_default(
+    tmp_path: Path,
+) -> None:
+    pytest.importorskip("h5py")
+    archive = tmp_path / "tiny.hdf5"
+    _write_synthetic_radioml(
+        archive,
+        modulations=["BPSK", "QPSK"],
+        snr_db_levels=[0, 10],
+        n_per_class_per_snr=4,
+    )
+
+    with pytest.raises(ValueError, match="zero examples in the archive"):
+        load_radioml_2018_01a(
+            archive,
+            modulations=["BPSK", "QPSK"],
+            snr_db_levels=[5, 10],
+            sample_length=128,
+        )
+
+
+def test_load_radioml_strict_snr_false_only_warns(tmp_path: Path) -> None:
+    import warnings
+
+    pytest.importorskip("h5py")
+    archive = tmp_path / "tiny.hdf5"
+    _write_synthetic_radioml(
+        archive,
+        modulations=["BPSK", "QPSK"],
+        snr_db_levels=[0, 10],
+        n_per_class_per_snr=4,
+    )
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        data = load_radioml_2018_01a(
+            archive,
+            modulations=["BPSK", "QPSK"],
+            snr_db_levels=[5, 10],
+            sample_length=128,
+            strict_snr=False,
+        )
+    assert any("zero examples" in str(warning.message) for warning in caught)
+    assert set(data.test_snr_db.tolist()).issubset({10})
