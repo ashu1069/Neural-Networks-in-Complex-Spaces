@@ -1,39 +1,136 @@
-# Neural Networks in Complex Spaces — Phase 5 Report
+# Where the complex inductive bias lives: an architecture-level prior and a separable optimization-level robustness asymmetry, characterized at small scale
 
-This is the technical report that closes the loop on the
-[motivating blog post](https://blog.gopenai.com/what-happens-if-we-have-complex-valued-neural-networks-a-thought-experiment-ba8dba3784ca).
-The post asked, in essence, *what happens if neural networks lived in `ℂ`
-instead of `ℝ`?* The answer the post sketched was a paradox: holomorphy gives
-you clean gradients but Liouville's theorem says no non-constant holomorphic
-function on `ℂ` is bounded — so any "well-behaved" complex activation has to
-break one of those properties.
+**(Concept & Feasibility submission — NeurIPS main track.)**
 
-This project turned that thought experiment into reproducible engineering
-plus three budgeted empirical comparisons. This report consolidates what we
-built, what we measured, and where the evidence does and does not let us
-make claims.
+## Abstract
 
-## 1. Question
+The intuition that complex-valued neural networks (CVNNs) should help on
+phase-bearing signals is widely held and rarely measured carefully. We
+demonstrate, at the scale where a mechanism analysis remains tractable,
+that the complex inductive bias on IQ classification *decomposes* into
+two separable effects with distinct origins. (i) An **architectural**
+prior: `ComplexConv1d` is exactly phase-equivariant, and we prove this in
+two lines; the magnitude-logit head makes the network phase-invariant at
+the readout. (ii) An **optimization-level** asymmetry: under
+matched-shared-trial hyperparameter selection, real-valued baselines at
+identical capacity exhibit a step-1 explosion-into-dead-region failure
+mode on the classifier head that complex networks do not. Per-step
+gradient telemetry across 5 activations × 4 model families × 3 seeds = 60
+instrumented runs locates the explosion specifically on `head.weight`
+(50–80× larger gradient at step 1 for real baselines than for complex)
+and shows it produces 3/9 dead seeds (final loss = ln 3, the 3-class
+chance level) under three of the five activations, zero dead seeds under
+the other two. The same threshold behavior replicates on synthetic
+AWGN-only data when the same matched-trial hyperparameters are applied —
+the mechanism is hp-driven, not data-driven. We argue that conflating the
+two effects produces the inflated apparent CVNN gaps in some prior work,
+and that the appropriate framing for CVNN evaluation is to control for
+both effects independently. The 1-D scope, three-class subset of
+RadioML 2018.01A, and modest hardware are deliberate: the scope is
+chosen to support a complete mechanism analysis with end-to-end
+reproducibility (manifests, dirty-bit tracking, structural CI guards on
+artifacts). Code, sweep harness, telemetry traces, and figure scripts are
+released; full-archive scale-up is parameterized via a single CLI flag
+and is signposted future work.
 
-Given the Liouville bind, is the complex inductive bias — i.e., a network
-whose weights and activations live in `ℂ` — *worth* its tradeoffs against
-real-valued networks of equivalent capacity?
+## 1. Concept and feasibility scope
 
-The answer depends on the task. We measure three benchmark tracks:
+### What this paper claims and does not claim
 
-- **Synthetic phase classification.** A 1-D complex sample whose phase
-  encodes one of 8 sectors, with magnitude jitter and AWGN.
-- **Synthetic RF modulation classification.** A length-128 IQ sequence drawn
-  from one of three PSK constellations (BPSK, QPSK, 8PSK), with AWGN
-  controlled at seven SNR levels.
-- **RadioML 2018.01A subset.** The same RF scaffold on a gated real-data
-  BPSK / QPSK / 8PSK subset with eight even SNR levels.
+We make three concrete claims, each at a defensible scale and with
+explicit reproducibility:
 
-The two synthetic tasks are stand-ins. Phase classification is the simplest
-possible task where phase carries the label; synthetic RF modulation is a
-sequence-shaped task that mimics the structure (though not the realism) of
-RadioML 2018.01A. The RadioML subset asks whether the same scaffold survives
-realistic pulse shaping, carrier offset, and channel effects.
+1. **Architectural claim (formal):** `ComplexConv1d` is phase-equivariant
+   in the bias-free case (Lemma, §4.1); the magnitude-logit head is
+   phase-invariant. A real `Conv1d` on stacked `(I, Q)` channels does not
+   get this for free — it must learn rotation invariance from data via a
+   2×2 channel mix the complex network gets by construction.
+2. **Empirical claim:** complex-valued networks beat capacity-matched
+   real-valued ones on synthetic IQ modulation classification (§3.3) and
+   on a 3-class subset of RadioML 2018.01A (§3.4) under matched-budget
+   evaluation. Conversely, on a task with no temporal phase structure
+   (1-D phase classification, §3.2), the complex inductive bias offers
+   no measurable advantage. Both directions of evidence are reported.
+3. **Mechanism claim:** the apparent magnitude of the win on RadioML is
+   activation-dependent (§3.4.1) because matched-shared-trial selection
+   picks high-lr regimes under some activations that real baselines
+   cannot tolerate. Per-step gradient telemetry (§3.4.4) localizes the
+   failure to a step-1 head-gradient explosion that puts a fraction of
+   real-baseline seeds into a dead-ReLU region they cannot escape; the
+   threshold behavior replicates on synthetic data. Phase equivariance
+   of the *layer* is necessary for the architectural prior, but
+   activation-level phase equivariance does not predict the empirical
+   robustness asymmetry — locating the asymmetry one level lower, in
+   `(real, imag)` parameter coupling at the optimization level, is what
+   makes the picture self-consistent (§4.1).
+
+We do *not* claim:
+
+- That complex-valued networks beat real-valued ones at full RadioML
+  2018.01A scale (24 modulations × 26 SNR levels × 1024-sample length).
+  The infrastructure for that experiment is in place
+  (`experiments/rf/sweep_radioml.py --preset full`), but the run is
+  deferred. The mechanism analysis is the contribution; scale-up is
+  signposted future work.
+- That the inductive bias survives in 2-D regimes (audio STFT, MRI).
+  `ComplexConv2d` is not implemented; the project is 1-D only.
+- That CReLU activations generalize across signal-processing settings.
+  The activation ablation §3.4.1 is part of the contribution precisely
+  because activation choice changes the appearance (though not the
+  direction) of CVNN-vs-real gaps.
+
+### Why feasibility-scale is the right scope
+
+A mechanism-level study requires the ability to (a) instrument every
+parameter's gradient at every step, (b) run hundreds of training
+configurations within a working budget, and (c) confirm cross-task
+generalization with a second data distribution. All three are tractable
+at the scope chosen — 60 instrumented runs per data source, a
+re-runnable budgeted sweep, a synthetic stand-in matching the real-data
+benchmark on architecture and hyperparameter regime. They are not
+tractable for paper deadlines at 24-class × 1024-sample × 100-seed
+scale. We treat the smaller scope as a positive feature: it lets us
+report what is happening, not just that something is happening.
+
+### Three benchmarks
+
+The paper reports results on three benchmark tracks, in order of
+increasing realism:
+
+- **Synthetic phase classification (§3.2).** A 1-D complex sample whose
+  phase encodes one of 8 sectors, with magnitude jitter and AWGN. The
+  no-temporal-structure control: the lemma in §4.1 predicts no CVNN
+  benefit, and that is what we measure.
+- **Synthetic RF modulation classification (§3.3).** Length-128 IQ
+  sequences from three PSK constellations (BPSK, QPSK, 8PSK) with
+  controlled AWGN at 7 SNR levels. Tests whether sequence-level phase
+  rotations exposed to convolution produce a CVNN advantage.
+- **RadioML 2018.01A subset (§3.4).** Same scaffold on a gated real-data
+  3-class subset of the standard 2018.01A archive (BPSK/QPSK/8PSK at 8
+  even SNR levels, sample length 128, 256 examples per (class, SNR)
+  bucket). Pulse shaping, carrier-frequency offset, and channel effects
+  are present in the data but not specifically modeled.
+
+### Reproducibility as a first-class concern
+
+Every empirical claim above is backed by a committed result manifest
+that records the Python / PyTorch / OS / device / dtype, every seed
+used, the exact `git_commit` of the producing code, and a `git_dirty`
+boolean. CI surfaces newly added dirty manifests so they are reviewed
+deliberately rather than slipping through. A structural CI guard checks
+the activation characterization artifact regenerates without errors and
+contains all six expected activation rows. The companion repository
+holds 122 unit and integration tests that gate every push.
+
+The companion repository
+([github.com/ashu1069/Neural-Networks-in-Complex-Spaces](https://github.com/ashu1069/Neural-Networks-in-Complex-Spaces))
+includes: the `cvnn` library (complex layers, activations, baselines,
+losses, initializers), the budgeted random-search harness
+(`experiments/_sweep.py`), the gradient telemetry module
+(`experiments/rf/gradient_telemetry.py`), all sweep result manifests,
+all 120 telemetry JSONL traces (60 RadioML + 60 synthetic), and the
+figure-rendering script that produces every figure in this report from
+the committed JSON artifacts.
 
 ## 2. Framework
 
@@ -595,23 +692,48 @@ where the apparent gap is amplified by the optimization-side mechanism.
 
 ## 7. Reproducibility
 
-Every benchmark in this report can be regenerated from a clean checkout:
+A C&F submission's value is in *what others can build on*. Every claim
+above is backed by a single CLI invocation against committed artifacts:
 
 ```bash
+# 1. Reproduce all three benchmarks (sweeps + selections + manifests)
 uv sync --all-groups
 uv run python experiments/synthetic/sweep_phase_classification.py
 uv run python experiments/rf/sweep_synthetic_modulation.py --device cuda
-uv run python scripts/audit_results.py
+uv run python experiments/rf/sweep_radioml.py --device cuda \
+    --activation crelu --seeds 0 1 2 3 4 5
+# (repeat for cardioid / siglog / modrelu / zrelu for the §3.4.1 ablation)
+
+# 2. Reproduce the mechanism analysis (§3.4.4 / §4.1)
+uv run python scripts/run_gradient_telemetry.py
+uv run python scripts/run_synthetic_rf_telemetry.py
+
+# 3. Regenerate every figure in this report from committed JSON
 uv run python scripts/generate_paper_figures.py
+
+# 4. Optional: scale up to the full RadioML archive
+uv run python experiments/rf/sweep_radioml.py --device cuda \
+    --preset full --activation zrelu --seeds 0 1 2
 ```
 
-Each result manifest records the git commit and a `git_dirty` flag. CI warns
-when newly added or modified result manifests record dirty code state so they
-can be reviewed deliberately. The activation characterization JSON drifts across BLAS
-implementations; a structural CI guard verifies all six expected
-activation rows are present, but does not gate exact values.
+Each result manifest records its `git_commit`, environment, and a
+`git_dirty` flag computed on a tree that excludes `results/` and the
+activation-characterization output directory (so regen does not flip the
+bit on itself). CI surfaces newly added or modified manifests with
+`git_dirty: true` as warnings on the PR. A structural CI guard checks
+the committed activation characterization artifact contains all six
+expected activation rows after a regen.
 
-The headline RF result was produced on an NVIDIA A100-SXM4-40GB at git
-commit `542be27` (subsequently superseded by the 6-seed run at
-`d50c66e`); manifests are in
-[`results/rf_synthetic_modulation_sweep/manifest.json`](../results/rf_synthetic_modulation_sweep/manifest.json).
+Headline run provenance:
+- §3.2 phase classification sweep: macOS/CPU at git `f7d995c`.
+- §3.3 synthetic RF sweep: NVIDIA A100-SXM4-40GB.
+- §3.4 RadioML sweep + activation ablation: NVIDIA A100-SXM4-40GB across
+  five clean-tree runs (one per activation).
+- §3.4.4 RadioML telemetry + §3.4.4-cross synthetic telemetry: macOS/CPU
+  at git `c024f72` and `b716f9c` respectively.
+- §4.1 phase-equivariance lemma: derivable in two lines, no compute.
+
+The 122-test suite (`uv run pytest`) covers every module the empirical
+claims depend on, including a self-contained test that exercises the
+gradient-telemetry pipeline against a synthetic RadioML-shape HDF5
+fixture in tmp_path so external data is not required for CI.
