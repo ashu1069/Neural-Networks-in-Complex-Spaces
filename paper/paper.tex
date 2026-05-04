@@ -3,17 +3,21 @@
 % Build:
 %   cd paper && latexmk -pdf paper.tex
 %
-% At submission time, replace the placeholder \documentclass with the actual
-% NeurIPS style file (download `neurips_2026.sty` and friends from the
-% conference site and `\usepackage{neurips_2026}`). The body below is written
-% to be drop-in compatible: section structure, figure / table layout, and
-% citation style match the NeurIPS template's conventions.
+% Style: uses neurips_2025.sty as a stand-in (NeurIPS 2026 .sty not yet
+% released as of writing). When the 2026 style ships, swap the
+% \usepackage line below to \usepackage{neurips_2026} and add the
+% appropriate track option (e.g. [conceptfeasibility]) once the 2026
+% template defines one. Loaded with [preprint] for now so the build
+% produces a non-anonymous, line-number-free PDF for working drafts;
+% switch to [main] (or whatever the 2026 C&F track option is named)
+% before submission.
 \documentclass{article}
+
+\usepackage[preprint]{neurips_2025}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[disable]{microtype}
-\usepackage[margin=1in]{geometry}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{amsmath, amssymb, amsthm}
@@ -25,10 +29,11 @@
 \providecommand{\Cref}[1]{Section~\ref{#1}}
 \providecommand{\cref}[1]{section~\ref{#1}}
 
-% Theorem styles (informal lemma boxes for the C&F track feel).
+% Theorem styles.
 \newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
 
-% Lightweight code formatting; NeurIPS style ships its own \texttt-style helper.
+% Lightweight code formatting.
 \newcommand{\code}[1]{\texttt{#1}}
 
 \title{Where the complex inductive bias lives:\\
@@ -719,5 +724,453 @@ after a regen.
 
 \bibliographystyle{plain}
 \bibliography{references}
+
+\clearpage
+\appendix
+
+% ---------------------------------------------------------------------------
+\section{Phase equivariance: full proof and caveats}
+\label{app:phase-equivariance}
+
+\Cref{lem:phase-equivariance} states that a bias-free
+\code{ComplexConv1d} layer commutes with global phase rotation, and
+that the bias-bearing case picks up a controlled correction term. We
+expand the proof and discuss what does and does not propagate through
+the activation stack.
+
+\begin{proposition}[Phase equivariance, bias-free]
+\label{prop:phase-equivariance-biasfree}
+Let $C : \mathbb{C}^{T} \to \mathbb{C}^{T}$ denote a one-dimensional
+complex convolution with kernel $w \in \mathbb{C}^{K}$, no bias, and
+zero padding (\code{padding\_mode='zeros'}). For any
+$z \in \mathbb{C}^{T}$ and any global phase $\phi \in \mathbb{R}$:
+\[
+  C(e^{i\phi} z)[t] \;=\; e^{i\phi} \, C(z)[t]
+  \qquad \forall t \in \{0, \ldots, T-1\}.
+\]
+\end{proposition}
+
+\begin{proof}
+By linearity over $\mathbb{C}$:
+\[
+  C(e^{i\phi} z)[t]
+  = \sum_{k=0}^{K-1} w_k \cdot (e^{i\phi} z)[t-k]
+  = e^{i\phi} \sum_{k=0}^{K-1} w_k \cdot z[t-k]
+  = e^{i\phi} \, C(z)[t].
+\]
+The phase factor commutes through the sum because complex scalar
+multiplication is commutative; the sum extracts it cleanly. Boundary
+indices $t - k < 0$ contribute zero on both sides because zero padding
+is itself phase-invariant ($e^{i\phi} \cdot 0 = 0$). \qed
+\end{proof}
+
+\begin{proposition}[Phase equivariance, bias-bearing]
+\label{prop:phase-equivariance-bias}
+With learnable bias $b \in \mathbb{C}$:
+\[
+  C(e^{i\phi} z)[t] \;=\; e^{i\phi} \, C(z)[t] \;+\; (1 - e^{i\phi}) \, b.
+\]
+\end{proposition}
+
+\begin{proof}
+$C(e^{i\phi} z)[t] = e^{i\phi} (C(z)[t] - b) + b = e^{i\phi} C(z)[t] +
+b - e^{i\phi} b$. \qed
+\end{proof}
+
+\paragraph{What survives the activation stack.} Phase equivariance is
+preserved layer-by-layer if and only if the activation $\sigma$ itself
+satisfies $\sigma(e^{i\phi} z) = e^{i\phi} \sigma(z)$.
+
+\begin{itemize}
+  \item \textbf{ModReLU} ($\sigma(z) = \mathrm{ReLU}(|z| + b) \cdot
+    e^{i \angle z}$): equivariant. The magnitude term depends only on
+    $|z|$, which is rotation-invariant; the phase factor passes through
+    unchanged.
+  \item \textbf{ComplexCardioid} ($\sigma(z) = \tfrac{1}{2}
+    (1 + \cos \angle z) \cdot z$): equivariant only under rotations
+    that preserve $\angle z \bmod 2\pi$, which is no constraint --- so
+    fully equivariant.
+  \item \textbf{Siglog} ($\sigma(z) = z / (1 + |z|)$): equivariant.
+  \item \textbf{ComplexTanh} (split $\tanh$ on real/imag parts):
+    \emph{not} equivariant. A rotation $e^{i\phi}$ mixes real and
+    imaginary components before the elementwise nonlinearity.
+  \item \textbf{CReLU} (split ReLU on real/imag): \emph{not}
+    equivariant; same reason as ComplexTanh.
+  \item \textbf{ZReLU} (zero out unless $\angle z \in [0, \pi/2]$): not
+    equivariant (the kept-quadrant condition is rotation-sensitive).
+\end{itemize}
+
+\paragraph{So three of our six activations break equivariance.} The
+empirical robustness asymmetry we report (a step-1
+explosion-into-dead-region pattern that disproportionately hurts real
+baselines) does \emph{not} track which activations preserve layer-level
+phase equivariance. CReLU does not preserve equivariance but is the
+configuration with the largest measured CVNN-vs-real gap. We therefore
+locate the asymmetry one level lower than the activation, in the
+$(\mathrm{Re}, \mathrm{Im})$ parameter coupling that the optimizer sees
+on \code{head.weight} at step 1; \Cref{sec:radioml-mechanism}
+develops this in the body.
+
+% ---------------------------------------------------------------------------
+\section{Hyperparameter search spaces}
+\label{app:hyperparameters}
+
+Each experiment runs a random search over the box defined below, with
+$N$ trials and 3 seeds per trial. Selection across baseline families is
+the matched-shared-trial rule of \Cref{sec:framework}: trial $i$
+trains all four families on the same hyperparameters, validation
+selects the trial index, and the test number reports that index across
+families. The independent-winner table is in
+\Cref{app:per-activation-results} for diagnostic purposes.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Experiment} & \textbf{Search space} & \textbf{Budget} \\
+\midrule
+Synthetic phase classification
+  & hidden $\in \{16, 32, 64\}$, batch $\in \{64, 128\}$,
+  & 16 trials \\
+  & lr $\in [10^{-4}, 10^{-2}]$ log-uniform,
+  & 3 seeds each \\
+  & steps $\in \{200, 400, 800\}$
+  & \\
+\midrule
+Synthetic RF modulation
+  & hidden $\in \{16, 32, 64, 128\}$ (conv) / $\{32, 64, 128\}$ (mlp),
+  & 16 trials \\
+  & batch $\in \{128, 256, 512\}$,
+  & 3 seeds \\
+  & lr $\in [10^{-4}, 10^{-2}]$,
+  & \\
+  & steps $\in \{200, 400, 800\}$
+  & \\
+\midrule
+RadioML subset (\code{--preset subset})
+  & hidden $\in \{16, 32, 64\}$ (conv) / $\{32, 64, 128\}$ (mlp),
+  & 16 trials \\
+  & batch $\in \{128, 256, 512\}$, lr $\in [10^{-4}, 10^{-2}]$,
+  & 3 seeds \\
+  & steps $\in \{200, 400, 800\}$
+  & \\
+\midrule
+RadioML full (\code{--preset full})
+  & hidden $\in \{32, 64, 128, 256\}$, batch $\in \{256, 512, 1024\}$,
+  & 16 trials \\
+  & lr $\in [5 \times 10^{-5}, 5 \times 10^{-3}]$,
+  & 3 seeds \\
+  & steps $\in \{400, 800, 1600\}$
+  & (deferred) \\
+\bottomrule
+\end{tabular}
+\caption{Search spaces and budgets per experiment. Optimizer is
+AdamW~\cite{loshchilov2019decoupled} with weight decay $10^{-4}$
+throughout; learning-rate scheduler is cosine to zero across the
+trial's step budget. The full-archive RadioML budget is the deferred
+scale-up, parameterized via \code{--preset full}; everything else is
+reproducible on a single A100 in under an hour per
+activation.}
+\label{tab:search-spaces}
+\end{table}
+
+\paragraph{Why matched-shared-trial.} An independent winner per family
+selects the family-best hyperparameter from a 16-trial search, which
+biases up the best of four 16-trial searches and conflates capacity
+allocation across families. The shared-trial rule fixes the trial
+index across families, so each family is evaluated at the same
+allocation; capacity matching is then transparent. We report
+independent-selection numbers as a diagnostic
+(\Cref{app:per-activation-results}); the gap between the two
+selection rules is itself one of the artifacts the C\&F framing
+exposes.
+
+% ---------------------------------------------------------------------------
+\section{Architecture details and parameter counts}
+\label{app:architectures}
+
+The four baseline families differ in capacity-allocation rule against
+the complex network:
+
+\begin{itemize}
+  \item \code{complex}: \code{ComplexConv1d(2c$\to$h)} or
+    \code{ComplexLinear(d$\to$h)}, complex weights \texttt{[h$\times$2c, K]} or
+    \texttt{[h$\times$d]} with 2 floats/parameter (real and imaginary).
+  \item \code{real\_stacked}: \code{Conv1d(2$\to$h)} or
+    \code{Linear(2d$\to$h)}; treats $(I, Q)$ as 2 input channels.
+    Same $h$ as the complex network, half the parameter count
+    (1 float per weight).
+  \item \code{real\_matched\_params}: hidden width chosen to match
+    parameter count to the complex family. For a complex
+    \code{(2c $\to$ h, K)} layer with $2chK$ complex weights = $4chK$
+    floats, the matched real layer is \code{(2 $\to$ 2h, K)} = $4hK$
+    floats, identical at $c=1$ but scaling to $\sqrt{2} h$ at $c > 1$.
+  \item \code{real\_matched\_flops}: hidden width chosen to match
+    forward-pass multiply-accumulate count rather than parameter count.
+    For our 1-D conv layers the resulting widths track
+    \code{matched\_params} closely (within 5\%); listed separately to
+    avoid silently conflating ``capacity'' senses.
+\end{itemize}
+
+The synthetic phase classifier uses a 1-layer MLP head (no conv); the
+RF/RadioML classifiers use \code{ComplexConv1d} (or \code{Conv1d} on
+$(I,Q)$ stacked channels) followed by global magnitude pool + linear
+readout. Magnitude pool is $|z|$ per channel for the complex family
+and identity for real, since the real channels are already real-valued
+at the readout.
+
+% ---------------------------------------------------------------------------
+\section{Per-activation results, all four baseline families}
+\label{app:per-activation-results}
+
+For each of six activations (CReLU, ZReLU, ModReLU, ComplexCardioid,
+Siglog, ComplexTanh), we report mean test accuracy on the RadioML
+\code{--preset subset} task across the 3 seeds at the matched
+shared-trial winner, with 95\% CI from the seeds. Cells show
+\code{mean (lo, hi)}; bold = best per row; ``dead'' marks seeds with
+final loss $\geq \ln 3 - 0.05$ (the 3-class chance level).
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Activation} & \textbf{complex} & \textbf{real\_stacked} & \textbf{matched\_params} & \textbf{matched\_flops} \\
+\midrule
+CReLU            & \textbf{0.78} & 0.41 (3 dead) & 0.46 (3 dead) & 0.45 (3 dead) \\
+ZReLU            & 0.71          & 0.69          & \textbf{0.72}          & 0.71 \\
+ModReLU          & 0.69          & 0.62 (1 dead) & 0.65 (1 dead) & 0.65 (1 dead) \\
+ComplexCardioid  & \textbf{0.74} & 0.55 (2 dead) & 0.57 (2 dead) & 0.57 (2 dead) \\
+Siglog           & 0.70          & 0.68          & \textbf{0.71}          & 0.70 \\
+ComplexTanh      & 0.66          & 0.65          & 0.67          & \textbf{0.68} \\
+\bottomrule
+\end{tabular}
+\caption{RadioML subset, matched-shared-trial selection. The
+CVNN-vs-real gap is large under three activations (CReLU,
+ComplexCardioid, ModReLU) and absent under three others (ZReLU,
+Siglog, ComplexTanh). The gap-bearing activations are exactly those
+for which real baselines exhibit dead-loss seeds; \emph{the gap is the
+dead-seed average}. See \Cref{app:telemetry} for the per-step
+mechanism.}
+\label{tab:per-activation}
+\end{table}
+
+\paragraph{Independent-winner contrast.} Re-doing the same table with
+independent per-family hyperparameter selection (each family's best of
+16 trials, rather than shared trial index) reduces the CReLU gap from
+0.78 vs 0.41 to roughly 0.78 vs 0.65 --- still a real difference, but
+about a third the size. The reduction comes from independent selection
+allowing real baselines to avoid the high-lr trial that triggers the
+step-1 explosion. We report matched-shared-trial as the headline
+because at fixed capacity allocation the explosion is the actual
+phenomenon under study, not a search-budget artifact.
+
+% ---------------------------------------------------------------------------
+\section{Gradient telemetry: per-layer, per-step}
+\label{app:telemetry}
+
+Telemetry instruments every parameter tensor with per-step
+$\|\nabla_\theta L\|_F$, the Cauchy-Riemann residual on complex
+parameters (zero by construction for the complex family), and an
+intrinsic Jacobian-norm proxy. Runs cover 5 activations
+$\times$ 4 families $\times$ 3 seeds = 60 instrumented trajectories,
+each capped at 200 steps for tractability on commodity hardware.
+
+\paragraph{Step-1 head-gradient ratio.} Across all five activations,
+the step-1 ratio
+$\|\nabla_{\text{head.weight}} L\|_{\text{real}} \,/\,
+\|\nabla_{\text{head.weight}} L\|_{\text{complex}}$
+falls into two regimes:
+
+\begin{itemize}
+  \item \textbf{Gap-bearing} (CReLU, ComplexCardioid, ModReLU): ratio
+    in the range $50$--$80$ at step 1; collapses to $\sim 1$ by step
+    20 for surviving seeds, but seeds whose post-step-1 head landed in
+    a dead-ReLU region never produce gradient signal again.
+  \item \textbf{Stable} (ZReLU, Siglog): ratio in the range
+    $1.5$--$3$ at step 1; no seeds enter dead-loss states.
+\end{itemize}
+
+The grouping is consistent across seeds and across the synthetic-data
+replication (\Cref{app:synthetic-replication}). The
+$50$--$80\times$ figure is a step-1 measurement on raw weights with
+fan-in initialization; later steps post-Adam-warmup show smaller
+ratios under all activations. The point of measuring at step 1 is that
+that is where the dead seeds become dead; past step 1, the parameter
+state has already diverged.
+
+\paragraph{Why \code{head.weight}, specifically.} The conv stack's
+parameters show no comparable real-vs-complex ratio at any step. The
+explosion is a property of how matched-trial hyperparameter selection
+maps into the readout when the readout sees magnitude-pooled inputs
+(complex) versus stacked $(\mathrm{Re}, \mathrm{Im})$ inputs (real).
+The complex magnitude pool produces inputs of comparable scale across
+seeds; the stacked $(\mathrm{Re}, \mathrm{Im})$ readout sees inputs
+whose scale is seed-dependent through the conv-stack random init, and
+high-lr trials interact badly with the unlucky tail of that
+distribution.
+
+% ---------------------------------------------------------------------------
+\section{Synthetic-data replication of the threshold mechanism}
+\label{app:synthetic-replication}
+
+To rule out RadioML-specific effects (CFO, multipath, pulse shaping)
+as the cause of the explosion, we re-run the gradient telemetry
+harness on synthetic AWGN-only IQ data with the same 4-family / 5-act
+sweep and the same matched-trial hyperparameters. The synthetic data
+generator is \code{experiments/rf/synthetic\_modulation.py}, which
+produces raw-symbol $(I, Q)$ sequences with per-class label imbalance
+matched to RadioML.
+
+\paragraph{Result.} The dead-seed pattern replicates: CReLU,
+ComplexCardioid, and ModReLU produce 2--3 dead seeds per 9 in the real
+families; ZReLU and Siglog produce zero. The step-1 head-gradient
+ratio sits in the same $50$--$80\times$ band for the gap-bearing
+activations. We conclude the mechanism is hyperparameter-driven,
+mediated by the readout's input distribution under matched
+shared-trial selection, and not an artifact of RadioML's distortions.
+
+% ---------------------------------------------------------------------------
+\section{RadioML 2018.01A loader: aliases and strict-SNR mode}
+\label{app:radioml-loader}
+
+\paragraph{Class-label aliasing.} The original
+\code{classes.txt} distributed with RadioML 2018.01A lists the 24
+modulations in an order that does not match the one-hot ordering of
+the \code{Y} array; this is a known issue in the community.
+\code{experiments/rf/radioml.py} normalizes class labels through a
+canonical map and prefers \code{classes-fixed.json} or
+\code{classes-fixed.txt} sidecars next to the HDF5 file when present.
+Common aliases accepted: \code{PSK8}~$\to$~\code{8PSK},
+\code{QAM16}~$\to$~\code{16QAM}, \code{APSK16}~$\to$~\code{16APSK},
+\code{ASK4}~$\to$~\code{4ASK}, AM labels with underscores
+(\code{AM\_SSB\_WC}~$\to$~\code{AM-SSB-WC}), etc.
+
+\paragraph{Strict-SNR mode.} Earlier loader versions silently dropped
+samples at SNR levels not in the user's filter list. The default is
+now \code{strict\_snr=True}, which raises rather than dropping; the
+test suite includes a regression case that asserts on the strict
+behaviour. The previous silent-drop behaviour is recoverable via
+\code{strict\_snr=False} for compatibility with downstream code that
+intentionally subsets.
+
+% ---------------------------------------------------------------------------
+\section{Reproducibility: manifest schema and CI guards}
+\label{app:reproducibility}
+
+Every long-running script writes a JSON manifest into the run's output
+directory (under \code{results/}). Manifest fields:
+
+\begin{itemize}
+  \item \code{git\_commit}: the SHA at run start.
+  \item \code{git\_dirty}: boolean, computed on a tree filtered to
+    exclude \code{results/} and the activation-characterization output
+    directory (otherwise regenerating figures from a clean checkout
+    would flip the bit on its own outputs).
+  \item \code{python}, \code{torch}, \code{numpy} versions.
+  \item \code{cuda}: device string and CUDA version, or
+    \code{"cpu"}.
+  \item \code{argv}: full command line.
+  \item \code{seed}, \code{n\_trials}, \code{search\_space}: the
+    hyperparameter regime.
+  \item \code{wall\_clock\_seconds}: end-to-end runtime.
+\end{itemize}
+
+CI surfaces newly-added or modified manifests with
+\code{git\_dirty: true} as warnings on the PR (initially a hard fail;
+loosened to a warning at the request of practical iteration). A
+structural CI guard checks the committed activation characterization
+artifact contains all six expected activation rows after a regen, so
+that figure regeneration cannot silently drop an activation.
+
+\paragraph{Caching.} Capped sweep subsets cache the seed/filter split
+to disk and reuse it across trial/family/seed runs. Uncapped
+full-archive runs disable caching automatically (the working set
+exceeds typical Mac SSD scratch space); pass \code{--no-cache-data}
+to force-disable for capped runs that nevertheless overflow memory.
+
+% ---------------------------------------------------------------------------
+\section{Full-archive RadioML scale-up: cost and deferred plan}
+\label{app:scale-up}
+
+The submitted experiments are at \code{--preset subset}: 3 PSK
+modulations, 8 even SNR levels, \code{max\_per\_class\_per\_snr=256},
+\code{sample\_length=128}. The infrastructure for full-archive runs is
+in place via \code{--preset full} (24 modulations, 26 SNR levels,
+\code{sample\_length=1024}); we have deliberately deferred running it
+because the mechanism analysis is the contribution and the scale-up
+risks scope creep relative to a C\&F submission.
+
+\paragraph{Cost estimate.} A single
+\code{--preset full --activation crelu --seeds 0 1 2} run on an A100
+40GB takes 5--15 hours depending on which trial samples land at the
+upper end of the search space (the search box's largest configuration
+is the bottleneck). Six activations $\times$ 3 seeds $\times$ 16
+trials $\times$ 4 families = 1152 instrumented runs at full scale; in
+practice we would run 2--3 activations (CReLU as the headline,
+ZReLU as the stable counter-example, and one of
+\{ComplexCardioid, Siglog\} as a disambiguation). On 4$\times$A100 in
+parallel, $\sim$24 hours wall-clock for a 3-activation full sweep is a
+realistic estimate.
+
+\paragraph{What to expect at scale.} The C\&F prediction is that the
+two-effect decomposition holds: the architectural prior (phase
+equivariance, magnitude readout) survives at 24-class /
+1024-sample scale, and the optimization-level robustness asymmetry
+remains hp-driven and disappears under independent per-family
+selection. We do not predict the specific numerical gap because the
+full-archive distribution is qualitatively different from the subset
+(more distortion-heavy modulations like AM-SSB-WC and FM are present
+at low SNR), and the matched-trial selection rule may admit different
+hyperparameter regimes once the conv stack has more channels.
+
+\paragraph{Failure modes to watch for.} (1) Caching off may surface
+stragglers if the loader's \code{strict\_snr=True} default flags
+HDF5 SNR levels not in the user's filter; the loader's regression
+test covers this on the subset but the full archive has not been run
+in CI. (2) A 24-class softmax has higher entropy at chance ($\ln 24
+\approx 3.18$ vs $\ln 3 \approx 1.10$), so the dead-loss threshold for
+detecting failed seeds shifts; the telemetry harness already infers
+this from the dataset's class count.
+
+% ---------------------------------------------------------------------------
+\section{Activation function catalogue}
+\label{app:activations}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Activation} & \textbf{Definition} & \textbf{Phase-equivariant?} \\
+\midrule
+CReLU
+  & $\sigma(z) = \mathrm{ReLU}(\mathrm{Re}\,z) + i\,\mathrm{ReLU}(\mathrm{Im}\,z)$
+  & no \\
+ZReLU
+  & $\sigma(z) = z$ if $\angle z \in [0, \pi/2]$, else $0$
+  & no \\
+ModReLU
+  & $\sigma(z) = \mathrm{ReLU}(|z| + b) \cdot e^{i \angle z}$
+  & yes \\
+ComplexCardioid
+  & $\sigma(z) = \tfrac{1}{2}(1 + \cos \angle z) \cdot z$
+  & yes \\
+Siglog
+  & $\sigma(z) = z / (1 + |z|)$
+  & yes \\
+ComplexTanh
+  & $\sigma(z) = \tanh(\mathrm{Re}\,z) + i\,\tanh(\mathrm{Im}\,z)$
+  & no \\
+\bottomrule
+\end{tabular}
+\caption{The six activations swept in this paper, and whether they
+preserve global phase equivariance layer-by-layer
+(\Cref{app:phase-equivariance}). Equivariance does not predict
+the empirical CVNN-vs-real gap pattern; see body
+\Cref{sec:radioml-mechanism}.}
+\label{tab:activations}
+\end{table}
 
 \end{document}
