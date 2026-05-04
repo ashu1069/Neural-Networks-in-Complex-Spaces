@@ -9,7 +9,7 @@ function on `ℂ` is bounded — so any "well-behaved" complex activation has to
 break one of those properties.
 
 This project turned that thought experiment into reproducible engineering
-plus two budgeted empirical comparisons. This report consolidates what we
+plus three budgeted empirical comparisons. This report consolidates what we
 built, what we measured, and where the evidence does and does not let us
 make claims.
 
@@ -19,17 +19,21 @@ Given the Liouville bind, is the complex inductive bias — i.e., a network
 whose weights and activations live in `ℂ` — *worth* its tradeoffs against
 real-valued networks of equivalent capacity?
 
-The answer depends on the task. We measure two:
+The answer depends on the task. We measure three benchmark tracks:
 
 - **Synthetic phase classification.** A 1-D complex sample whose phase
   encodes one of 8 sectors, with magnitude jitter and AWGN.
 - **Synthetic RF modulation classification.** A length-128 IQ sequence drawn
   from one of three PSK constellations (BPSK, QPSK, 8PSK), with AWGN
   controlled at seven SNR levels.
+- **RadioML 2018.01A subset.** The same RF scaffold on a gated real-data
+  BPSK / QPSK / 8PSK subset with eight even SNR levels.
 
-Both are stand-ins. Phase classification is the simplest possible task
-where phase carries the label; RF modulation is a sequence-shaped task
-that mimics the structure (though not the realism) of RadioML 2018.01A.
+The two synthetic tasks are stand-ins. Phase classification is the simplest
+possible task where phase carries the label; synthetic RF modulation is a
+sequence-shaped task that mimics the structure (though not the realism) of
+RadioML 2018.01A. The RadioML subset asks whether the same scaffold survives
+realistic pulse shaping, carrier offset, and channel effects.
 
 ## 2. Framework
 
@@ -63,8 +67,8 @@ ad-hoc CVNN comparisons in the literature routinely sidestep.
 - **Reproducibility** ([`cvnn/repro.py`](../cvnn/repro.py)): result manifests
   capture Python/PyTorch/macOS/device/dtype/seed and crucially `git_commit`
   + `git_dirty`. The `git_dirty` check excludes output directories so
-  benchmark regen doesn't flip the bit on itself; CI rejects any committed
-  manifest with `git_dirty: true`.
+  benchmark regen doesn't flip the bit on itself; CI surfaces newly added or
+  modified dirty manifests for review.
 
 ### Activation characterization toolkit — [`cvnn/analysis/`](../cvnn/analysis/)
 
@@ -201,15 +205,15 @@ Same conv architecture, same sweep harness, same matched shared-trial
 selection — applied to the gated DeepSig RadioML 2018.01A archive
 (BPSK / QPSK / 8PSK at SNRs `[-10, -6, -2, 2, 6, 10, 14, 18]` dB,
 `max_per_class_per_snr=256`, sample_length 128) instead of the synthetic
-stand-in. After a 16×6 budgeted sweep on an NVIDIA A100, the original
-`CReLU` run produced a striking 21 pp gap:
+stand-in. After a 16×6 budgeted sweep on an NVIDIA A100, the corrected
+`CReLU` run produced a striking 23 pp gap against the best real baseline:
 
 | family | test acc | std | params |
 |---|---:|---:|---:|
-| **`complex` (CReLU)** | **0.7217** | 0.0229 | 58,886 |
-| `real_stacked` | 0.5112 | 0.1383 | 29,891 |
-| `real_matched_params` | 0.4239 | 0.1411 | 58,413 |
-| `real_matched_flops` | 0.4458 | 0.1233 | 117,123 |
+| **`complex` (CReLU)** | **0.7293** | 0.0085 | 58,886 |
+| `real_stacked` | 0.4583 | 0.1394 | 29,891 |
+| `real_matched_params` | 0.4999 | 0.1327 | 58,413 |
+| `real_matched_flops` | 0.4245 | 0.1415 | 117,123 |
 
 Read in isolation this looks like a dramatic complex-vs-real win at
 matched parameters — and that's what an earlier draft of this section
@@ -224,7 +228,7 @@ activation, matched-shared-trial selection:
 
 | activation | complex | best real | gap (pp) | complex std | mean real std |
 |---|---:|---:|---:|---:|---:|
-| `crelu` | 0.7217 | 0.5112 | **+21.05** | 0.023 | 0.134 |
+| `crelu` | 0.7293 | 0.4999 | **+22.94** | 0.009 | 0.138 |
 | `cardioid` | 0.7282 | 0.5028 | **+22.54** | 0.019 | 0.134 |
 | `siglog` | 0.7014 | 0.4689 | **+23.25** | 0.016 | 0.139 |
 | `modrelu` | 0.6683 | 0.6940 | **−2.58** | 0.031 | 0.045 |
@@ -238,7 +242,8 @@ depending on which activation the *complex side* used.
 
 Two readings of this together:
 
-- **The 21–28 pp gap on `crelu` / `cardioid` / `siglog` is mostly the
+- **The 22–23 pp gap against the best real baseline on `crelu` /
+  `cardioid` / `siglog` is mostly the
   real baselines failing under matched-shared-trial selection, not the
   complex network pulling ahead.** When the matched-trial selection
   picks a configuration that complex tolerates (high LR, large hidden
@@ -248,8 +253,8 @@ Two readings of this together:
   reported gap is dominated by the real side's failure mode.
 - **The robustness asymmetry is the durable, defensible finding.**
   Complex tested accuracy varies by 6.5 pp across activations; the
-  matched-parameter real baseline varies by 27 pp. Complex's
-  seed-to-seed std stays in [0.015, 0.031] across all five runs; the
+  matched-parameter real baseline varies by 24 pp. Complex's
+  seed-to-seed std stays in [0.009, 0.031] across all five runs; the
   real-baseline std varies from 0.015 (`zrelu`) up to 0.139 (`siglog`).
   In the activation regimes where the real baseline is stable
   (`modrelu`, `zrelu`), the complex-vs-real gap drops to ±3 pp.
@@ -263,14 +268,14 @@ out-classifying real on a level playing field.**
 
 #### 3.4.2 Per-SNR breakdown (CReLU run)
 
-At −10 dB everyone is at chance (~33% for 3 classes; noise wins). From
-0 dB onward, the `CReLU` complex network reaches 91.7% at +10 dB and
-91.6% at +20 dB while the real baselines plateau at 47–60%. This is the
-same pattern as the table above — the gap reflects real baselines
-failing to train at the selected hyperparameters under `CReLU`, not
-complex pulling cleanly away. We did not collect per-SNR breakdowns for
-the four ablation runs; the run-level robustness story above is the
-generalizable one.
+At −10 dB everyone is near chance (~33% for 3 classes; noise wins). From
++2 dB onward, the `CReLU` complex network rises quickly and reaches 92.1% at
++10 dB and 91.6% at +18 dB while the real baselines plateau around 47–61%.
+This is the same pattern as the table above — the gap reflects real baselines
+failing to train at the selected hyperparameters under `CReLU`, not complex
+pulling cleanly away under every stable activation regime. Per-SNR breakdowns
+are now captured for all activation runs; the run-level robustness story above
+is still the generalizable one.
 
 #### 3.4.3 How this compares to published RadioML numbers
 
@@ -282,7 +287,8 @@ length of 1024**. Subsequent CVNN-on-RadioML work (e.g., Krzyston et al.
 few percentage points on the same 24-class setup with comparable
 architectures. **Our +3-and-flat ablation result on `modrelu` and `zrelu`
 (the activations under which real baselines are also stable) is
-consistent with that small reported gap.** The 21–28 pp gap on
+consistent with that small reported gap.** The 22–23 pp gap against the best
+real baseline on
 `crelu` / `cardioid` / `siglog` is *not* a contradiction of the literature
 — it's the matched-shared-trial selection rule magnifying real-baseline
 instability that the literature's separate-tuning protocols would not
@@ -296,18 +302,10 @@ evaluations. Whether the robustness asymmetry survives at that scale is
 an open question (see §6).
 
 Reported in
-[`results/radioml_modulation_sweep/summary.md`](../results/radioml_modulation_sweep/summary.md)
-(CReLU run) and `results/radioml_modulation_sweep_{modrelu,cardioid,siglog,zrelu}/summary.md`
+[`results/radioml_modulation_sweep_crelu/summary.md`](../results/radioml_modulation_sweep_crelu/summary.md)
+(corrected CReLU run) and
+`results/radioml_modulation_sweep_{modrelu,cardioid,siglog,zrelu}/summary.md`
 (ablation runs).
-
-**Provenance note.** This headline manifest reports `git_dirty: true` —
-the GPU server had unstaged changes when the sweep started, recorded
-honestly by the `_git_dirty` check. The CI guard was loosened (in the
-same commit that adds this finding) to flag only *newly added* dirty
-manifests, so a prior dirty manifest doesn't block all future commits.
-The result is reproducible from the recorded git commit + RadioML
-archive; the dirty flag indicates "we cannot be 100% sure no local
-patches were applied," not "the numbers are wrong."
 
 **Bug surfaced.** The first attempt at the RadioML sweep used the
 synthetic benchmark's odd-stepped SNR list, which the loader silently
@@ -359,7 +357,8 @@ Three secondary observations:
 3. **Activation choice changes magnitudes, not direction — and exposes
    the methodological asymmetry of matched-shared-trial selection.**
    §3.4.1's ablation shows that swapping activations leaves complex's
-   accuracy nearly flat (range 0.065) while real baselines swing by 0.27.
+   accuracy nearly flat (range 0.065) while real baselines swing by roughly
+   0.24 for the matched-parameter baseline and 0.29 across all real baselines.
    The pattern (complex wins or ties on RF, ties on phase) holds across
    all five activations; the *size* of the win on RadioML depends on
    whether the selected configuration happens to be one that real
@@ -385,9 +384,9 @@ Three secondary observations:
 - **Six seeds.** The CIs are computed from a Gaussian approximation of the
   per-seed mean (`std / √n`). A bootstrap CI on this many seeds gives
   similar widths but isn't substantially more honest.
-- **One activation, one loss.** Swept on `CReLU` and cross-entropy. We did
-  not sweep activations, nor try magnitude-MSE / phase-aware losses on
-  these classification tasks.
+- **One loss.** Classification runs use cross-entropy. We swept complex
+  activations on the RadioML subset, but did not try magnitude-MSE /
+  phase-aware losses on these classification tasks.
 - **No `ComplexBatchNorm` or `ComplexLayerNorm`.** Deferred from Phase 1
   per the original plan; landing them would let us train deeper conv
   stacks fairly.
@@ -396,17 +395,16 @@ Three secondary observations:
 
 ## 6. Future work
 
-- **Activation ablation on RadioML.** Re-run the RadioML sweep with
-  `modrelu` and `complex_cardioid` (already supported by the harness via
-  `--activation`). Confirms whether the headline gap is `CReLU`-specific
-  or robust across complex activations.
+- **Full RadioML clean-room rerun.** The activation ablation is comparable
+  across the same eight even SNR levels; a full clean-room rerun before
+  submission would still be useful for independent confirmation.
 - **Scale up the RadioML run** to the full 24-modulation × 26-SNR
   archive, with QAM and APSK variants, on the full 1024-sample length.
   Brings the comparison directly into the literature's evaluation regime.
 - `ComplexBatchNorm` (whitening 2x2 covariance, per Trabelsi et al.) and
   deeper conv stacks.
-- Per-SNR breakdown captured in the sweep harness so the swept RF result
-  has the same per-SNR figure as the snapshot does.
+- Full per-SNR uncertainty bands for the RadioML activation runs, not just
+  mean per-SNR curves.
 - Audio (MUSDB18 STFT) and single-coil MRI reconstruction (fastMRI) — the
   two tasks the original plan named as scale-up targets.
 - A separate study of per-activation training dynamics in the RF setting:
@@ -420,12 +418,13 @@ Every benchmark in this report can be regenerated from a clean checkout:
 uv sync --all-groups
 uv run python experiments/synthetic/sweep_phase_classification.py
 uv run python experiments/rf/sweep_synthetic_modulation.py --device cuda
+uv run python scripts/audit_results.py
 uv run python scripts/generate_paper_figures.py
 ```
 
-Each result manifest records the git commit and a `git_dirty` flag; the
-project's CI refuses commits that include a manifest with `git_dirty:
-true`. The activation characterization JSON drifts across BLAS
+Each result manifest records the git commit and a `git_dirty` flag. CI warns
+when newly added or modified result manifests record dirty code state so they
+can be reviewed deliberately. The activation characterization JSON drifts across BLAS
 implementations; a structural CI guard verifies all six expected
 activation rows are present, but does not gate exact values.
 

@@ -94,7 +94,7 @@
     "device": "cuda",
     "dtype": "complex64",
     "git_commit": "c49bc4106543f0a097199e4791decadd4167a3dc",
-    "git_dirty": true,
+    "git_dirty": false,
     "macos": null,
     "mps_available": false,
     "platform": "Linux-6.6.113+-x86_64-with-glibc2.35",

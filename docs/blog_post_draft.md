@@ -72,8 +72,8 @@ benchmark numbers were trusted:
   winner chooses the shared trial index; independent family winners are kept
   as diagnostics.
 - Manifests on every result that record the git commit, environment, and
-  whether the working tree was dirty when it ran. CI refuses commits with
-  dirty manifests.
+  whether the working tree was dirty when it ran. CI warns when new result
+  manifests are dirty so they can be reviewed deliberately.
 
 This sounds like overkill. It is what you need to make a "complex wins by
 3pp" claim mean something.
@@ -149,13 +149,14 @@ crushing win:
 
 | family | test acc | std | params |
 |---|---:|---:|---:|
-| **CVNN (CReLU)** | **0.722** | 0.023 | 58,886 |
-| Real (stacked) | 0.511 | 0.138 | 29,891 |
-| Real (≈params) | 0.424 | 0.141 | 58,413 |
-| Real (≈FLOPs) | 0.446 | 0.123 | 117,123 |
+| **CVNN (CReLU)** | **0.729** | 0.009 | 58,886 |
+| Real (stacked) | 0.458 | 0.139 | 29,891 |
+| Real (≈params) | 0.500 | 0.133 | 58,413 |
+| Real (≈FLOPs) | 0.425 | 0.142 | 117,123 |
 
-A 21–28 pp gap, real baselines clustered ~50%, the complex network
-hitting ~92% at high SNR. I almost shipped this as the headline.
+A 23–30 pp gap across the real baselines, real baselines clustered ~50%, the
+complex network hitting ~92% at high SNR. I almost shipped this as the
+headline.
 
 Then I ran the activation ablation — same scaffold, swap `CReLU` for
 `modrelu`, `cardioid`, `siglog`, `zrelu` on the complex side:
@@ -170,7 +171,7 @@ The pattern reads like this:
 
 | activation | CVNN | best real | gap |
 |---|---:|---:|---:|
-| `crelu` | 0.722 | 0.511 | **+21.0** |
+| `crelu` | 0.729 | 0.500 | **+22.9** |
 | `cardioid` | 0.728 | 0.503 | **+22.5** |
 | `siglog` | 0.701 | 0.469 | **+23.3** |
 | `modrelu` | 0.668 | 0.694 | **−2.6** |
@@ -184,9 +185,9 @@ RadioML literature reports.
 What this means: **the matched-shared-trial selection rule picks a
 configuration that the complex network tolerates and the real network
 does not** — high learning rate, large hidden width. Complex's seed-to-seed
-std stays in [0.015, 0.031] across all five activations; the real
+std stays in [0.009, 0.031] across all five activations; the real
 baselines' std jumps to 0.13–0.14 for three of the five activations,
-meaning roughly half the seeds barely train. The 21–28 pp gap is mostly
+meaning roughly half the seeds barely train. The 23–30 pp gap is mostly
 those failed runs being averaged in, not complex out-classifying real on
 a level playing field.
 
@@ -211,7 +212,7 @@ all of them.
 
 This *isn't*:
 
-- A claim that complex beats real by 21–28 pp on a level playing field.
+- A claim that complex beats real by 23–30 pp on a level playing field.
   That gap appeared on three of five activations under matched-shared-trial
   selection; it dissolves to ±3 pp on the other two and on independent
   selection. The 27 pp number is a real measurement of a real asymmetry,

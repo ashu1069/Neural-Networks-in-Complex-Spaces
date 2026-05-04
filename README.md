@@ -69,9 +69,11 @@ Three budgeted benchmarks, four model families each, sweeps following
   on A100), swept across 5 complex activations:
   - **CVNN test accuracy stays in [0.668, 0.733]** across all 5
     activations (range 0.065).
-  - **Real baselines swing from ~0.45 to ~0.70** depending on which
-    activation the complex side used (range 0.27).
-  - Initial `CReLU` run showed a 21-28 pp gap; ablation reveals this
+  - **Real baselines swing from ~0.47 to ~0.70** depending on which
+    activation the complex side used (roughly 24 pp for the matched-parameter
+    baseline, 29 pp across all real baselines).
+  - Corrected `CReLU` run shows a 23-30 pp gap across real baselines;
+    ablation reveals this
     is mostly real baselines collapsing under matched-shared-trial
     selection. On `modrelu` / `zrelu` (where real is also stable) the gap
     is ±3 pp.

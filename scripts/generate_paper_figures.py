@@ -36,6 +36,8 @@ FAMILY_LABEL = {
     "real_matched_flops": "Real (≈FLOPs)",
 }
 
+RADIOML_CRELU_DIR = "radioml_modulation_sweep_crelu"
+
 
 def load_json(path: Path) -> Any:
     with path.open() as f:
@@ -347,23 +349,23 @@ def fig_rf_sweep_pareto() -> Path:
 
 
 def fig_radioml_swept() -> Path:
-    summary_path = RESULTS / "radioml_modulation_sweep" / "summary.json"
+    summary_path = RESULTS / RADIOML_CRELU_DIR / "summary.json"
     summary = load_json(summary_path)
     n_seeds = len(summary["config"]["seeds"])
     return _swept_bars(
         summary_path,
         title=(
-            f"RadioML 2018.01A — matched shared-trial configs\n"
+            f"RadioML 2018.01A subset — matched shared-trial configs\n"
             f"16 trials × {n_seeds} seeds  ·  "
             "error bars = 95% CI (std / √n)\n"
-            "Complex wins by 27 pp on real-data IQ classification"
+            "Matched selection exposes real-baseline instability"
         ),
         out_name="radioml_modulation_swept.png",
     )
 
 
 def fig_radioml_per_snr() -> Path:
-    summary = load_json(RESULTS / "radioml_modulation_sweep" / "summary.json")
+    summary = load_json(RESULTS / RADIOML_CRELU_DIR / "summary.json")
     selection_rows = summary["matched_selections"]
     fig, ax = plt.subplots(figsize=(8.0, 4.8))
     snr_keys: list[str] = []
@@ -405,7 +407,7 @@ def fig_radioml_per_snr() -> Path:
     ax.set_ylabel("Mean test accuracy")
     ax.set_title(
         "RadioML 2018.01A — accuracy vs SNR (matched shared-trial)\n"
-        "At ≥0 dB the complex network leaves real baselines 25–32 pp behind"
+        "CReLU run: complex is stable; real baselines collapse at selected trial"
     )
     ax.grid(True, linestyle=":", alpha=0.4)
     ax.legend(frameon=False, loc="lower right", fontsize=9)
@@ -417,8 +419,8 @@ def fig_radioml_per_snr() -> Path:
 
 
 def fig_radioml_sweep_pareto() -> Path:
-    sweep = load_json(RESULTS / "radioml_modulation_sweep" / "trials.json")
-    summary = load_json(RESULTS / "radioml_modulation_sweep" / "summary.json")
+    sweep = load_json(RESULTS / RADIOML_CRELU_DIR / "trials.json")
+    summary = load_json(RESULTS / RADIOML_CRELU_DIR / "summary.json")
     selection_rows = summary["matched_selections"]
     selections = {s["family"]: s for s in selection_rows}
     trials = sweep["trials"]
@@ -479,9 +481,10 @@ RADIOML_ABLATION_ACTIVATIONS: tuple[str, ...] = (
     "zrelu",
 )
 RADIOML_ABLATION_DIRS: dict[str, str] = {
-    # The original CReLU sweep lives at the canonical name; the ablation runs
-    # use the suffixed names produced by `--output-dir`.
-    "crelu": "radioml_modulation_sweep",
+    # The first CReLU sweep used an odd-SNR request list and is kept as a
+    # historical artifact at `radioml_modulation_sweep`. The corrected run uses
+    # the same eight even SNRs as the other activation runs.
+    "crelu": RADIOML_CRELU_DIR,
     "modrelu": "radioml_modulation_sweep_modrelu",
     "cardioid": "radioml_modulation_sweep_cardioid",
     "siglog": "radioml_modulation_sweep_siglog",
