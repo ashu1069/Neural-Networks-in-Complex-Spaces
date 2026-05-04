@@ -60,30 +60,38 @@ Three budgeted benchmarks, four model families each, sweeps following
   sweep with a `ComplexConv1d` stack: complex reaches 0.819 test accuracy
   at 3,974 parameters; the next-best real baseline reaches 0.781 at 7,779
   parameters. CIs do not overlap, Welch t-test gives `p < 0.01`.
-- **RadioML 2018.01A — complex is robust across activation choice; real
-  baselines are not**
+- **RadioML 2018.01A — complex tolerates a step-1 head-gradient regime
+  where real baselines explode-into-dead-region**
   ([`radioml_activation_ablation.png`](results/figures/radioml_activation_ablation.png),
+  [`radioml_telemetry_loss.png`](results/figures/radioml_telemetry_loss.png),
+  [`radioml_telemetry_grad.png`](results/figures/radioml_telemetry_grad.png),
   [`radioml_modulation_swept.png`](results/figures/radioml_modulation_swept.png),
   [`radioml_per_snr.png`](results/figures/radioml_per_snr.png)) — same
   scaffold on the gated DeepSig archive (BPSK / QPSK / 8PSK subset, 16×6
-  on A100), swept across 5 complex activations:
+  on A100), swept across 5 complex activations and instrumented with
+  per-step gradient telemetry:
   - **CVNN test accuracy stays in [0.668, 0.733]** across all 5
-    activations (range 0.065).
-  - **Real baselines swing from ~0.47 to ~0.70** depending on which
-    activation the complex side used (roughly 24 pp for the matched-parameter
-    baseline, 29 pp across all real baselines).
-  - Corrected `CReLU` run shows a 23-30 pp gap across real baselines;
-    ablation reveals this
-    is mostly real baselines collapsing under matched-shared-trial
-    selection. On `modrelu` / `zrelu` (where real is also stable) the gap
-    is ±3 pp.
+    activations (range 0.065); real-baseline accuracy ranges over
+    ~24 pp depending on which activation the complex side used.
+  - **Mechanism (60 telemetry runs):** matched-shared-trial selects
+    high-lr configs under `crelu` / `cardioid` / `siglog` (lr ≥ 0.024).
+    At step 1, real baselines see a `head.weight` gradient of 13.7–40.4
+    while the complex network sees 0.1–0.7 — about 50–80× smaller on
+    identical data. **3/9 real-baseline seeds explode into a dead-ReLU
+    region** under each unstable activation and stabilize at exactly
+    `loss = ln(3) = 1.099` (uniform-prediction chance). Under
+    `modrelu` / `zrelu` (lr ≤ 0.008), step-1 gradients are bounded for
+    everyone, **0/9 dead seeds**, and the accuracy gap is ±3 pp.
 
-The headline thesis: **the complex inductive bias pays for itself when the
-task carries structure that complex multiplication naturally encodes, and
-is neutral otherwise. On real-data IQ classification, complex networks are
-dramatically more robust to activation choice and seed than
-capacity-matched real ones; on a level playing field the accuracy gap is
-small (±3 pp).**
+The headline thesis: **the complex `(real, imag)` parameter coupling
+distributes the classifier-head loss signal across more parameter slots,
+producing smaller effective head updates than a capacity-matched real
+network at identical learning rate. On tasks where the inductive bias
+also matters (RF modulation), this manifests as both a representational
+advantage *and* an LR-tolerance advantage — the matched-shared-trial
+selection rule converts the latter into apparent accuracy gaps of
+20+ pp. On tasks with no `ℂ`-multiplication structure (1-D phase
+classification), neither advantage helps.**
 
 ## Scope and caveats
 

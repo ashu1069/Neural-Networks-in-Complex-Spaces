@@ -199,9 +199,59 @@ The honest one-line headline is therefore narrower than "complex wins by
 > this RadioML subset; on a level playing field (matched activation,
 > matched search), the accuracy gap is ±3 pp.**
 
-That's still a real finding — robustness across architectural choices is
-a property you can ship. It's just a different finding than the one I
-nearly committed to.
+### What's actually happening — gradient telemetry
+
+I instrumented the matched-shared-trial selected configuration and ran
+60 captures (5 activations × 4 families × 3 seeds) with per-step train
+loss, total parameter gradient norm, and per-parameter gradient norm.
+
+![radioml_telemetry_loss](../results/figures/radioml_telemetry_loss.png)
+
+The dotted line is `ln(3) ≈ 1.099`, the cross-entropy loss for uniform
+predictions on a 3-class problem. In the `crelu` / `cardioid` / `siglog`
+panels, real-baseline curves spike to loss ~7–36 at step 1 and a fraction
+of seeds end up pinned to that dotted line forever — never moving off
+chance. In the `modrelu` / `zrelu` panels nobody spikes; everybody
+descends.
+
+![radioml_telemetry_grad](../results/figures/radioml_telemetry_grad.png)
+
+The gradient picture is the same story on a log y-axis: real-baseline
+total gradient norm peaks ~10–40 at step 1 under the unstable activations,
+~0.05–0.1 under the stable ones. Complex's first-step gradient is
+50–80× smaller than the real baselines' on the same data and same
+learning rate.
+
+Drilling into per-parameter gradients tells you *where* the explosion
+lives. Across all three unstable activations it's the final classifier
+head — `head.weight` carries 90%+ of the step-1 gradient norm:
+
+| activation | lr | dead seeds | step-1 head.weight grad (real, max) |
+|---|---:|:--:|---:|
+| `crelu` | 0.024 | 3 / 9 | 13.7 |
+| `cardioid` | 0.024 | 3 / 9 | 19.5 |
+| `siglog` | 0.040 | 3 / 9 | 40.4 |
+| `modrelu` | 0.008 | **0 / 9** | 0.17 |
+| `zrelu` | 0.0024 | **0 / 9** | 0.13 |
+
+Two orders of magnitude separation in step-1 head gradient between the
+unstable and stable activation regimes. The dead-seed rate jumps from
+zero to 33% as soon as the matched-shared-trial selected lr crosses
+~0.02. Dead seeds end with `total_grad_norm < 0.05` — they exploded
+*into* a dead-ReLU region they can't escape.
+
+The mechanism is now sharp. The complex network's `(real, imag)`
+parameter coupling distributes the same cross-entropy gradient signal
+across more parameter slots, so the same `lr × CE-gradient` product
+produces a smaller effective step on the classifier head. The real
+network has no such smoothing, AdamW's first step pushes some seeds into
+a region where the second `Conv1d`'s ReLU activations are saturated, and
+training "stabilizes" at chance.
+
+The robustness asymmetry isn't really an architectural property of the
+inductive bias — it's an **LR-tolerance asymmetry on the classifier
+head**, and the matched-shared-trial selection happens to exploit it.
+That's a different and cleaner claim than what I started with.
 
 ## What this is and isn't
 
