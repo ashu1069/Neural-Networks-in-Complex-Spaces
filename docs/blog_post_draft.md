@@ -133,7 +133,7 @@ The blue CVNN star sits visibly above the capacity-matched real baselines.
 **Higher accuracy at a comparable parameter count.** That's what the
 inductive bias buys you, on a task where it has something to bite on.
 
-## Result C: RadioML 2018.01A — the gap gets dramatic on real data
+## Result C: RadioML 2018.01A — what an ablation reveals
 
 The synthetic RF benchmark is a stand-in. The actual standard task is
 DeepSig's RadioML 2018.01A: 24 modulations, 26 SNR levels from −20 to
@@ -142,42 +142,81 @@ simulated channel effects. The loader landed in
 [`experiments/rf/radioml.py`](../experiments/rf/radioml.py) (gated archive,
 local HDF5). I re-ran the same scaffold — same `ComplexConv1d` stack,
 same matched shared-trial selection, 16 trials × 6 seeds on an A100 —
-on a 3-modulation × 8-SNR subset (BPSK / QPSK / 8PSK). Headline:
+on a 3-modulation × 8-SNR subset (BPSK / QPSK / 8PSK).
+
+The first run, with `CReLU` as the complex activation, looked like a
+crushing win:
 
 | family | test acc | std | params |
 |---|---:|---:|---:|
-| **CVNN** | **0.722** | 0.023 | 58,886 |
+| **CVNN (CReLU)** | **0.722** | 0.023 | 58,886 |
 | Real (stacked) | 0.511 | 0.138 | 29,891 |
 | Real (≈params) | 0.424 | 0.141 | 58,413 |
 | Real (≈FLOPs) | 0.446 | 0.123 | 117,123 |
 
-Two things stand out beyond the 21–28 pp accuracy gap. First, the per-SNR
-breakdown:
+A 21–28 pp gap, real baselines clustered ~50%, the complex network
+hitting ~92% at high SNR. I almost shipped this as the headline.
 
-![radioml_per_snr](../results/figures/radioml_per_snr.png)
+Then I ran the activation ablation — same scaffold, swap `CReLU` for
+`modrelu`, `cardioid`, `siglog`, `zrelu` on the complex side:
 
-At low SNR everyone is at chance. From 0 dB onward, the complex network
-pulls cleanly away — at +10 dB and +20 dB it sits at ~92% while the real
-baselines plateau at 47–60%. Below noise everything fails together; above
-noise, only the complex network reaches the regime where a modulation
-classifier is actually useful.
+![radioml_activation_ablation](../results/figures/radioml_activation_ablation.png)
 
-Second, the seed-to-seed standard deviation. CVNN's std is 0.023; the real
-baselines' stds are 0.12–0.14, roughly **6× larger**. Half the real-baseline
-seeds barely train at all. The complex network isn't just more accurate
-on average — it converges reliably across seeds where the real baselines
-do not. That's a property you don't see in the bar chart but you absolutely
-care about if you're shipping a model.
+The blue CVNN line is **nearly flat across all five activations**
+(0.668–0.733). The real-baseline lines **swing wildly** between ~0.45
+(crelu, cardioid, siglog) and ~0.70 (modrelu, zrelu).
+
+The pattern reads like this:
+
+| activation | CVNN | best real | gap |
+|---|---:|---:|---:|
+| `crelu` | 0.722 | 0.511 | **+21.0** |
+| `cardioid` | 0.728 | 0.503 | **+22.5** |
+| `siglog` | 0.701 | 0.469 | **+23.3** |
+| `modrelu` | 0.668 | 0.694 | **−2.6** |
+| `zrelu` | 0.733 | 0.704 | **+2.9** |
+
+When the activation choice is one where real baselines are *also* stable
+(`modrelu`, `zrelu`), the gap drops to ±3 pp — entirely consistent with
+the few-percentage-points complex-vs-real advantage that the published
+RadioML literature reports.
+
+What this means: **the matched-shared-trial selection rule picks a
+configuration that the complex network tolerates and the real network
+does not** — high learning rate, large hidden width. Complex's seed-to-seed
+std stays in [0.015, 0.031] across all five activations; the real
+baselines' std jumps to 0.13–0.14 for three of the five activations,
+meaning roughly half the seeds barely train. The 21–28 pp gap is mostly
+those failed runs being averaged in, not complex out-classifying real on
+a level playing field.
+
+The honest one-line headline is therefore narrower than "complex wins by
+27 points":
+
+> **Complex-valued networks are substantially more robust across
+> activation choice and seed than capacity-matched real-valued ones on
+> this RadioML subset; on a level playing field (matched activation,
+> matched search), the accuracy gap is ±3 pp.**
+
+That's still a real finding — robustness across architectural choices is
+a property you can ship. It's just a different finding than the one I
+nearly committed to.
 
 ## What this is and isn't
 
-This *is* a defensible "complex wins on this task" claim. Same scaffolding,
-same search budget, same architecture shape, statistically separated CIs,
-real and synthetic versions of the same task agreeing in direction (the
-real-data version magnifies the gap).
+This *is* a defensible "complex is more robust than real on this task"
+claim. Same scaffolding, same search budget, same architecture shape,
+five activations measured, the robustness asymmetry replicates across
+all of them.
 
 This *isn't*:
 
+- A claim that complex beats real by 21–28 pp on a level playing field.
+  That gap appeared on three of five activations under matched-shared-trial
+  selection; it dissolves to ±3 pp on the other two and on independent
+  selection. The 27 pp number is a real measurement of a real asymmetry,
+  but it's not "complex wins by 27 pp at things the real network is also
+  trying to do well."
 - A claim about the full RadioML 2018.01A archive. The headline run uses
   3 modulations × 8 SNR levels at sample length 128, not the full 24×26
   at sample length 1024. The directory layout is set up to scale up; not
@@ -202,8 +241,10 @@ answer, and it is task-dependent in a way you can characterize:
 For 1-D scalar phase classification, the complex network buys you nothing
 over a 2-D real network. For sequence-shaped IQ-like data, it buys you
 ~4 percentage points at comparable parameter count. **On real RadioML
-data with channel effects, the gap grows to 21–28 percentage points and
-the complex network is also ~6× more reliable across seeds.**
+data, complex networks are dramatically more robust to activation choice
+and seed than capacity-matched real ones — a finding that survives
+swapping the activation but a finding about *robustness*, not raw
+accuracy. On a level playing field the accuracy gap is ±3 pp.**
 
 The thought experiment was right that there's no clean activation. It was
 incomplete in implying that this means the whole enterprise is stuck. The

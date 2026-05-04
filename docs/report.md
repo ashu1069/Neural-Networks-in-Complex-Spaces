@@ -186,70 +186,119 @@ width.
 Reported in
 [`results/rf_synthetic_modulation_sweep/summary.md`](../results/rf_synthetic_modulation_sweep/summary.md).
 
-### 3.4 RadioML 2018.01A — the win is real-data-confirmed and dramatic
+### 3.4 RadioML 2018.01A — the durable finding is robustness, not a 27 pp accuracy gap
 
-[Figures: swept bars
+[Figures: bars on the original CReLU run
 [`radioml_modulation_swept.png`](../results/figures/radioml_modulation_swept.png),
 per-SNR breakdown
 [`radioml_per_snr.png`](../results/figures/radioml_per_snr.png),
 sweep pareto
-[`radioml_sweep_pareto.png`](../results/figures/radioml_sweep_pareto.png).]
+[`radioml_sweep_pareto.png`](../results/figures/radioml_sweep_pareto.png),
+**activation ablation
+[`radioml_activation_ablation.png`](../results/figures/radioml_activation_ablation.png)**.]
 
 Same conv architecture, same sweep harness, same matched shared-trial
 selection — applied to the gated DeepSig RadioML 2018.01A archive
 (BPSK / QPSK / 8PSK at SNRs `[-10, -6, -2, 2, 6, 10, 14, 18]` dB,
 `max_per_class_per_snr=256`, sample_length 128) instead of the synthetic
-stand-in. After a 16×6 budgeted sweep on an NVIDIA A100:
+stand-in. After a 16×6 budgeted sweep on an NVIDIA A100, the original
+`CReLU` run produced a striking 21 pp gap:
 
 | family | test acc | std | params |
 |---|---:|---:|---:|
-| **`complex`** | **0.7217** | 0.0229 | 58,886 |
+| **`complex` (CReLU)** | **0.7217** | 0.0229 | 58,886 |
 | `real_stacked` | 0.5112 | 0.1383 | 29,891 |
 | `real_matched_params` | 0.4239 | 0.1411 | 58,413 |
 | `real_matched_flops` | 0.4458 | 0.1233 | 117,123 |
 
-Two things stand out beyond the headline 21–28 pp gap:
+Read in isolation this looks like a dramatic complex-vs-real win at
+matched parameters — and that's what an earlier draft of this section
+claimed. **The activation ablation forces a different reading.**
 
-1. **Per-SNR breakdown** — at −10 dB everyone is at chance (~33% for 3
-   classes; noise wins). From 0 dB onward, complex pulls away cleanly:
-   91.7% at +10 dB and 91.6% at +20 dB versus 47–60% for the real
-   baselines. The complex network's accuracy curve is the only one that
-   reaches the regime where a modulation classifier is actually useful.
-2. **Reliability** — complex's seed-to-seed std is 0.023; the real
-   baselines sit at 0.12–0.14, roughly 6× larger. Half the real-baseline
-   seeds barely train. Complex isn't just more accurate — it converges
-   reliably across seeds where the real baselines do not.
+#### 3.4.1 Activation ablation reveals the headline gap is mostly
+real baselines collapsing
+
+We re-ran the same sweep four more times, varying only the complex side's
+activation (the real baselines always use `ReLU`). Headline numbers per
+activation, matched-shared-trial selection:
+
+| activation | complex | best real | gap (pp) | complex std | mean real std |
+|---|---:|---:|---:|---:|---:|
+| `crelu` | 0.7217 | 0.5112 | **+21.05** | 0.023 | 0.134 |
+| `cardioid` | 0.7282 | 0.5028 | **+22.54** | 0.019 | 0.134 |
+| `siglog` | 0.7014 | 0.4689 | **+23.25** | 0.016 | 0.139 |
+| `modrelu` | 0.6683 | 0.6940 | **−2.58** | 0.031 | 0.045 |
+| `zrelu` | 0.7330 | 0.7039 | **+2.91** | 0.015 | 0.015 |
+
+The plot ([`radioml_activation_ablation.png`](../results/figures/radioml_activation_ablation.png))
+makes the asymmetry visible at a glance: the **CVNN line is nearly flat
+across all five activations** (test accuracy 0.668–0.733, range 0.065),
+while the real-baseline lines **swing wildly** between ~0.45 and ~0.70
+depending on which activation the *complex side* used.
+
+Two readings of this together:
+
+- **The 21–28 pp gap on `crelu` / `cardioid` / `siglog` is mostly the
+  real baselines failing under matched-shared-trial selection, not the
+  complex network pulling ahead.** When the matched-trial selection
+  picks a configuration that complex tolerates (high LR, large hidden
+  width — the complex network's per-trial val accuracy is robust to
+  these), but real baselines do *not* tolerate (their seed-to-seed std
+  jumps to 0.13–0.14, meaning roughly half the seeds barely train), the
+  reported gap is dominated by the real side's failure mode.
+- **The robustness asymmetry is the durable, defensible finding.**
+  Complex tested accuracy varies by 6.5 pp across activations; the
+  matched-parameter real baseline varies by 27 pp. Complex's
+  seed-to-seed std stays in [0.015, 0.031] across all five runs; the
+  real-baseline std varies from 0.015 (`zrelu`) up to 0.139 (`siglog`).
+  In the activation regimes where the real baseline is stable
+  (`modrelu`, `zrelu`), the complex-vs-real gap drops to ±3 pp.
+
+The honest one-sentence headline:
+**complex-valued networks are substantially more robust across activation
+choice and seed than capacity-matched real-valued ones on this RadioML
+subset; under matched-shared-trial selection the reported accuracy gap
+is dominated by that robustness asymmetry rather than by complex
+out-classifying real on a level playing field.**
+
+#### 3.4.2 Per-SNR breakdown (CReLU run)
+
+At −10 dB everyone is at chance (~33% for 3 classes; noise wins). From
+0 dB onward, the `CReLU` complex network reaches 91.7% at +10 dB and
+91.6% at +20 dB while the real baselines plateau at 47–60%. This is the
+same pattern as the table above — the gap reflects real baselines
+failing to train at the selected hyperparameters under `CReLU`, not
+complex pulling cleanly away. We did not collect per-SNR breakdowns for
+the four ablation runs; the run-level robustness story above is the
+generalizable one.
+
+#### 3.4.3 How this compares to published RadioML numbers
+
+The RadioML 2018.01A dataset paper (O'Shea, Roy, Clancy, *IEEE JSTSP*
+2018) reports a real-valued ResNet-style classifier reaching roughly 90%
+top-1 at high SNR on the full **24-class** task with the **full sample
+length of 1024**. Subsequent CVNN-on-RadioML work (e.g., Krzyston et al.
+2020, Tu et al. 2020) reports a typical complex-vs-real advantage of a
+few percentage points on the same 24-class setup with comparable
+architectures. **Our +3-and-flat ablation result on `modrelu` and `zrelu`
+(the activations under which real baselines are also stable) is
+consistent with that small reported gap.** The 21–28 pp gap on
+`crelu` / `cardioid` / `siglog` is *not* a contradiction of the literature
+— it's the matched-shared-trial selection rule magnifying real-baseline
+instability that the literature's separate-tuning protocols would not
+expose.
+
+Our setup uses a deliberately reduced regime — 3-class PSK subset
+(BPSK / QPSK / 8PSK), 8 even SNR levels, sample length 128,
+`max_per_class_per_snr=256` — so absolute accuracies are not directly
+comparable to the literature's 24-class × 26-SNR × 1024-sample
+evaluations. Whether the robustness asymmetry survives at that scale is
+an open question (see §6).
 
 Reported in
-[`results/radioml_modulation_sweep/summary.md`](../results/radioml_modulation_sweep/summary.md).
-
-**How this compares to published RadioML numbers.** The RadioML 2018.01A
-dataset paper (O'Shea, Roy, Clancy, *IEEE JSTSP* 2018) reports a
-real-valued ResNet-style classifier reaching roughly 90% top-1 at high SNR
-on the full **24-class** task with the **full sample length of 1024**.
-Subsequent CVNN-on-RadioML work (e.g., Krzyston et al. 2020, Tu et al.
-2020) reports a typical complex-vs-real advantage of a few percentage
-points on the same 24-class setup with comparable architectures. **Our
-result lives in a deliberately reduced regime:** a 3-class PSK subset
-(BPSK, QPSK, 8PSK), 8 even SNR levels, sample length 128,
-`max_per_class_per_snr=256`. Absolute accuracy numbers are therefore
-*not* directly comparable to the literature — a 24-class classifier and
-a 3-class classifier are different problems, and the literature's models
-are deeper, see longer sequences, and train on the full per-class budget.
-
-What the headline 21–28 pp gap shows is more specific:
-**under matched-shared-trial conditions on this subset, a
-2-layer `ComplexConv1d` stack opens a much larger gap against
-its real-valued counterparts than the synthetic stand-in
-suggested.** Whether that gap shrinks, holds, or widens on the full
-24-class task is an explicit open question (see §6).
-
-**Activation ablation.** The headline run used `CReLU`. To check that the
-result isn't activation-specific, the [`activation_ablation`](#) section
-of `summary.md` will be filled in by parallel sweeps over `modrelu` and
-`complex_cardioid` (see §6). Until those numbers land, a reviewer should
-read the headline as "complex with `CReLU` wins" rather than "complex
-unconditionally wins."
+[`results/radioml_modulation_sweep/summary.md`](../results/radioml_modulation_sweep/summary.md)
+(CReLU run) and `results/radioml_modulation_sweep_{modrelu,cardioid,siglog,zrelu}/summary.md`
+(ablation runs).
 
 **Provenance note.** This headline manifest reports `git_dirty: true` —
 the GPU server had unstaged changes when the sweep started, recorded
@@ -271,12 +320,16 @@ exploratory work.
 
 ## 4. Interpretation
 
-The three findings together support a falsifiable story:
+The three findings together support a more nuanced falsifiable story
+than the original "complex wins" framing:
 
 > **The complex inductive bias pays for itself when the task carries
-> structure that complex multiplication naturally encodes — and is neutral
-> otherwise. On real-data IQ classification with channel effects, the gap
-> grows substantially.**
+> structure that complex multiplication naturally encodes — and is
+> neutral otherwise. On real-data IQ classification, complex networks are
+> *robust to activation choice and seed* in a way capacity-matched real
+> networks are not; this robustness asymmetry, rather than a raw accuracy
+> advantage on a level playing field, is what produces large reported
+> gaps under matched-shared-trial selection.**
 
 Phase classification on a single complex sample doesn't give the network
 anything to do with `ℂ`-multiplication's "scale-and-rotate" semantics. RF
@@ -303,10 +356,16 @@ Three secondary observations:
    roughly null; the 16×6 swept run separated the families by ~5pp.
    Without honoring the documented tuning budget, this report would have
    the wrong headline.
-3. **The activation choice was not the critical variable.** All swept
-   results above used `CReLU`. Modrelu/cardioid/zrelu would shift absolute
-   numbers but the pattern (complex wins on RF, ties on phase) is unlikely
-   to flip based on an activation swap.
+3. **Activation choice changes magnitudes, not direction — and exposes
+   the methodological asymmetry of matched-shared-trial selection.**
+   §3.4.1's ablation shows that swapping activations leaves complex's
+   accuracy nearly flat (range 0.065) while real baselines swing by 0.27.
+   The pattern (complex wins or ties on RF, ties on phase) holds across
+   all five activations; the *size* of the win on RadioML depends on
+   whether the selected configuration happens to be one that real
+   baselines can train at. The robustness-across-activations asymmetry
+   is the durable finding; the apparently large per-activation gap is a
+   consequence of that asymmetry, not a separate phenomenon.
 
 ## 5. Limitations
 

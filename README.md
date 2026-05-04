@@ -60,19 +60,28 @@ Three budgeted benchmarks, four model families each, sweeps following
   sweep with a `ComplexConv1d` stack: complex reaches 0.819 test accuracy
   at 3,974 parameters; the next-best real baseline reaches 0.781 at 7,779
   parameters. CIs do not overlap, Welch t-test gives `p < 0.01`.
-- **RadioML 2018.01A — complex wins by 21–28 pp on real data**
-  ([`radioml_modulation_swept.png`](results/figures/radioml_modulation_swept.png),
+- **RadioML 2018.01A — complex is robust across activation choice; real
+  baselines are not**
+  ([`radioml_activation_ablation.png`](results/figures/radioml_activation_ablation.png),
+  [`radioml_modulation_swept.png`](results/figures/radioml_modulation_swept.png),
   [`radioml_per_snr.png`](results/figures/radioml_per_snr.png)) — same
   scaffold on the gated DeepSig archive (BPSK / QPSK / 8PSK subset, 16×6
-  on A100): complex 0.722 vs best real 0.511. Per-SNR breakdown: at
-  ≥+10 dB the complex network reaches ~92% while real baselines plateau
-  at 50–60%. Real baselines also have ~6× higher seed-to-seed std — half
-  the seeds barely train. Complex is more accurate *and* more reliable.
+  on A100), swept across 5 complex activations:
+  - **CVNN test accuracy stays in [0.668, 0.733]** across all 5
+    activations (range 0.065).
+  - **Real baselines swing from ~0.45 to ~0.70** depending on which
+    activation the complex side used (range 0.27).
+  - Initial `CReLU` run showed a 21-28 pp gap; ablation reveals this
+    is mostly real baselines collapsing under matched-shared-trial
+    selection. On `modrelu` / `zrelu` (where real is also stable) the gap
+    is ±3 pp.
 
 The headline thesis: **the complex inductive bias pays for itself when the
 task carries structure that complex multiplication naturally encodes, and
-is neutral otherwise. On real-data IQ classification with channel effects,
-the gap grows substantially.**
+is neutral otherwise. On real-data IQ classification, complex networks are
+dramatically more robust to activation choice and seed than
+capacity-matched real ones; on a level playing field the accuracy gap is
+small (±3 pp).**
 
 ## Scope and caveats
 
