@@ -460,6 +460,82 @@ Three secondary observations:
    is the durable finding; the apparently large per-activation gap is a
    consequence of that asymmetry, not a separate phenomenon.
 
+### 4.1 Why complex helps on IQ data — phase equivariance
+
+The "complex multiplication has the right semantics for phase-bearing
+signals" intuition can be made formal in one short lemma.
+
+**Lemma (phase equivariance of `ComplexConv1d`).** *Let*
+`C(z)[t] = Σ_τ K[τ] · z[t-τ] + b` *be a `ComplexConv1d` layer with
+complex-valued kernel `K`, complex bias `b`, and complex input sequence
+`z`. For any global phase `φ ∈ ℝ` and any `t`,*
+
+> `C(e^{iφ} · z)[t] = e^{iφ} · C(z)[t] + (1 - e^{iφ}) · b`.
+
+*Proof.* By linearity of complex multiplication and convolution,
+`C(e^{iφ}·z)[t] = Σ_τ K[τ] · (e^{iφ}·z[t-τ]) + b = e^{iφ} · Σ_τ K[τ] · z[t-τ] + b
+= e^{iφ}·(C(z)[t] - b) + b`. ∎
+
+In the bias-free case (or after subtracting the bias) the result is
+exactly equivariant. The biased case adds a fixed offset `(1 - e^{iφ})·b`
+that the next layer can absorb; in our networks the head's `|·|` magnitude
+operation is itself phase-invariant
+(`|e^{iφ} · y| = |y|` for real `φ`), so the *output* logits are unaffected
+by a constant input phase shift — the architecture is phase-invariant
+as a whole at the readout.
+
+The same does not hold for `Conv1d` operating on a stacked
+`(Re z, Im z)` real input. A global phase shift `e^{iφ}` corresponds to
+multiplying each `(I, Q)` sample by the 2×2 rotation matrix
+`R_φ = [[cos φ, −sin φ], [sin φ, cos φ]]`. To match `ComplexConv1d`'s
+equivariance, every real conv kernel would need to commute with `R_φ`
+applied to its 2 input channels — which forces a constraint on the
+kernel that real `Conv1d` does not impose by construction. The real
+network *can* learn the symmetry from data, but it has to spend capacity
+on it; the complex network gets it for free.
+
+**This is the structural inductive bias the synthetic phase
+classification result (§3.2) and the RadioML result (§3.4) probe in
+opposite regimes.** A single complex sample (phase classification) gives
+no temporal structure for convolutional equivariance to bite on, and the
+2-D real network has the same "see real and imag" feature view, so the
+complex network buys nothing — the §3.2 null is exactly what the lemma
+predicts. A length-`L` IQ sequence (RadioML) does have temporal
+structure, the carrier phase varies sample-to-sample under channel
+effects, and a phase-equivariant conv stack matches that symmetry — the
+§3.3 / §3.4 wins are exactly what the lemma predicts.
+
+#### What the lemma does *not* explain
+
+Phase equivariance of the *layer* is necessary for the architectural
+prior, but the activations between conv layers vary in their own
+equivariance. By direct computation:
+
+- `modrelu(z) = ReLU(|z| + b) · z/|z|` is phase-equivariant
+  (`|·|` is invariant; `z/|z|` is equivariant).
+- `siglog(z) = z / (1 + |z|)` is phase-equivariant for the same reason.
+- `crelu(z) = ReLU(Re z) + i ReLU(Im z)` is *not* — splitting
+  real and imaginary coordinates breaks rotation invariance.
+- `cardioid(z) = ½(1 + cos(arg z)) z` is *not* — `arg(e^{iφ}z) = arg z + φ`,
+  so the cosine factor depends on `φ`.
+- `zrelu(z) = z` if `arg z ∈ [0, π/2]` else `0` is *not* — the quadrant
+  gate depends on the basis.
+
+If the §3.4 robustness asymmetry were *driven* by activation phase
+equivariance, the stable activations should be exactly `modrelu` and
+`siglog`. They are not: §3.4.4 shows `modrelu` and `zrelu` are stable
+(0/9 dead seeds across 9 real-baseline runs each), while
+`crelu`, `cardioid`, and `siglog` are unstable (3/9 dead). One
+phase-equivariant activation is on each side of the divide. **Phase
+equivariance of the layer is necessary for the inductive bias, but the
+robustness asymmetry §3.4.4 measures lives one level lower — at the
+optimization dynamics induced by `(real, imag)` parameter coupling on
+the classifier head, not at the equivariance of the activation.** The
+two effects are partially independent and partially compounding. This
+also explains why the §3.4 result is most defensible at activations like
+`zrelu` where complex wins by a small margin rather than at `crelu`
+where the apparent gap is amplified by the optimization-side mechanism.
+
 ## 5. Limitations
 
 - **RadioML subset, not the full archive.** The headline real-data run
