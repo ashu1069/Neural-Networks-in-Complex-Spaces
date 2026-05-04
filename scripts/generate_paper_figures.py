@@ -471,8 +471,100 @@ def fig_radioml_sweep_pareto() -> Path:
     return out
 
 
+RADIOML_ABLATION_ACTIVATIONS: tuple[str, ...] = (
+    "crelu",
+    "modrelu",
+    "cardioid",
+    "siglog",
+    "zrelu",
+)
+RADIOML_ABLATION_DIRS: dict[str, str] = {
+    # The original CReLU sweep lives at the canonical name; the ablation runs
+    # use the suffixed names produced by `--output-dir`.
+    "crelu": "radioml_modulation_sweep",
+    "modrelu": "radioml_modulation_sweep_modrelu",
+    "cardioid": "radioml_modulation_sweep_cardioid",
+    "siglog": "radioml_modulation_sweep_siglog",
+    "zrelu": "radioml_modulation_sweep_zrelu",
+}
+
+
+def fig_radioml_activation_ablation() -> Path | None:
+    """Lines: x = activation, y = test accuracy, one line per family.
+
+    Skipped (returns None) until at least two activation runs are present,
+    so the figures script doesn't break before the GPU sweeps land.
+    """
+
+    rows: dict[str, dict[str, tuple[float, float, int]]] = {}
+    for activation in RADIOML_ABLATION_ACTIVATIONS:
+        summary_path = RESULTS / RADIOML_ABLATION_DIRS[activation] / "summary.json"
+        if not summary_path.exists():
+            continue
+        summary = load_json(summary_path)
+        n_seeds = len(summary["config"]["seeds"])
+        selection_rows = summary.get("matched_selections") or summary["selections"]
+        for sel in selection_rows:
+            family = sel["family"]
+            if family not in FAMILY_ORDER:
+                continue
+            mean = sel["selected_test_accuracy_mean"]
+            std = sel["selected_test_accuracy_std"]
+            rows.setdefault(activation, {})[family] = (mean, std, n_seeds)
+
+    if len(rows) < 2:
+        print(
+            "skipping radioml_activation_ablation.png: need >=2 activation runs, "
+            f"have {len(rows)}"
+        )
+        return None
+
+    activations = [a for a in RADIOML_ABLATION_ACTIVATIONS if a in rows]
+    fig, ax = plt.subplots(figsize=(8.5, 5.0))
+    x = np.arange(len(activations))
+    for family in FAMILY_ORDER:
+        means: list[float] = []
+        ci_half: list[float] = []
+        for activation in activations:
+            cell = rows[activation].get(family)
+            if cell is None:
+                means.append(float("nan"))
+                ci_half.append(0.0)
+                continue
+            mean, std, n_seeds = cell
+            means.append(mean)
+            ci_half.append(1.96 * std / np.sqrt(n_seeds))
+        ax.errorbar(
+            x,
+            means,
+            yerr=ci_half,
+            marker="o",
+            color=FAMILY_COLOR[family],
+            label=FAMILY_LABEL[family],
+            linewidth=1.8,
+            capsize=4,
+        )
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(activations, rotation=10)
+    ax.set_xlabel("Activation (complex side; real baselines use ReLU)")
+    ax.set_ylabel("Test accuracy (matched shared-trial, 95% CI)")
+    ax.set_title(
+        "RadioML 2018.01A — activation ablation on complex side\n"
+        "Lines parallel = robust to activation choice; lines crossing = "
+        "activation-specific finding"
+    )
+    ax.grid(True, axis="y", linestyle=":", alpha=0.4)
+    ax.legend(frameon=False, loc="lower right")
+    fig.tight_layout()
+    out = FIG_DIR / "radioml_activation_ablation.png"
+    fig.savefig(out, dpi=180)
+    plt.close(fig)
+    return out
+
+
 def main() -> None:
-    figures = [
+    figures: list[Path | None] = [
         fig_activation_tradeoff(),
         fig_synthetic_phase(),
         fig_synthetic_phase_swept(),
@@ -483,8 +575,11 @@ def main() -> None:
         fig_radioml_swept(),
         fig_radioml_per_snr(),
         fig_radioml_sweep_pareto(),
+        fig_radioml_activation_ablation(),
     ]
     for path in figures:
+        if path is None:
+            continue
         print(f"wrote {path.relative_to(ROOT)}")
 
 
