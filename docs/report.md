@@ -223,6 +223,34 @@ Two things stand out beyond the headline 21–28 pp gap:
 Reported in
 [`results/radioml_modulation_sweep/summary.md`](../results/radioml_modulation_sweep/summary.md).
 
+**How this compares to published RadioML numbers.** The RadioML 2018.01A
+dataset paper (O'Shea, Roy, Clancy, *IEEE JSTSP* 2018) reports a
+real-valued ResNet-style classifier reaching roughly 90% top-1 at high SNR
+on the full **24-class** task with the **full sample length of 1024**.
+Subsequent CVNN-on-RadioML work (e.g., Krzyston et al. 2020, Tu et al.
+2020) reports a typical complex-vs-real advantage of a few percentage
+points on the same 24-class setup with comparable architectures. **Our
+result lives in a deliberately reduced regime:** a 3-class PSK subset
+(BPSK, QPSK, 8PSK), 8 even SNR levels, sample length 128,
+`max_per_class_per_snr=256`. Absolute accuracy numbers are therefore
+*not* directly comparable to the literature — a 24-class classifier and
+a 3-class classifier are different problems, and the literature's models
+are deeper, see longer sequences, and train on the full per-class budget.
+
+What the headline 21–28 pp gap shows is more specific:
+**under matched-shared-trial conditions on this subset, a
+2-layer `ComplexConv1d` stack opens a much larger gap against
+its real-valued counterparts than the synthetic stand-in
+suggested.** Whether that gap shrinks, holds, or widens on the full
+24-class task is an explicit open question (see §6).
+
+**Activation ablation.** The headline run used `CReLU`. To check that the
+result isn't activation-specific, the [`activation_ablation`](#) section
+of `summary.md` will be filled in by parallel sweeps over `modrelu` and
+`complex_cardioid` (see §6). Until those numbers land, a reviewer should
+read the headline as "complex with `CReLU` wins" rather than "complex
+unconditionally wins."
+
 **Provenance note.** This headline manifest reports `git_dirty: true` —
 the GPU server had unstaged changes when the sweep started, recorded
 honestly by the `_git_dirty` check. The CI guard was loosened (in the
@@ -309,8 +337,13 @@ Three secondary observations:
 
 ## 6. Future work
 
-- Scale up the RadioML run: full 24-modulation × 26-SNR archive, with QAM
-  and APSK variants, on the full 1024-sample length.
+- **Activation ablation on RadioML.** Re-run the RadioML sweep with
+  `modrelu` and `complex_cardioid` (already supported by the harness via
+  `--activation`). Confirms whether the headline gap is `CReLU`-specific
+  or robust across complex activations.
+- **Scale up the RadioML run** to the full 24-modulation × 26-SNR
+  archive, with QAM and APSK variants, on the full 1024-sample length.
+  Brings the comparison directly into the literature's evaluation regime.
 - `ComplexBatchNorm` (whitening 2x2 covariance, per Trabelsi et al.) and
   deeper conv stacks.
 - Per-SNR breakdown captured in the sweep harness so the swept RF result
