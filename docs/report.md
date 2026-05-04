@@ -495,6 +495,19 @@ Three secondary observations:
 - **Scale up the RadioML run** to the full 24-modulation × 26-SNR
   archive, with QAM and APSK variants, on the full 1024-sample length.
   Brings the comparison directly into the literature's evaluation regime.
+  *The infrastructure for this is in place* —
+  `experiments/rf/sweep_radioml.py --preset full` switches the
+  modulations / SNR levels / sample length / search space to the
+  full-archive bundle (see [`docs/radioml.md`](radioml.md#sweep-presets)
+  for the recommended GPU command and cost estimates). The run was
+  deferred from the headline write-up to keep the paper anchored on the
+  3-class subset that supports the mechanism analysis (§3.4.4); we will
+  execute the full sweep on review feedback or before any venue
+  submission, whichever comes first. Recommended first activation is
+  `zrelu` (the only ablation point where real baselines also train
+  cleanly, so the comparison is least confounded by the
+  matched-shared-trial selection's interaction with §3.4.4's explosion
+  mechanism).
 - `ComplexBatchNorm` (whitening 2x2 covariance, per Trabelsi et al.) and
   deeper conv stacks.
 - Full per-SNR uncertainty bands for the RadioML activation runs, not just
