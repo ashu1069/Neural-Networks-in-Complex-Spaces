@@ -29,6 +29,7 @@ from experiments._sweep import (
     random_search,
     select_best_per_family,
     select_reference_trial_for_all_families,
+    step_progress_bar,
     write_tuning_log,
 )
 from experiments.synthetic.phase_classification import (
@@ -101,14 +102,24 @@ def _train_one(
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=hp["learning_rate"], weight_decay=0.0
     )
+    n_steps = int(hp["steps"])
+    inner_bar = step_progress_bar(n_steps, desc=f"{family}/s{seed}")
     start = time.perf_counter()
     model.train()
-    for _ in range(hp["steps"]):
+    last_loss = float("nan")
+    for step in range(n_steps):
         optimizer.zero_grad()
         logits = model(train_inputs)
         loss = F.cross_entropy(logits, train_actual_labels)
         loss.backward()  # type: ignore[no-untyped-call]
         optimizer.step()
+        if inner_bar is not None:
+            last_loss = float(loss.detach().cpu().item())
+            if step == n_steps - 1 or step % max(1, n_steps // 50) == 0:
+                inner_bar.set_postfix_str(f"loss={last_loss:.4f}", refresh=False)
+            inner_bar.update(1)
+    if inner_bar is not None:
+        inner_bar.close()
     train_seconds = time.perf_counter() - start
 
     model.eval()

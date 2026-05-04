@@ -41,6 +41,7 @@ from experiments._sweep import (
     random_search,
     select_best_per_family,
     select_reference_trial_for_all_families,
+    step_progress_bar,
     write_tuning_log,
 )
 from experiments.rf.radioml import load_radioml_2018_01a
@@ -130,15 +131,25 @@ def _train_one(
     n_train = train_inputs.shape[0]
     batch_size = min(int(hp["batch_size"]), n_train)
     batch_gen = torch.Generator(device="cpu").manual_seed(seed + 1_000_000)
+    n_steps = int(hp["steps"])
+    inner_bar = step_progress_bar(n_steps, desc=f"{family}/s{seed}")
     start = time.perf_counter()
     model.train()
-    for _ in range(int(hp["steps"])):
+    last_loss = float("nan")
+    for step in range(n_steps):
         indices = torch.randint(0, n_train, (batch_size,), generator=batch_gen)
         optimizer.zero_grad()
         logits = model(train_inputs[indices])
         loss = F.cross_entropy(logits, train_actual_labels[indices])
         loss.backward()  # type: ignore[no-untyped-call]
         optimizer.step()
+        if inner_bar is not None:
+            last_loss = float(loss.detach().cpu().item())
+            if step == n_steps - 1 or step % max(1, n_steps // 50) == 0:
+                inner_bar.set_postfix_str(f"loss={last_loss:.4f}", refresh=False)
+            inner_bar.update(1)
+    if inner_bar is not None:
+        inner_bar.close()
     train_seconds = time.perf_counter() - start
 
     model.eval()

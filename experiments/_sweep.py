@@ -219,6 +219,39 @@ def _maybe_tqdm(total: int, *, enabled: bool) -> Any:
     return tqdm(total=total, desc="sweep", dynamic_ncols=True, leave=True)
 
 
+def step_progress_bar(
+    total: int,
+    *,
+    desc: str = "train",
+    min_steps: int = 50,
+    mininterval: float = 0.5,
+) -> Any:
+    """Return an inner-loop tqdm bar for the per-step training loop.
+
+    Returns `None` when tqdm is unavailable or the run is too short to
+    benefit from a bar (`total < min_steps`); the caller's `if bar is not
+    None` branches keep the call sites uniform.
+
+    The bar is `leave=False` so it disappears after the seed completes,
+    keeping the outer sweep bar's view clean. Use `bar.set_postfix_str(...)`
+    to surface the current loss.
+    """
+
+    if total < min_steps:
+        return None
+    try:
+        from tqdm.auto import tqdm
+    except ImportError:
+        return None
+    return tqdm(
+        total=total,
+        desc=desc,
+        dynamic_ncols=True,
+        leave=False,
+        mininterval=mininterval,
+    )
+
+
 def _print_trial_line(trial: TrialResult, *, n_trials: int) -> None:
     hp_str = ", ".join(
         f"{key}={_format_hp_value(value)}"
@@ -457,5 +490,6 @@ __all__ = [
     "random_search",
     "select_best_per_family",
     "select_reference_trial_for_all_families",
+    "step_progress_bar",
     "write_tuning_log",
 ]
