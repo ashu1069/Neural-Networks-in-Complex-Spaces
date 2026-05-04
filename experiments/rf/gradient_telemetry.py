@@ -29,7 +29,7 @@ import time
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 import torch
 import torch.nn.functional as F
@@ -41,7 +41,10 @@ from experiments.rf.synthetic_modulation import (
     ModelFamily,
     _features_for_family,
     _make_model,
+    make_synthetic_rf_modulation_dataset,
 )
+
+DataSource = Literal["radioml", "synthetic"]
 
 
 @dataclass(frozen=True)
@@ -60,9 +63,11 @@ class TelemetryConfig:
     sample_length: int
     val_fraction: float
     real_activation: str
-    data_path: Path
-    classes_path: Path | None
+    data_source: DataSource
     dtype: torch.dtype
+    # Only used when data_source == "radioml"
+    data_path: Path | None = None
+    classes_path: Path | None = None
 
 
 @dataclass
@@ -91,10 +96,18 @@ def telemetry_config_from_sweep_summary(
     activation: str,
     family: str,
     seed: int,
-    data_path: Path,
+    data_path: Path | None = None,
     classes_path: Path | None = None,
 ) -> TelemetryConfig:
-    """Build a TelemetryConfig from a sweep's summary.json + selected family."""
+    """Build a TelemetryConfig from a sweep's summary.json + selected family.
+
+    The data source is inferred from the sweep's `experiment` field in
+    config:
+      - `radioml_modulation_sweep` → loads from a local HDF5 archive
+        (requires `data_path`).
+      - `rf_synthetic_modulation_sweep` → generates symbols on the fly via
+        `make_synthetic_rf_modulation_dataset`; `data_path` is unused.
+    """
 
     summary = json.loads(summary_path.read_text())
     config = summary["config"]
@@ -107,6 +120,26 @@ def telemetry_config_from_sweep_summary(
         msg = f"family {family!r} not in {list(by_family)}"
         raise ValueError(msg)
 
+    experiment = str(config.get("experiment", ""))
+    if "synthetic" in experiment:
+        data_source: DataSource = "synthetic"
+    elif "radioml" in experiment:
+        data_source = "radioml"
+        if data_path is None:
+            msg = (
+                f"summary at {summary_path} is a RadioML sweep; pass "
+                "data_path pointing at the HDF5 archive."
+            )
+            raise ValueError(msg)
+    else:
+        msg = f"could not infer data_source from experiment={experiment!r}"
+        raise ValueError(msg)
+
+    sample_count_key = (
+        "max_per_class_per_snr"
+        if "max_per_class_per_snr" in config
+        else "n_per_class_per_snr"
+    )
     dtype = torch.complex64 if config["dtype"] == "complex64" else torch.complex128
     return TelemetryConfig(
         activation=activation,
@@ -117,13 +150,14 @@ def telemetry_config_from_sweep_summary(
         kernel_size=int(config["kernel_size"]),
         modulations=tuple(config["modulations"]),
         snr_db_levels=tuple(int(s) for s in config["snr_db_levels"]),
-        max_per_class_per_snr=int(config["max_per_class_per_snr"]),
+        max_per_class_per_snr=int(config[sample_count_key]),
         sample_length=int(config["sample_length"]),
         val_fraction=float(config["val_fraction"]),
         real_activation=str(config.get("real_activation", "relu")),
+        data_source=data_source,
+        dtype=dtype,
         data_path=data_path,
         classes_path=classes_path,
-        dtype=dtype,
     )
 
 
@@ -155,7 +189,8 @@ def run_instrumented_training(
         torch.cuda.manual_seed_all(config.seed)
 
     cache_key = (
-        str(config.data_path),
+        config.data_source,
+        str(config.data_path) if config.data_path else None,
         str(config.classes_path) if config.classes_path else None,
         config.modulations,
         config.snr_db_levels,
@@ -166,7 +201,21 @@ def run_instrumented_training(
     )
     if cache_key in _DATA_CACHE:
         data = _DATA_CACHE[cache_key]
+    elif config.data_source == "synthetic":
+        data = make_synthetic_rf_modulation_dataset(
+            seed=config.seed,
+            modulations=cast(Any, tuple(config.modulations)),
+            snr_db_levels=config.snr_db_levels,
+            n_per_class_per_snr=config.max_per_class_per_snr,
+            sample_length=config.sample_length,
+            train_fraction=0.8,
+            dtype=config.dtype,
+        )
+        _DATA_CACHE[cache_key] = data
     else:
+        if config.data_path is None:
+            msg = "RadioML telemetry requires data_path"
+            raise ValueError(msg)
         data = load_radioml_2018_01a(
             config.data_path,
             modulations=config.modulations,

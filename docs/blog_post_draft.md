@@ -248,6 +248,15 @@ network has no such smoothing, AdamW's first step pushes some seeds into
 a region where the second `Conv1d`'s ReLU activations are saturated, and
 training "stabilizes" at chance.
 
+To check this isn't RadioML-specific (pulse shaping, channel effects),
+I re-ran the same 60-trace telemetry against the synthetic AWGN-only RF
+generator using the *same* per-activation hyperparameters. Identical
+dead-seed pattern — 3/9 on crelu/cardioid, 2/9 on siglog, 0/9 on
+modrelu/zrelu — with step-1 gradients if anything *larger* on synthetic
+than on RadioML (AWGN-only signals carry more per-sample variance).
+**The mechanism is hp-driven, not data-driven.** The matched-shared-trial
+selection rule, not the dataset, is what triggers the explosion.
+
 The robustness asymmetry isn't really an architectural property of the
 inductive bias — it's an **LR-tolerance asymmetry on the classifier
 head**, and the matched-shared-trial selection happens to exploit it.

@@ -1,0 +1,542 @@
+[
+  {
+    "activation": "crelu",
+    "family": "complex",
+    "final_train_loss": 0.37478572130203247,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/crelu/complex_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.7844551205635071
+  },
+  {
+    "activation": "crelu",
+    "family": "complex",
+    "final_train_loss": 0.4742279052734375,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/crelu/complex_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.7996794581413269
+  },
+  {
+    "activation": "crelu",
+    "family": "complex",
+    "final_train_loss": 0.3917754292488098,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/crelu/complex_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.7876602411270142
+  },
+  {
+    "activation": "crelu",
+    "family": "real_stacked",
+    "final_train_loss": 0.5776609778404236,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/crelu/real_stacked_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.6073718070983887
+  },
+  {
+    "activation": "crelu",
+    "family": "real_stacked",
+    "final_train_loss": 0.5823463797569275,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/crelu/real_stacked_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.7155448794364929
+  },
+  {
+    "activation": "crelu",
+    "family": "real_stacked",
+    "final_train_loss": 0.6069110035896301,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/crelu/real_stacked_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.6193910241127014
+  },
+  {
+    "activation": "crelu",
+    "family": "real_matched_params",
+    "final_train_loss": 0.5306569337844849,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/crelu/real_matched_params_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.6915063858032227
+  },
+  {
+    "activation": "crelu",
+    "family": "real_matched_params",
+    "final_train_loss": 0.5888127684593201,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/crelu/real_matched_params_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.6426281929016113
+  },
+  {
+    "activation": "crelu",
+    "family": "real_matched_params",
+    "final_train_loss": 1.0982640981674194,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/crelu/real_matched_params_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.3333333432674408
+  },
+  {
+    "activation": "crelu",
+    "family": "real_matched_flops",
+    "final_train_loss": 1.0987733602523804,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/crelu/real_matched_flops_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.3333333432674408
+  },
+  {
+    "activation": "crelu",
+    "family": "real_matched_flops",
+    "final_train_loss": 1.1008281707763672,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/crelu/real_matched_flops_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.3333333432674408
+  },
+  {
+    "activation": "crelu",
+    "family": "real_matched_flops",
+    "final_train_loss": 0.6121160387992859,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/crelu/real_matched_flops_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.6418269276618958
+  },
+  {
+    "activation": "modrelu",
+    "family": "complex",
+    "final_train_loss": 0.580590546131134,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/modrelu/complex_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.6185897588729858
+  },
+  {
+    "activation": "modrelu",
+    "family": "complex",
+    "final_train_loss": 0.5651270151138306,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/modrelu/complex_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.6426281929016113
+  },
+  {
+    "activation": "modrelu",
+    "family": "complex",
+    "final_train_loss": 0.6099532842636108,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/modrelu/complex_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.6682692170143127
+  },
+  {
+    "activation": "modrelu",
+    "family": "real_stacked",
+    "final_train_loss": 0.6204501986503601,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/modrelu/real_stacked_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.6770833134651184
+  },
+  {
+    "activation": "modrelu",
+    "family": "real_stacked",
+    "final_train_loss": 0.605923056602478,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/modrelu/real_stacked_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.6794871687889099
+  },
+  {
+    "activation": "modrelu",
+    "family": "real_stacked",
+    "final_train_loss": 0.597148060798645,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/modrelu/real_stacked_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.6306089758872986
+  },
+  {
+    "activation": "modrelu",
+    "family": "real_matched_params",
+    "final_train_loss": 0.5893591642379761,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/modrelu/real_matched_params_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.6266025900840759
+  },
+  {
+    "activation": "modrelu",
+    "family": "real_matched_params",
+    "final_train_loss": 0.5785630941390991,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/modrelu/real_matched_params_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.7564102411270142
+  },
+  {
+    "activation": "modrelu",
+    "family": "real_matched_params",
+    "final_train_loss": 0.5906401872634888,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/modrelu/real_matched_params_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.6306089758872986
+  },
+  {
+    "activation": "modrelu",
+    "family": "real_matched_flops",
+    "final_train_loss": 0.6114835739135742,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/modrelu/real_matched_flops_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.6602563858032227
+  },
+  {
+    "activation": "modrelu",
+    "family": "real_matched_flops",
+    "final_train_loss": 0.5714172720909119,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/modrelu/real_matched_flops_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.7580128312110901
+  },
+  {
+    "activation": "modrelu",
+    "family": "real_matched_flops",
+    "final_train_loss": 0.5927865505218506,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/modrelu/real_matched_flops_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.6386218070983887
+  },
+  {
+    "activation": "cardioid",
+    "family": "complex",
+    "final_train_loss": 0.31508052349090576,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/cardioid/complex_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.8092948794364929
+  },
+  {
+    "activation": "cardioid",
+    "family": "complex",
+    "final_train_loss": 0.38727307319641113,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/cardioid/complex_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.7996794581413269
+  },
+  {
+    "activation": "cardioid",
+    "family": "complex",
+    "final_train_loss": 0.30426985025405884,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/cardioid/complex_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.8229166865348816
+  },
+  {
+    "activation": "cardioid",
+    "family": "real_stacked",
+    "final_train_loss": 0.5776609778404236,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/cardioid/real_stacked_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.6073718070983887
+  },
+  {
+    "activation": "cardioid",
+    "family": "real_stacked",
+    "final_train_loss": 0.5823463797569275,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/cardioid/real_stacked_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.7155448794364929
+  },
+  {
+    "activation": "cardioid",
+    "family": "real_stacked",
+    "final_train_loss": 0.6069110035896301,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/cardioid/real_stacked_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.6193910241127014
+  },
+  {
+    "activation": "cardioid",
+    "family": "real_matched_params",
+    "final_train_loss": 0.5306569337844849,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/cardioid/real_matched_params_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.6915063858032227
+  },
+  {
+    "activation": "cardioid",
+    "family": "real_matched_params",
+    "final_train_loss": 0.5888127684593201,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/cardioid/real_matched_params_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.6426281929016113
+  },
+  {
+    "activation": "cardioid",
+    "family": "real_matched_params",
+    "final_train_loss": 1.0982640981674194,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/cardioid/real_matched_params_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.3333333432674408
+  },
+  {
+    "activation": "cardioid",
+    "family": "real_matched_flops",
+    "final_train_loss": 1.0987733602523804,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/cardioid/real_matched_flops_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.3333333432674408
+  },
+  {
+    "activation": "cardioid",
+    "family": "real_matched_flops",
+    "final_train_loss": 1.1008281707763672,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/cardioid/real_matched_flops_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.3333333432674408
+  },
+  {
+    "activation": "cardioid",
+    "family": "real_matched_flops",
+    "final_train_loss": 0.6121160387992859,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/cardioid/real_matched_flops_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.6418269276618958
+  },
+  {
+    "activation": "siglog",
+    "family": "complex",
+    "final_train_loss": 0.5024752616882324,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/siglog/complex_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.7171474099159241
+  },
+  {
+    "activation": "siglog",
+    "family": "complex",
+    "final_train_loss": 0.46371981501579285,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/siglog/complex_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.7395833134651184
+  },
+  {
+    "activation": "siglog",
+    "family": "complex",
+    "final_train_loss": 0.507815420627594,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/siglog/complex_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.7660256624221802
+  },
+  {
+    "activation": "siglog",
+    "family": "real_stacked",
+    "final_train_loss": 0.5825634002685547,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/siglog/real_stacked_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.6266025900840759
+  },
+  {
+    "activation": "siglog",
+    "family": "real_stacked",
+    "final_train_loss": 1.0972535610198975,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/siglog/real_stacked_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.3333333432674408
+  },
+  {
+    "activation": "siglog",
+    "family": "real_stacked",
+    "final_train_loss": 0.60735023021698,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/siglog/real_stacked_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.6306089758872986
+  },
+  {
+    "activation": "siglog",
+    "family": "real_matched_params",
+    "final_train_loss": 0.6064276695251465,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/siglog/real_matched_params_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.6354166865348816
+  },
+  {
+    "activation": "siglog",
+    "family": "real_matched_params",
+    "final_train_loss": 0.5957538485527039,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/siglog/real_matched_params_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.6642628312110901
+  },
+  {
+    "activation": "siglog",
+    "family": "real_matched_params",
+    "final_train_loss": 0.54167240858078,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/siglog/real_matched_params_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.7427884340286255
+  },
+  {
+    "activation": "siglog",
+    "family": "real_matched_flops",
+    "final_train_loss": 0.5917598009109497,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/siglog/real_matched_flops_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.6490384340286255
+  },
+  {
+    "activation": "siglog",
+    "family": "real_matched_flops",
+    "final_train_loss": 1.0973659753799438,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/siglog/real_matched_flops_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.3333333432674408
+  },
+  {
+    "activation": "siglog",
+    "family": "real_matched_flops",
+    "final_train_loss": 0.5770483016967773,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/siglog/real_matched_flops_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.6073718070983887
+  },
+  {
+    "activation": "zrelu",
+    "family": "complex",
+    "final_train_loss": 0.5514498353004456,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/zrelu/complex_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.7347756624221802
+  },
+  {
+    "activation": "zrelu",
+    "family": "complex",
+    "final_train_loss": 0.5410504341125488,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/zrelu/complex_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.7740384340286255
+  },
+  {
+    "activation": "zrelu",
+    "family": "complex",
+    "final_train_loss": 0.5547431111335754,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/zrelu/complex_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.7676281929016113
+  },
+  {
+    "activation": "zrelu",
+    "family": "real_stacked",
+    "final_train_loss": 0.5843541026115417,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/zrelu/real_stacked_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.7195512652397156
+  },
+  {
+    "activation": "zrelu",
+    "family": "real_stacked",
+    "final_train_loss": 0.5833780169487,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/zrelu/real_stacked_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.6482371687889099
+  },
+  {
+    "activation": "zrelu",
+    "family": "real_stacked",
+    "final_train_loss": 0.6025971174240112,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/zrelu/real_stacked_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.629807710647583
+  },
+  {
+    "activation": "zrelu",
+    "family": "real_matched_params",
+    "final_train_loss": 0.5899039506912231,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/zrelu/real_matched_params_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.7203525900840759
+  },
+  {
+    "activation": "zrelu",
+    "family": "real_matched_params",
+    "final_train_loss": 0.5821788907051086,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/zrelu/real_matched_params_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.6482371687889099
+  },
+  {
+    "activation": "zrelu",
+    "family": "real_matched_params",
+    "final_train_loss": 0.59718918800354,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/zrelu/real_matched_params_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.7419871687889099
+  },
+  {
+    "activation": "zrelu",
+    "family": "real_matched_flops",
+    "final_train_loss": 0.6046440601348877,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/zrelu/real_matched_flops_seed0.jsonl",
+    "seed": 0,
+    "test_accuracy": 0.7019230723381042
+  },
+  {
+    "activation": "zrelu",
+    "family": "real_matched_flops",
+    "final_train_loss": 0.5849865674972534,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/zrelu/real_matched_flops_seed1.jsonl",
+    "seed": 1,
+    "test_accuracy": 0.7131410241127014
+  },
+  {
+    "activation": "zrelu",
+    "family": "real_matched_flops",
+    "final_train_loss": 0.5931386947631836,
+    "n_steps": 200,
+    "output_path": "results/synthetic_rf_telemetry/zrelu/real_matched_flops_seed2.jsonl",
+    "seed": 2,
+    "test_accuracy": 0.6850961446762085
+  }
+]

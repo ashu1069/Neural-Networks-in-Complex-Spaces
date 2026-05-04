@@ -373,6 +373,34 @@ real-conv-stack baseline at fixed parameter budget should expect the
 complex variant to be substantially less LR-fragile at the head; this is
 the property to reach for, not "complex always wins by 27 pp."
 
+**Cross-task confirmation: the mechanism is hp-driven, not data-driven.**
+[Figures: `synthetic_rf_telemetry_loss.png` /
+`synthetic_rf_telemetry_grad.png`.] To check whether the
+explosion-into-dead-region pattern is RadioML-specific (pulse shaping,
+carrier offset, channel effects) or generic to the hp regime, we re-ran
+the same 60-run telemetry against the synthetic AWGN-only RF generator
+([`experiments.rf.synthetic_modulation`](../experiments/rf/synthetic_modulation.py))
+using the same per-activation hyperparameters that the RadioML
+matched-shared-trial selected. Side-by-side dead-seed counts:
+
+| activation | RadioML dead/9 | synthetic dead/9 | RadioML max real grad | synthetic max real grad |
+|---|:--:|:--:|---:|---:|
+| `crelu` | 3 | 3 | 19.9 | 34.1 |
+| `cardioid` | 3 | 3 | 19.9 | 34.1 |
+| `siglog` | 3 | 2 | 42.1 | 55.7 |
+| `modrelu` | **0** | **0** | 0.3 | 0.5 |
+| `zrelu` | **0** | **0** | 0.2 | 0.7 |
+
+The pattern replicates almost exactly: same dead-seed counts on
+crelu/cardioid (3/3), one less on siglog (2/3 vs 3/3), and zero deaths
+on modrelu/zrelu in both. Step-1 gradients on synthetic are *larger*
+than RadioML's (AWGN-only signals carry more per-sample variance than
+pulse-shaped, channel-attenuated ones) but the threshold behavior — the
+0%→33% jump at lr ~0.02 — is the same. **The matched-shared-trial
+selection rule, not the data distribution, is what triggers the
+explosion.** Stored under
+[`results/synthetic_rf_telemetry/`](../results/synthetic_rf_telemetry/).
+
 **Bug surfaced.** The first attempt at the RadioML sweep used the
 synthetic benchmark's odd-stepped SNR list, which the loader silently
 dropped because RadioML 2018.01A only ships even SNRs (2 dB steps from

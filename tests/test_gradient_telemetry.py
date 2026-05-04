@@ -40,6 +40,7 @@ def _write_tiny_radioml(path: Path) -> None:
 def _write_minimal_summary(path: Path, *, activation: str) -> None:
     payload = {
         "config": {
+            "experiment": "radioml_modulation_sweep",
             "architecture": "conv",
             "kernel_size": 3,
             "modulations": ["BPSK", "QPSK"],
@@ -145,6 +146,57 @@ def test_run_instrumented_training_logs_per_step(tmp_path: Path) -> None:
     assert any(
         "conv" in key for record in records for key in record.per_layer_grad_norm
     )
+
+
+def test_telemetry_runs_against_synthetic_data_source(tmp_path: Path) -> None:
+    """Synthetic data source should not require an HDF5 archive."""
+
+    summary_path = tmp_path / "summary.json"
+    payload = {
+        "config": {
+            "experiment": "rf_synthetic_modulation_sweep",
+            "architecture": "conv",
+            "kernel_size": 3,
+            "modulations": ["bpsk", "qpsk"],
+            "snr_db_levels": [0, 10],
+            "n_per_class_per_snr": 4,
+            "sample_length": 32,
+            "val_fraction": 0.25,
+            "activation": "crelu",
+            "real_activation": "relu",
+            "dtype": "complex64",
+        },
+        "matched_selections": [
+            {
+                "family": "complex",
+                "selected_trial_index": 0,
+                "selected_val_accuracy_mean": 0.8,
+                "selected_test_accuracy_mean": 0.75,
+                "selected_test_accuracy_std": 0.01,
+                "selected_hyperparameters": {
+                    "learning_rate": 0.01,
+                    "hidden_features": 8,
+                    "steps": 5,
+                    "batch_size": 8,
+                },
+                "selected_extra": {"parameter_count_mean": 1000.0},
+            },
+        ],
+    }
+    summary_path.write_text(json.dumps(payload))
+
+    config = telemetry_config_from_sweep_summary(
+        summary_path,
+        activation="crelu",
+        family="complex",
+        seed=0,
+    )
+    assert config.data_source == "synthetic"
+    assert config.data_path is None
+
+    records, summary = run_instrumented_training(config, log_every_n=1)
+    assert len(records) == config.hyperparameters["steps"]
+    assert 0.0 <= summary["test_accuracy"] <= 1.0
 
 
 def test_write_telemetry_jsonl_round_trips(tmp_path: Path) -> None:
