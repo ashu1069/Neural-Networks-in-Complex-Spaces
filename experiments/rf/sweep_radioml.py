@@ -24,6 +24,7 @@ Or put the archive location in `config/radioml_paths.json` (see
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import time
 from collections.abc import Sequence
@@ -109,6 +110,7 @@ def _train_one(
     classes_path: Path | None,
     data_cache: dict[tuple[Any, ...], RFModulationData] | None,
     data_cache_device: torch.device | None,
+    dataset_cache_dir: Path | None,
     architecture: ArchitectureName,
     kernel_size: int,
     modulations: Sequence[str],
@@ -130,6 +132,7 @@ def _train_one(
         classes_path=classes_path,
         data_cache=data_cache,
         data_cache_device=data_cache_device,
+        dataset_cache_dir=dataset_cache_dir,
         modulations=modulations,
         snr_db_levels=snr_db_levels,
         max_per_class_per_snr=max_per_class_per_snr,
@@ -230,6 +233,7 @@ def _load_data_for_run(
     classes_path: Path | None,
     data_cache: dict[tuple[Any, ...], RFModulationData] | None,
     data_cache_device: torch.device | None,
+    dataset_cache_dir: Path | None,
     modulations: Sequence[str],
     snr_db_levels: Sequence[int],
     max_per_class_per_snr: int | None,
@@ -251,6 +255,29 @@ def _load_data_for_run(
     if data_cache is not None and cache_key in data_cache:
         return data_cache[cache_key]
 
+    dataset_cache_path = (
+        _dataset_cache_path(
+            dataset_cache_dir,
+            data_path=data_path,
+            classes_path=classes_path,
+            modulations=modulations,
+            snr_db_levels=snr_db_levels,
+            max_per_class_per_snr=max_per_class_per_snr,
+            sample_length=sample_length,
+            seed=seed,
+            dtype=dtype,
+        )
+        if dataset_cache_dir is not None
+        else None
+    )
+    if dataset_cache_path is not None and dataset_cache_path.exists():
+        data = _load_dataset_cache(dataset_cache_path)
+        if data_cache is not None:
+            if data_cache_device is not None:
+                data = _data_to_device(data, data_cache_device)
+            data_cache[cache_key] = data
+        return data
+
     data = load_radioml_2018_01a(
         data_path,
         modulations=modulations,
@@ -262,6 +289,8 @@ def _load_data_for_run(
         dtype=dtype,
         classes_path=classes_path,
     )
+    if dataset_cache_path is not None:
+        _write_dataset_cache(dataset_cache_path, data)
     if data_cache is not None:
         if data_cache_device is not None:
             data = _data_to_device(data, data_cache_device)
@@ -280,6 +309,70 @@ def _data_to_device(data: RFModulationData, device: torch.device) -> RFModulatio
         modulation_names=data.modulation_names,
         snr_db_levels=data.snr_db_levels,
         sample_length=data.sample_length,
+    )
+
+
+def _dataset_cache_path(
+    cache_dir: Path,
+    *,
+    data_path: Path,
+    classes_path: Path | None,
+    modulations: Sequence[str],
+    snr_db_levels: Sequence[int],
+    max_per_class_per_snr: int | None,
+    sample_length: int,
+    seed: int,
+    dtype: torch.dtype,
+) -> Path:
+    payload = {
+        "data_path": str(data_path.resolve()),
+        "classes_path": str(classes_path.resolve()) if classes_path else None,
+        "modulations": list(modulations),
+        "snr_db_levels": [int(snr) for snr in snr_db_levels],
+        "max_per_class_per_snr": max_per_class_per_snr,
+        "sample_length": sample_length,
+        "seed": seed,
+        "dtype": str(dtype),
+    }
+    digest = hashlib.sha256(
+        json.dumps(payload, sort_keys=True).encode("utf-8")
+    ).hexdigest()[:16]
+    return cache_dir / f"radioml_2018_01a_{digest}.pt"
+
+
+def _write_dataset_cache(path: Path, data: RFModulationData) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "train_inputs": data.train_inputs.cpu(),
+        "train_labels": data.train_labels.cpu(),
+        "train_snr_db": data.train_snr_db.cpu(),
+        "test_inputs": data.test_inputs.cpu(),
+        "test_labels": data.test_labels.cpu(),
+        "test_snr_db": data.test_snr_db.cpu(),
+        "modulation_names": data.modulation_names,
+        "snr_db_levels": data.snr_db_levels,
+        "sample_length": data.sample_length,
+    }
+    tmp_path = path.with_name(path.name + ".tmp")
+    torch.save(payload, tmp_path)
+    tmp_path.replace(path)
+
+
+def _load_dataset_cache(path: Path) -> RFModulationData:
+    payload = torch.load(path, map_location="cpu", weights_only=False)
+    if not isinstance(payload, dict):
+        msg = f"dataset cache must contain a dict: {path}"
+        raise TypeError(msg)
+    return RFModulationData(
+        train_inputs=payload["train_inputs"],
+        train_labels=payload["train_labels"],
+        train_snr_db=payload["train_snr_db"],
+        test_inputs=payload["test_inputs"],
+        test_labels=payload["test_labels"],
+        test_snr_db=payload["test_snr_db"],
+        modulation_names=tuple(payload["modulation_names"]),
+        snr_db_levels=tuple(int(snr) for snr in payload["snr_db_levels"]),
+        sample_length=int(payload["sample_length"]),
     )
 
 
@@ -517,6 +610,15 @@ def main() -> int:
             "GPUs to avoid repeated CPU-to-GPU copies across trials."
         ),
     )
+    parser.add_argument(
+        "--dataset-cache-dir",
+        type=Path,
+        default=None,
+        help=(
+            "optional persistent cache for filtered RadioML tensors. Use local "
+            "NVMe/scratch to reuse filtered subsets across activation sweeps."
+        ),
+    )
     parser.add_argument("--sample-length", type=int, default=128)
     parser.add_argument("--val-fraction", type=float, default=0.2)
     parser.add_argument("--architecture", choices=["mlp", "conv"], default="conv")
@@ -632,6 +734,7 @@ def main() -> int:
             classes_path=args.classes_path,
             data_cache=data_cache,
             data_cache_device=data_cache_device,
+            dataset_cache_dir=args.dataset_cache_dir,
             architecture=architecture,
             kernel_size=args.kernel_size,
             modulations=args.modulations,
@@ -674,6 +777,9 @@ def main() -> int:
         "max_per_class_per_snr": args.max_per_class_per_snr,
         "cache_data": cache_data,
         "cache_data_device": str(data_cache_device) if data_cache_device else "cpu",
+        "dataset_cache_dir": (
+            str(args.dataset_cache_dir) if args.dataset_cache_dir else None
+        ),
         "sample_length": args.sample_length,
         "val_fraction": args.val_fraction,
         "architecture": args.architecture,

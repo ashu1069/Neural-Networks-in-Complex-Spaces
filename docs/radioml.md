@@ -172,13 +172,15 @@ git pull && git status
 # Full 24-class run on the headline activation (CReLU)
 uv run python experiments/rf/sweep_radioml.py --device cuda \
     --preset full --activation crelu --seeds 0 1 2 --resume \
-    --cache-data-device device
+    --cache-data-device device \
+    --dataset-cache-dir /scratch/$USER/radioml-filter-cache
 
 # Optional: ablate a stable activation (zrelu) on the full task to test
 # whether the robustness asymmetry survives at scale
 uv run python experiments/rf/sweep_radioml.py --device cuda \
     --preset full --activation zrelu --seeds 0 1 2 --resume \
-    --cache-data-device device
+    --cache-data-device device \
+    --dataset-cache-dir /scratch/$USER/radioml-filter-cache
 ```
 
 When done:
@@ -215,6 +217,11 @@ filtered per-seed RadioML tensors on GPU for the life of the process. This
 trades a few GB of GPU memory for less repeated host-to-device copying across
 the 192 seed runs in a full activation sweep. Leave it off if GPU memory is
 tight or if you disable `--max-per-class-per-snr`.
+
+`--dataset-cache-dir` persists the filtered per-seed tensors on local disk, so
+the next activation sweep can load cached `.pt` shards instead of re-scanning
+the large HDF5 archive. Put this directory on local NVMe/scratch, not Google
+Drive or network storage.
 
 ## Citation
 
