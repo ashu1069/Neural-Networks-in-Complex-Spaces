@@ -206,6 +206,9 @@ tempCodeRunnerFile.py
 # Local assistant/tool state
 .claude/
 
+# Local dataset path overrides
+config/radioml_paths.json
+
 # Ruff stuff:
 .ruff_cache/
 

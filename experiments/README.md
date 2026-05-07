@@ -86,5 +86,11 @@ The real RadioML 2018.01A loader expects the local archive at
 uv run python experiments/rf/sweep_radioml.py --device cuda
 ```
 
+For Colab or mounted-drive runs, copy `config/radioml_paths.example.json` to
+`config/radioml_paths.json`, set the absolute mounted-drive path there, and run
+the same command without a long `--data-path` flag. CLI flags and the
+`RADIOML_DATA_PATH` / `RADIOML_CLASSES_PATH` environment variables still
+override the config.
+
 The full RF sweep is GPU-oriented. CPU smoke runs should reduce
 `--sample-length`, `--n-per-class-per-snr`, and/or `--n-trials`.

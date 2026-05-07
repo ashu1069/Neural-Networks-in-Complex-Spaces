@@ -21,8 +21,31 @@ data/GOLD_XYZ_OSC.0001_1024.hdf5
 ```
 
 Override with the `path` argument or the `--data-path` CLI flag where
-applicable. **Do not commit the file.** The repo's `.gitignore` excludes
-`data/`.
+applicable. For Colab or any machine where the archive lives outside the repo,
+copy the example paths config and edit it once:
+
+```bash
+cp config/radioml_paths.example.json config/radioml_paths.json
+```
+
+Example `config/radioml_paths.json` for a mounted Google Drive:
+
+```json
+{
+  "radioml_2018_01a": {
+    "data_path": "/content/drive/MyDrive/datasets/RadioML/GOLD_XYZ_OSC.0001_1024.hdf5",
+    "classes_path": "/content/drive/MyDrive/datasets/RadioML/classes-fixed.json"
+  }
+}
+```
+
+`config/radioml_paths.json` is git-ignored. The sweep and telemetry scripts use
+this resolution order: explicit `--data-path` / `--classes-path`, then
+`RADIOML_DATA_PATH` / `RADIOML_CLASSES_PATH`, then `config/radioml_paths.json`,
+then the default `data/` path. If you keep the config somewhere else, pass
+`--paths-config /path/to/radioml_paths.json` or set `RADIOML_PATHS_CONFIG`.
+
+**Do not commit the dataset file.** The repo's `.gitignore` excludes `data/`.
 
 Keep the fixed class sidecar next to the HDF5 when possible:
 

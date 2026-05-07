@@ -16,6 +16,9 @@ For GPU:
 
     uv run python experiments/rf/sweep_radioml.py --device cuda \\
         --data-path data/GOLD_XYZ_OSC.0001_1024.hdf5
+
+Or put the archive location in `config/radioml_paths.json` (see
+`config/radioml_paths.example.json`) and omit `--data-path`.
 """
 
 from __future__ import annotations
@@ -43,6 +46,10 @@ from experiments._sweep import (
     select_reference_trial_for_all_families,
     step_progress_bar,
     write_tuning_log,
+)
+from experiments.rf.path_config import (
+    DEFAULT_RADIOML_PATHS_CONFIG,
+    resolve_radioml_paths,
 )
 from experiments.rf.radioml import load_radioml_2018_01a
 from experiments.rf.synthetic_modulation import (
@@ -408,7 +415,11 @@ def main() -> int:
     parser.add_argument(
         "--data-path",
         type=Path,
-        default=Path("data/GOLD_XYZ_OSC.0001_1024.hdf5"),
+        default=None,
+        help=(
+            "RadioML HDF5 path. Overrides RADIOML_DATA_PATH and "
+            "config/radioml_paths.json."
+        ),
     )
     parser.add_argument(
         "--classes-path",
@@ -417,6 +428,15 @@ def main() -> int:
         help=(
             "optional fixed class-order sidecar; defaults to classes-fixed.json "
             "or classes-fixed.txt next to the HDF5"
+        ),
+    )
+    parser.add_argument(
+        "--paths-config",
+        type=Path,
+        default=None,
+        help=(
+            "JSON file with radioml_2018_01a.data_path/classes_path. Defaults "
+            f"to {DEFAULT_RADIOML_PATHS_CONFIG} when present."
         ),
     )
     parser.add_argument(
@@ -479,6 +499,20 @@ def main() -> int:
         default=Path("results/radioml_modulation_sweep"),
     )
     args = parser.parse_args()
+
+    paths = resolve_radioml_paths(
+        data_path=args.data_path,
+        classes_path=args.classes_path,
+        config_path=args.paths_config,
+    )
+    args.data_path = paths.data_path
+    args.classes_path = paths.classes_path
+    print(
+        "RadioML paths: "
+        f"data_path={args.data_path} ({paths.data_path_source}), "
+        f"classes_path={args.classes_path} ({paths.classes_path_source})",
+        flush=True,
+    )
 
     # Apply preset overrides first; explicit per-flag values always win because
     # argparse tags absent flags with their parser defaults, which we detect by
@@ -573,6 +607,9 @@ def main() -> int:
         "experiment": "radioml_modulation_sweep",
         "data_path": str(args.data_path),
         "classes_path": str(args.classes_path) if args.classes_path else None,
+        "paths_config": str(paths.config_path) if paths.config_path else None,
+        "data_path_source": paths.data_path_source,
+        "classes_path_source": paths.classes_path_source,
         "n_trials": args.n_trials,
         "seeds": list(args.seeds),
         "model_families": list(args.model_families),

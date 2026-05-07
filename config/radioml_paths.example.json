@@ -1,0 +1,6 @@
+{
+  "radioml_2018_01a": {
+    "data_path": "/content/drive/MyDrive/datasets/RadioML/GOLD_XYZ_OSC.0001_1024.hdf5",
+    "classes_path": "/content/drive/MyDrive/datasets/RadioML/classes-fixed.json"
+  }
+}

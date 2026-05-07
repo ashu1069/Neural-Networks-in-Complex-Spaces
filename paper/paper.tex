@@ -36,9 +36,9 @@
 % Lightweight code formatting.
 \newcommand{\code}[1]{\texttt{#1}}
 
-\title{Where the complex inductive bias lives:\\
-an architecture-level prior and a separable optimization-level\\
-robustness asymmetry, characterized at small scale}
+\title{Complex spaces as geometry and optimization:\\
+disentangling architectural priors from training robustness\\
+in complex-valued neural networks}
 
 \author{%
   Ashutosh Kumar\\
@@ -52,35 +52,34 @@ robustness asymmetry, characterized at small scale}
 \maketitle
 
 \begin{abstract}
-The intuition that complex-valued neural networks (CVNNs) help on
-phase-bearing signals is widely held and rarely measured carefully. We
-demonstrate, at the scale where a mechanism analysis remains tractable,
-that the complex inductive bias on IQ classification \emph{decomposes}
-into two separable effects with distinct origins. (i) An
-\textbf{architectural} prior: \code{ComplexConv1d} is exactly
-phase-equivariant (proof in two lines); the magnitude-logit head makes
-the network phase-invariant at the readout. (ii) An
-\textbf{optimization-level} asymmetry: under matched-shared-trial
-hyperparameter selection, real-valued baselines at identical capacity
-exhibit a step-1 explosion-into-dead-region failure mode on the
-classifier head that complex networks do not. Per-step gradient
-telemetry across $5 \times 4 \times 3 = 60$ instrumented runs locates
-the explosion specifically on \code{head.weight} (50--80$\times$ larger
-gradient at step 1 for real baselines than for complex) and shows it
-produces $3/9$ dead seeds (final loss = $\ln 3$, the 3-class chance
-level) under three of the five activations and zero dead seeds under
-the other two. The same threshold behavior replicates on synthetic
-AWGN-only data with the same matched-trial hyperparameters --- the
-mechanism is hp-driven, not data-driven. We argue that conflating these
-two effects produces the inflated apparent CVNN gaps in some prior
-work, and that the appropriate framing for CVNN evaluation is to
-control for both effects independently. The 1-D scope, three-class
-subset of RadioML 2018.01A, and modest hardware are deliberate: the
-scope is chosen to support a complete mechanism analysis with
-end-to-end reproducibility (manifests, dirty-bit tracking, structural
-CI guards on artifacts). Code, sweep harness, telemetry traces, and
-figure scripts are released; full-archive scale-up is parameterized via
-a single CLI flag and is signposted future work.
+Complex-valued neural networks (CVNNs) are usually motivated by
+phase-bearing data, but the phrase ``complex helps'' hides two
+different mechanisms. We study CVNNs at a scale where both mechanisms
+can be measured directly and argue that complex spaces buy
+\emph{geometry and optimization}, not free accuracy. On the geometry
+side, bias-free \code{ComplexConv1d} is exactly phase-equivariant; a
+magnitude readout turns equivariant features into phase-invariant
+logits when the intervening stack preserves or learns the symmetry. On
+the optimization side, matched-shared-trial hyperparameter selection
+reveals a robustness asymmetry: real-valued baselines at matched
+capacity can suffer a step-1 explosion-into-dead-region failure mode on
+the classifier head that complex networks tolerate. Per-step gradient
+telemetry across $5 \times 4 \times 3 = 60$ RadioML runs localizes the
+explosion to \code{head.weight}: under three high-lr activation
+regimes, real baselines have 50--80$\times$ larger step-1 head
+gradients than the complex model and produce $3/9$ dead real-baseline
+seeds; under two lower-lr regimes the gradients stay bounded and the
+apparent CVNN-vs-real gap collapses to $\pm 3$ percentage points. The
+same threshold behavior replicates on synthetic AWGN-only data with
+the same matched-trial hyperparameters, indicating an hp-driven rather
+than RadioML-specific mechanism. We therefore separate three claims:
+complex geometry is useful when the task contains phase/sequence
+structure, complex parameterization changes optimization tolerance,
+and matched-shared-trial accuracy should be read as a robustness stress
+test rather than as an independently tuned performance estimate. The
+1-D scope, three-class RadioML 2018.01A subset, and modest hardware are
+deliberate: they make a complete mechanism analysis reproducible from
+released code, manifests, telemetry traces, and figure scripts.
 \end{abstract}
 
 \section{Concept and feasibility scope}
@@ -94,8 +93,9 @@ explicit reproducibility:
 \begin{enumerate}
   \item \textbf{Architectural claim (formal).}
     \code{ComplexConv1d} is phase-equivariant in the bias-free case
-    (\Cref{lem:phase-equivariance}); the magnitude-logit head is
-    phase-invariant. A real \code{Conv1d} on stacked $(I, Q)$ channels
+    (\Cref{lem:phase-equivariance}); a magnitude-logit head is
+    invariant to global phase rotations of its input features. A real
+    \code{Conv1d} on stacked $(I, Q)$ channels
     does not get this for free --- it must learn rotation invariance
     from data via a $2\times 2$ channel mix the complex network gets by
     construction.
@@ -167,8 +167,9 @@ used, the exact \code{git\_commit} of the producing code, and a
 they are reviewed deliberately rather than slipping through. A
 structural CI guard checks that the activation characterization
 artifact regenerates without errors and contains all six expected
-activation rows. The companion repository holds 122 unit and
-integration tests that gate every push.
+activation rows. The companion repository currently has 123 passing
+unit and integration tests, with two CUDA-specific tests skipped on the
+local non-CUDA development machine.
 
 \section{Framework}
 \label{sec:framework}
@@ -525,6 +526,7 @@ hyperparameters that the RadioML matched-shared-trial selected.
     channel-attenuated ones. \emph{The threshold is hp-driven, not
     data-driven.}}
   \label{tab:cross-task}
+  \resizebox{\linewidth}{!}{%
   \begin{tabular}{lrrrr}
     \toprule
     activation & RadioML dead/9 & synthetic dead/9 & RadioML max real grad & synthetic max real grad \\
@@ -536,6 +538,7 @@ hyperparameters that the RadioML matched-shared-trial selected.
     \code{zrelu} & $\mathbf{0}$ & $\mathbf{0}$ & 0.2 & 0.7 \\
     \bottomrule
   \end{tabular}
+  }
 \end{table}
 
 \section{Interpretation}
@@ -585,12 +588,13 @@ for phase-bearing signals'' can be made formal in one short lemma.
 
 In the bias-free case (or after subtracting the bias) the result is
 exactly equivariant. The biased case adds a fixed offset
-$(1 - e^{i\varphi}) \cdot b$ that the next layer can absorb; in our
-networks the head's $|\cdot|$ magnitude operation is itself
-phase-invariant ($|e^{i\varphi} \cdot y| = |y|$ for real $\varphi$), so
-the \emph{output} logits are unaffected by a constant input phase
-shift --- the architecture is phase-invariant as a whole at the
-readout.
+$(1 - e^{i\varphi}) \cdot b$. If the intervening stack preserves the
+global phase action, the head's $|\cdot|$ magnitude operation removes
+it ($|e^{i\varphi} \cdot y| = |y|$ for real $\varphi$), yielding
+phase-invariant logits. Our actual benchmarks include activations that
+do \emph{not} preserve exact equivariance, so we treat this as an
+architectural prior supplied by complex multiplication rather than a
+guarantee that the trained network is globally phase-invariant.
 
 The same does not hold for \code{Conv1d} operating on a stacked
 $(\mathrm{Re}\,z, \mathrm{Im}\,z)$ real input. A global phase shift
@@ -612,8 +616,10 @@ complex network buys nothing --- the null is what
 \Cref{lem:phase-equivariance} predicts. A length-$L$ IQ sequence
 (synthetic RF, RadioML) does have temporal structure, the carrier
 phase varies sample-to-sample under channel effects, and a
-phase-equivariant conv stack matches that symmetry --- the wins are
-also what the lemma predicts.
+complex conv stack can spend less capacity learning the relevant
+rotation algebra. The observed wins are consistent with that prior,
+without requiring every activation in the stack to preserve exact
+equivariance.
 
 \paragraph{What the lemma does not explain.}
 Phase equivariance of the \emph{layer} is necessary for the
@@ -787,9 +793,9 @@ satisfies $\sigma(e^{i\phi} z) = e^{i\phi} \sigma(z)$.
     $|z|$, which is rotation-invariant; the phase factor passes through
     unchanged.
   \item \textbf{ComplexCardioid} ($\sigma(z) = \tfrac{1}{2}
-    (1 + \cos \angle z) \cdot z$): equivariant only under rotations
-    that preserve $\angle z \bmod 2\pi$, which is no constraint --- so
-    fully equivariant.
+    (1 + \cos \angle z) \cdot z$): \emph{not} equivariant in general,
+    because the gate changes under rotation:
+    $\cos(\angle z + \phi) \neq \cos(\angle z)$ for generic $\phi$.
   \item \textbf{Siglog} ($\sigma(z) = z / (1 + |z|)$): equivariant.
   \item \textbf{ComplexTanh} (split $\tanh$ on real/imag parts):
     \emph{not} equivariant. A rotation $e^{i\phi}$ mixes real and
@@ -800,13 +806,14 @@ satisfies $\sigma(e^{i\phi} z) = e^{i\phi} \sigma(z)$.
     equivariant (the kept-quadrant condition is rotation-sensitive).
 \end{itemize}
 
-\paragraph{So three of our six activations break equivariance.} The
+\paragraph{So four of our six characterized activations break equivariance.} The
 empirical robustness asymmetry we report (a step-1
 explosion-into-dead-region pattern that disproportionately hurts real
 baselines) does \emph{not} track which activations preserve layer-level
 phase equivariance. CReLU does not preserve equivariance but is the
-configuration with the largest measured CVNN-vs-real gap. We therefore
-locate the asymmetry one level lower than the activation, in the
+configuration with the largest measured CVNN-vs-real gap; Siglog does
+preserve equivariance but appears in the unstable high-lr regime. We
+therefore locate the asymmetry one level lower than the activation, in the
 $(\mathrm{Re}, \mathrm{Im})$ parameter coupling that the optimizer sees
 on \code{head.weight} at step 1; \Cref{sec:radioml-mechanism}
 develops this in the body.
@@ -826,6 +833,7 @@ families. The independent-winner table is in
 \begin{table}[h]
 \centering
 \small
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{lll}
 \toprule
 \textbf{Experiment} & \textbf{Search space} & \textbf{Budget} \\
@@ -851,7 +859,7 @@ Synthetic RF modulation
 RadioML subset (\code{--preset subset})
   & hidden $\in \{16, 32, 64\}$ (conv) / $\{32, 64, 128\}$ (mlp),
   & 16 trials \\
-  & batch $\in \{128, 256, 512\}$, lr $\in [10^{-4}, 10^{-2}]$,
+  & batch $\in \{128, 256, 512\}$, lr $\in [10^{-3}, 5 \times 10^{-2}]$,
   & 3 seeds \\
   & steps $\in \{200, 400, 800\}$
   & \\
@@ -859,12 +867,13 @@ RadioML subset (\code{--preset subset})
 RadioML full (\code{--preset full})
   & hidden $\in \{32, 64, 128, 256\}$, batch $\in \{256, 512, 1024\}$,
   & 16 trials \\
-  & lr $\in [5 \times 10^{-5}, 5 \times 10^{-3}]$,
+  & lr $\in [10^{-3}, 5 \times 10^{-2}]$,
   & 3 seeds \\
   & steps $\in \{400, 800, 1600\}$
   & (deferred) \\
 \bottomrule
 \end{tabular}
+}
 \caption{Search spaces and budgets per experiment. Optimizer is
 AdamW~\cite{loshchilov2019decoupled} with weight decay $10^{-4}$
 throughout; learning-rate scheduler is cosine to zero across the
@@ -924,47 +933,48 @@ at the readout.
 \section{Per-activation results, all four baseline families}
 \label{app:per-activation-results}
 
-For each of six activations (CReLU, ZReLU, ModReLU, ComplexCardioid,
-Siglog, ComplexTanh), we report mean test accuracy on the RadioML
-\code{--preset subset} task across the 3 seeds at the matched
-shared-trial winner, with 95\% CI from the seeds. Cells show
-\code{mean (lo, hi)}; bold = best per row; ``dead'' marks seeds with
-final loss $\geq \ln 3 - 0.05$ (the 3-class chance level).
+For each of the five activations used in the RadioML ablation, we
+report mean $\pm$ standard deviation test accuracy on the
+\code{--preset subset} task at the matched shared-trial winner. The
+last column reports dead real-baseline seeds across the three real
+families $\times$ three telemetry seeds, where ``dead'' means final
+loss $\geq \ln 3 - 0.05$ (the 3-class chance level). ComplexTanh was
+included in activation characterization but not in the RadioML
+ablation.
 
 \begin{table}[h]
 \centering
 \small
-\begin{tabular}{lcccc}
+\begin{tabular}{lccccc}
 \toprule
-\textbf{Activation} & \textbf{complex} & \textbf{real\_stacked} & \textbf{matched\_params} & \textbf{matched\_flops} \\
+\textbf{Activation} & \textbf{complex} & \textbf{real\_stacked} & \textbf{matched\_params} & \textbf{matched\_flops} & \textbf{dead real seeds} \\
 \midrule
-CReLU            & \textbf{0.78} & 0.41 (3 dead) & 0.46 (3 dead) & 0.45 (3 dead) \\
-ZReLU            & 0.71          & 0.69          & \textbf{0.72}          & 0.71 \\
-ModReLU          & 0.69          & 0.62 (1 dead) & 0.65 (1 dead) & 0.65 (1 dead) \\
-ComplexCardioid  & \textbf{0.74} & 0.55 (2 dead) & 0.57 (2 dead) & 0.57 (2 dead) \\
-Siglog           & 0.70          & 0.68          & \textbf{0.71}          & 0.70 \\
-ComplexTanh      & 0.66          & 0.65          & 0.67          & \textbf{0.68} \\
+\code{crelu}    & \textbf{0.729 $\pm$ 0.009} & 0.458 $\pm$ 0.139 & 0.500 $\pm$ 0.133 & 0.425 $\pm$ 0.142 & 3/9 \\
+\code{cardioid} & \textbf{0.728 $\pm$ 0.019} & 0.457 $\pm$ 0.138 & 0.503 $\pm$ 0.135 & 0.416 $\pm$ 0.131 & 3/9 \\
+\code{siglog}   & \textbf{0.701 $\pm$ 0.016} & 0.469 $\pm$ 0.149 & 0.466 $\pm$ 0.145 & 0.412 $\pm$ 0.123 & 3/9 \\
+\code{modrelu}  & 0.668 $\pm$ 0.031 & 0.632 $\pm$ 0.035 & \textbf{0.694 $\pm$ 0.062} & 0.680 $\pm$ 0.038 & 0/9 \\
+\code{zrelu}    & \textbf{0.733 $\pm$ 0.015} & 0.664 $\pm$ 0.030 & 0.704 $\pm$ 0.008 & 0.699 $\pm$ 0.009 & 0/9 \\
 \bottomrule
 \end{tabular}
 \caption{RadioML subset, matched-shared-trial selection. The
 CVNN-vs-real gap is large under three activations (CReLU,
-ComplexCardioid, ModReLU) and absent under three others (ZReLU,
-Siglog, ComplexTanh). The gap-bearing activations are exactly those
-for which real baselines exhibit dead-loss seeds; \emph{the gap is the
-dead-seed average}. See \Cref{app:telemetry} for the per-step
-mechanism.}
+ComplexCardioid, Siglog) and small or absent under two others
+(ModReLU, ZReLU). The gap-bearing activations are exactly those for
+which the matched-shared-trial hyperparameters produce dead
+real-baseline seeds; the apparent gap is largely the dead-seed
+average. See \Cref{app:telemetry} for the per-step mechanism.}
 \label{tab:per-activation}
 \end{table}
 
 \paragraph{Independent-winner contrast.} Re-doing the same table with
 independent per-family hyperparameter selection (each family's best of
 16 trials, rather than shared trial index) reduces the CReLU gap from
-0.78 vs 0.41 to roughly 0.78 vs 0.65 --- still a real difference, but
-about a third the size. The reduction comes from independent selection
+0.7293 vs 0.4999 (best matched real) to 0.7293 vs 0.7047 (best
+independently selected real). The reduction comes from independent selection
 allowing real baselines to avoid the high-lr trial that triggers the
-step-1 explosion. We report matched-shared-trial as the headline
-because at fixed capacity allocation the explosion is the actual
-phenomenon under study, not a search-budget artifact.
+step-1 explosion. We therefore read matched-shared-trial as a
+robustness stress test and independent selection as the better estimate
+of best achievable performance under separate tuning.
 
 % ---------------------------------------------------------------------------
 \section{Gradient telemetry: per-layer, per-step}
@@ -984,11 +994,11 @@ $\|\nabla_{\text{head.weight}} L\|_{\text{real}} \,/\,
 falls into two regimes:
 
 \begin{itemize}
-  \item \textbf{Gap-bearing} (CReLU, ComplexCardioid, ModReLU): ratio
+  \item \textbf{Gap-bearing} (CReLU, ComplexCardioid, Siglog): ratio
     in the range $50$--$80$ at step 1; collapses to $\sim 1$ by step
     20 for surviving seeds, but seeds whose post-step-1 head landed in
     a dead-ReLU region never produce gradient signal again.
-  \item \textbf{Stable} (ZReLU, Siglog): ratio in the range
+  \item \textbf{Stable} (ModReLU, ZReLU): ratio in the range
     $1.5$--$3$ at step 1; no seeds enter dead-loss states.
 \end{itemize}
 
@@ -1024,8 +1034,8 @@ produces raw-symbol $(I, Q)$ sequences with per-class label imbalance
 matched to RadioML.
 
 \paragraph{Result.} The dead-seed pattern replicates: CReLU,
-ComplexCardioid, and ModReLU produce 2--3 dead seeds per 9 in the real
-families; ZReLU and Siglog produce zero. The step-1 head-gradient
+ComplexCardioid, and Siglog produce 2--3 dead seeds per 9 in the real
+families; ModReLU and ZReLU produce zero. The step-1 head-gradient
 ratio sits in the same $50$--$80\times$ band for the gap-bearing
 activations. We conclude the mechanism is hyperparameter-driven,
 mediated by the readout's input distribution under matched
@@ -1156,7 +1166,7 @@ ModReLU
   & yes \\
 ComplexCardioid
   & $\sigma(z) = \tfrac{1}{2}(1 + \cos \angle z) \cdot z$
-  & yes \\
+  & no \\
 Siglog
   & $\sigma(z) = z / (1 + |z|)$
   & yes \\
@@ -1165,11 +1175,13 @@ ComplexTanh
   & no \\
 \bottomrule
 \end{tabular}
-\caption{The six activations swept in this paper, and whether they
-preserve global phase equivariance layer-by-layer
+\caption{The six activations characterized in this paper, and whether
+they preserve global phase equivariance layer-by-layer
 (\Cref{app:phase-equivariance}). Equivariance does not predict
-the empirical CVNN-vs-real gap pattern; see body
-\Cref{sec:radioml-mechanism}.}
+the empirical CVNN-vs-real gap pattern; five of these activations
+(all except ComplexTanh) are used in the RadioML ablation, and
+Siglog's instability despite equivariance is part of the mechanism
+evidence in \Cref{sec:radioml-mechanism}.}
 \label{tab:activations}
 \end{table}
 

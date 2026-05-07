@@ -16,6 +16,10 @@ from experiments.rf.gradient_telemetry import (
     telemetry_config_from_sweep_summary,
     write_telemetry_jsonl,
 )
+from experiments.rf.path_config import (
+    DEFAULT_RADIOML_PATHS_CONFIG,
+    resolve_radioml_paths,
+)
 
 
 def main() -> int:
@@ -23,9 +27,22 @@ def main() -> int:
     parser.add_argument(
         "--data-path",
         type=Path,
-        default=Path("data/GOLD_XYZ_OSC.0001_1024.hdf5"),
+        default=None,
+        help=(
+            "RadioML HDF5 path. Overrides RADIOML_DATA_PATH and "
+            "config/radioml_paths.json."
+        ),
     )
     parser.add_argument("--classes-path", type=Path, default=None)
+    parser.add_argument(
+        "--paths-config",
+        type=Path,
+        default=None,
+        help=(
+            "JSON file with radioml_2018_01a.data_path/classes_path. Defaults "
+            f"to {DEFAULT_RADIOML_PATHS_CONFIG} when present."
+        ),
+    )
     parser.add_argument(
         "--activations",
         nargs="+",
@@ -76,6 +93,20 @@ def main() -> int:
         default=Path("results/radioml_telemetry"),
     )
     args = parser.parse_args()
+
+    paths = resolve_radioml_paths(
+        data_path=args.data_path,
+        classes_path=args.classes_path,
+        config_path=args.paths_config,
+    )
+    args.data_path = paths.data_path
+    args.classes_path = paths.classes_path
+    print(
+        "RadioML paths: "
+        f"data_path={args.data_path} ({paths.data_path_source}), "
+        f"classes_path={args.classes_path} ({paths.classes_path_source})",
+        flush=True,
+    )
 
     activations = (
         ["crelu", "modrelu", "cardioid", "siglog", "zrelu"]
