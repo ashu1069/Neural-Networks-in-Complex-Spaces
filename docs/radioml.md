@@ -171,12 +171,12 @@ git pull && git status
 
 # Full 24-class run on the headline activation (CReLU)
 uv run python experiments/rf/sweep_radioml.py --device cuda \
-    --preset full --activation crelu --seeds 0 1 2
+    --preset full --activation crelu --seeds 0 1 2 --resume
 
 # Optional: ablate a stable activation (zrelu) on the full task to test
 # whether the robustness asymmetry survives at scale
 uv run python experiments/rf/sweep_radioml.py --device cuda \
-    --preset full --activation zrelu --seeds 0 1 2
+    --preset full --activation zrelu --seeds 0 1 2 --resume
 ```
 
 When done:
@@ -187,6 +187,26 @@ git add results/radioml_modulation_sweep_full_*/
 git commit -m "Phase 5+: RadioML full-archive sweep (24 classes, 26 SNRs, 1024 samples)"
 git push
 ```
+
+Long sweeps write a seed-level checkpoint after every completed training run:
+
+```text
+results/radioml_modulation_sweep_full_<activation>/checkpoint.json
+```
+
+If Colab disconnects, rerun the same command with `--resume`; completed
+`(family, trial, seed)` rows are skipped. Completed sweeps also write:
+
+```text
+training_params.json
+loss_curves_all.png
+loss_curves_selected.png
+```
+
+`training_params.json` is the flat run list with every family/trial/seed,
+hyperparameter sample, metric, runtime, parameter count, and final training
+loss. The PNGs plot all trial mean loss curves and the selected-trial seed
+curves.
 
 ## Citation
 

@@ -12,6 +12,8 @@ from experiments._sweep import (
     random_search,
     select_best_per_family,
     select_reference_trial_for_all_families,
+    write_loss_curve_plots,
+    write_training_params,
     write_tuning_log,
 )
 
@@ -158,3 +160,91 @@ def test_write_tuning_log_writes_markdown_and_json(tmp_path: Path) -> None:
     md = (tmp_path / "tuning_log.md").read_text()
     assert "Selected configuration per family" in md
     assert "All trials" in md
+
+
+def test_random_search_checkpoints_and_resumes(tmp_path: Path) -> None:
+    space = SearchSpace(distributions={"x": ("choice", [1, 2])})
+    checkpoint_path = tmp_path / "checkpoint.json"
+    calls: list[tuple[str, int, int]] = []
+
+    def train_fn(family: str, hp: dict, seed: int) -> TrialSeedOutcome:
+        calls.append((family, hp["x"], seed))
+        return TrialSeedOutcome(
+            val_accuracy=float(hp["x"]),
+            test_accuracy=float(hp["x"]) + seed,
+            train_seconds=0.1,
+            extra={"train_loss_curve": [1.0, 0.5], "final_train_loss": 0.5},
+        )
+
+    first = random_search(
+        families=["a", "b"],
+        search_space=space,
+        seeds=[0, 1],
+        n_trials=2,
+        sweep_seed=0,
+        train_fn=train_fn,
+        checkpoint_path=checkpoint_path,
+        progress=False,
+    )
+    assert checkpoint_path.exists()
+    assert len(calls) == 8
+
+    def fail_if_called(family: str, hp: dict, seed: int) -> TrialSeedOutcome:
+        raise AssertionError(f"resume should skip {family=} {hp=} {seed=}")
+
+    resumed = random_search(
+        families=["a", "b"],
+        search_space=space,
+        seeds=[0, 1],
+        n_trials=2,
+        sweep_seed=0,
+        train_fn=fail_if_called,
+        checkpoint_path=checkpoint_path,
+        resume=True,
+        progress=False,
+    )
+
+    assert [trial.to_dict() for trial in resumed] == [
+        trial.to_dict() for trial in first
+    ]
+
+
+def test_training_params_and_loss_plots_are_written(tmp_path: Path) -> None:
+    space = SearchSpace(distributions={"x": ("choice", [1])})
+
+    def train_fn(family: str, hp: dict, seed: int) -> TrialSeedOutcome:
+        return TrialSeedOutcome(
+            val_accuracy=0.8,
+            test_accuracy=0.7,
+            train_seconds=0.1,
+            extra={
+                "parameter_count": 12,
+                "train_loss_curve": [1.0, 0.8, 0.6],
+                "final_train_loss": 0.6,
+            },
+        )
+
+    trials = random_search(
+        families=["complex", "real"],
+        search_space=space,
+        seeds=[0, 1],
+        n_trials=1,
+        sweep_seed=0,
+        train_fn=train_fn,
+        progress=False,
+    )
+    selections = select_reference_trial_for_all_families(trials)
+    params_path = write_training_params(
+        tmp_path,
+        sweep_config={"n_trials": 1, "seeds": [0, 1], "sweep_seed": 0},
+        trials=trials,
+    )
+    artifacts = write_loss_curve_plots(tmp_path, trials=trials, selections=selections)
+
+    params = json.loads(params_path.read_text())
+    assert len(params["runs"]) == 4
+    assert params["runs"][0]["hyperparameters"] == {"x": 1}
+    assert params["runs"][0]["train_loss_steps"] == 3
+    assert (tmp_path / "loss_curves_all.png").exists()
+    assert (tmp_path / "loss_curves_selected.png").exists()
+    assert set(artifacts) == {"loss_curves_all", "loss_curves_selected"}

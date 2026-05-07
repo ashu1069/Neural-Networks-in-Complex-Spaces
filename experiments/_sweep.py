@@ -16,7 +16,7 @@ import random
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 JsonValue = str | int | float | bool | None | dict[str, Any] | list[Any]
 JsonObject = dict[str, JsonValue]
@@ -138,6 +138,8 @@ def random_search(
     sweep_seed: int,
     train_fn: TrialFn,
     progress: bool = True,
+    checkpoint_path: Path | None = None,
+    resume: bool = False,
 ) -> list[TrialResult]:
     """Run a shared-budget random search across all families.
 
@@ -148,6 +150,11 @@ def random_search(
     Progress: when `progress=True` (default), shows a tqdm bar over total
     `(family, trial)` pairs and prints a one-line summary after each trial.
     Disable for tests or non-TTY logs.
+
+    Checkpointing: when `checkpoint_path` is provided, each completed
+    `(family, trial, seed)` run is flushed to JSON immediately. Pass
+    `resume=True` with the same sweep settings to skip completed seeds after a
+    preemption or Colab disconnect.
     """
 
     if n_trials <= 0:
@@ -165,7 +172,18 @@ def random_search(
         search_space.sample(rng) for _ in range(n_trials)
     ]
 
-    total_runs = len(families) * n_trials * len(seeds)
+    completed = _load_or_init_checkpoint(
+        checkpoint_path=checkpoint_path,
+        resume=resume,
+        families=list(families),
+        seeds=list(seeds),
+        n_trials=n_trials,
+        sweep_seed=sweep_seed,
+        sampled_trials=sampled_trials,
+    )
+
+    total_expected_runs = len(families) * n_trials * len(seeds)
+    total_runs = max(0, total_expected_runs - len(completed))
     bar = _maybe_tqdm(total_runs, enabled=progress)
 
     trials: list[TrialResult] = []
@@ -176,12 +194,35 @@ def random_search(
             seconds_per_seed: list[float] = []
             extra_per_seed: list[JsonObject] = []
             for seed in seeds:
-                outcome = train_fn(family, hyperparameters, seed)
+                key = _checkpoint_key(family, trial_index, seed)
+                checkpoint_record = completed.get(key)
+                was_resumed = checkpoint_record is not None
+                if checkpoint_record is None:
+                    outcome = train_fn(family, hyperparameters, seed)
+                    checkpoint_record = _checkpoint_record(
+                        family=family,
+                        trial_index=trial_index,
+                        seed=seed,
+                        hyperparameters=hyperparameters,
+                        outcome=outcome,
+                    )
+                    completed[key] = checkpoint_record
+                    _write_checkpoint(
+                        checkpoint_path=checkpoint_path,
+                        families=list(families),
+                        seeds=list(seeds),
+                        n_trials=n_trials,
+                        sweep_seed=sweep_seed,
+                        sampled_trials=sampled_trials,
+                        completed=completed,
+                    )
+                else:
+                    outcome = _outcome_from_checkpoint(checkpoint_record)
                 val_per_seed.append(outcome.val_accuracy)
                 test_per_seed.append(outcome.test_accuracy)
                 seconds_per_seed.append(outcome.train_seconds)
                 extra_per_seed.append(outcome.extra)
-                if bar is not None:
+                if bar is not None and not was_resumed:
                     bar.set_postfix_str(
                         f"{family} t{trial_index}/{n_trials - 1} s{seed} "
                         f"val={outcome.val_accuracy:.3f}",
@@ -207,6 +248,154 @@ def random_search(
     if bar is not None:
         bar.close()
     return trials
+
+
+def _checkpoint_key(family: str, trial_index: int, seed: int) -> str:
+    return f"{family}\x1f{trial_index}\x1f{seed}"
+
+
+def _checkpoint_record(
+    *,
+    family: str,
+    trial_index: int,
+    seed: int,
+    hyperparameters: dict[str, Any],
+    outcome: TrialSeedOutcome,
+) -> JsonObject:
+    return {
+        "family": family,
+        "trial_index": trial_index,
+        "seed": seed,
+        "hyperparameters": dict(hyperparameters),
+        "val_accuracy": outcome.val_accuracy,
+        "test_accuracy": outcome.test_accuracy,
+        "train_seconds": outcome.train_seconds,
+        "extra": dict(outcome.extra),
+    }
+
+
+def _outcome_from_checkpoint(record: JsonObject) -> TrialSeedOutcome:
+    extra = record.get("extra", {})
+    if not isinstance(extra, dict):
+        msg = "checkpoint record has non-object extra"
+        raise TypeError(msg)
+    return TrialSeedOutcome(
+        val_accuracy=_required_float(record, "val_accuracy"),
+        test_accuracy=_required_float(record, "test_accuracy"),
+        train_seconds=_required_float(record, "train_seconds"),
+        extra=cast(JsonObject, extra),
+    )
+
+
+def _load_or_init_checkpoint(
+    *,
+    checkpoint_path: Path | None,
+    resume: bool,
+    families: list[str],
+    seeds: list[int],
+    n_trials: int,
+    sweep_seed: int,
+    sampled_trials: list[dict[str, Any]],
+) -> dict[str, JsonObject]:
+    if checkpoint_path is None or not resume or not checkpoint_path.exists():
+        return {}
+
+    payload = json.loads(checkpoint_path.read_text())
+    if not isinstance(payload, dict):
+        msg = f"checkpoint must be a JSON object: {checkpoint_path}"
+        raise TypeError(msg)
+
+    expected = {
+        "families": families,
+        "seeds": seeds,
+        "n_trials": n_trials,
+        "sweep_seed": sweep_seed,
+        "sampled_trials": sampled_trials,
+    }
+    for key, value in expected.items():
+        if payload.get(key) != value:
+            msg = (
+                f"checkpoint {checkpoint_path} does not match this sweep on "
+                f"{key}; start a fresh output dir or remove --resume"
+            )
+            raise ValueError(msg)
+
+    completed_records = payload.get("completed", [])
+    if not isinstance(completed_records, list):
+        msg = f"checkpoint field `completed` must be a list: {checkpoint_path}"
+        raise TypeError(msg)
+
+    completed: dict[str, JsonObject] = {}
+    for raw_record in completed_records:
+        if not isinstance(raw_record, dict):
+            msg = (
+                f"checkpoint contains a non-object completed record: {checkpoint_path}"
+            )
+            raise TypeError(msg)
+        record = cast(JsonObject, raw_record)
+        family = str(record["family"])
+        trial_index = _required_int(record, "trial_index")
+        seed = _required_int(record, "seed")
+        key = _checkpoint_key(family, trial_index, seed)
+        completed[key] = record
+    return completed
+
+
+def _write_checkpoint(
+    *,
+    checkpoint_path: Path | None,
+    families: list[str],
+    seeds: list[int],
+    n_trials: int,
+    sweep_seed: int,
+    sampled_trials: list[dict[str, Any]],
+    completed: Mapping[str, JsonObject],
+) -> None:
+    if checkpoint_path is None:
+        return
+    checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+    payload: JsonObject = {
+        "schema_version": "0.1.0",
+        "families": families,
+        "seeds": seeds,
+        "n_trials": n_trials,
+        "sweep_seed": sweep_seed,
+        "sampled_trials": sampled_trials,
+        "completed": [
+            completed[key]
+            for key in sorted(
+                completed,
+                key=lambda raw: _checkpoint_sort_key(completed[raw]),
+            )
+        ],
+    }
+    tmp_path = checkpoint_path.with_name(checkpoint_path.name + ".tmp")
+    tmp_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+    tmp_path.replace(checkpoint_path)
+
+
+def _checkpoint_sort_key(record: JsonObject) -> tuple[str, int, int]:
+    return (
+        str(record["family"]),
+        _required_int(record, "trial_index"),
+        _required_int(record, "seed"),
+    )
+
+
+def _required_float(record: JsonObject, key: str) -> float:
+    value = record.get(key)
+    if not isinstance(value, int | float) or isinstance(value, bool):
+        msg = f"checkpoint record field {key!r} must be numeric"
+        raise TypeError(msg)
+    return float(value)
+
+
+def _required_int(record: JsonObject, key: str) -> int:
+    value = record.get(key)
+    if not isinstance(value, int) or isinstance(value, bool):
+        msg = f"checkpoint record field {key!r} must be an integer"
+        raise TypeError(msg)
+    return value
 
 
 def _maybe_tqdm(total: int, *, enabled: bool) -> Any:
@@ -450,6 +639,205 @@ def write_tuning_log(
     (output_dir / "tuning_log.md").write_text("\n".join(md_lines) + "\n")
 
 
+def write_training_params(
+    output_dir: Path,
+    *,
+    sweep_config: JsonObject,
+    trials: Sequence[TrialResult],
+) -> Path:
+    """Write one flat row per completed seed run.
+
+    `trials.json` is the canonical full record; this file is intentionally
+    easier to inspect while a long GPU sweep is running.
+    """
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    runs: list[JsonObject] = []
+    for trial in trials:
+        for seed_index, seed in enumerate(trial.seeds):
+            run: JsonObject = {
+                "family": trial.family,
+                "trial_index": trial.trial_index,
+                "seed": seed,
+                "hyperparameters": dict(trial.hyperparameters),
+                "val_accuracy": trial.val_accuracy_per_seed[seed_index],
+                "test_accuracy": trial.test_accuracy_per_seed[seed_index],
+                "train_seconds": trial.train_seconds_per_seed[seed_index],
+            }
+            _copy_per_seed_extras(run, trial.extra, seed_index, len(trial.seeds))
+            runs.append(run)
+
+    payload: JsonObject = {
+        "config": sweep_config,
+        "runs": runs,
+    }
+    path = output_dir / "training_params.json"
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+    return path
+
+
+def write_loss_curve_plots(
+    output_dir: Path,
+    *,
+    trials: Sequence[TrialResult],
+    selections: Sequence[FamilySelection],
+) -> dict[str, str]:
+    """Render all-trial and selected-trial training loss plots.
+
+    Curves are read from `train_loss_curve_per_seed` in each trial's aggregated
+    extras. If a sweep does not record curves, no files are written.
+    """
+
+    if not any(_loss_curves_from_trial(trial) for trial in trials):
+        return {}
+
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    selected_trial_by_family = {
+        selection.family: selection.selected_trial_index for selection in selections
+    }
+    families = _family_order(trials)
+
+    all_path = output_dir / "loss_curves_all.png"
+    fig, axes = plt.subplots(
+        len(families),
+        1,
+        figsize=(8.0, max(2.4, 2.1 * len(families))),
+        squeeze=False,
+    )
+    for ax, family in zip(axes.flatten(), families, strict=True):
+        family_trials = [trial for trial in trials if trial.family == family]
+        for trial in family_trials:
+            curves = _loss_curves_from_trial(trial)
+            mean_curve = _mean_curve(curves)
+            if not mean_curve:
+                continue
+            selected = selected_trial_by_family.get(family) == trial.trial_index
+            ax.plot(
+                range(len(mean_curve)),
+                mean_curve,
+                linewidth=2.2 if selected else 0.8,
+                alpha=0.95 if selected else 0.22,
+                label=f"trial {trial.trial_index}" if selected else None,
+            )
+        ax.set_title(f"{family} loss curves")
+        ax.set_xlabel("training step")
+        ax.set_ylabel("cross entropy")
+        ax.grid(True, axis="y", linestyle=":", alpha=0.35)
+        if selected_trial_by_family.get(family) is not None:
+            ax.legend(frameon=False)
+    fig.tight_layout()
+    fig.savefig(all_path, dpi=180)
+    plt.close(fig)
+
+    selected_path = output_dir / "loss_curves_selected.png"
+    fig, axes = plt.subplots(
+        len(families),
+        1,
+        figsize=(8.0, max(2.4, 2.1 * len(families))),
+        squeeze=False,
+    )
+    for ax, family in zip(axes.flatten(), families, strict=True):
+        selected_index = selected_trial_by_family.get(family)
+        selected_trial = next(
+            (
+                trial
+                for trial in trials
+                if trial.family == family and trial.trial_index == selected_index
+            ),
+            None,
+        )
+        curves = _loss_curves_from_trial(selected_trial) if selected_trial else []
+        for seed, curve in zip(
+            selected_trial.seeds if selected_trial else [],
+            curves,
+            strict=False,
+        ):
+            ax.plot(curve, alpha=0.3, linewidth=0.9, label=f"seed {seed}")
+        mean_curve = _mean_curve(curves)
+        if mean_curve:
+            ax.plot(mean_curve, color="black", linewidth=2.0, label="mean")
+        ax.set_title(f"{family} selected trial {selected_index}")
+        ax.set_xlabel("training step")
+        ax.set_ylabel("cross entropy")
+        ax.grid(True, axis="y", linestyle=":", alpha=0.35)
+        if curves:
+            ax.legend(frameon=False, ncols=min(4, len(curves) + 1))
+    fig.tight_layout()
+    fig.savefig(selected_path, dpi=180)
+    plt.close(fig)
+
+    return {
+        "loss_curves_all": str(all_path),
+        "loss_curves_selected": str(selected_path),
+    }
+
+
+def _copy_per_seed_extras(
+    run: JsonObject,
+    extra: dict[str, JsonValue],
+    seed_index: int,
+    n_seeds: int,
+) -> None:
+    for key, value in extra.items():
+        if not key.endswith("_per_seed") or not isinstance(value, list):
+            continue
+        if len(value) != n_seeds:
+            continue
+        base_key = key.removesuffix("_per_seed")
+        seed_value = value[seed_index]
+        if base_key == "train_loss_curve":
+            if isinstance(seed_value, list):
+                run["train_loss_steps"] = len(seed_value)
+                if seed_value:
+                    run["final_train_loss"] = seed_value[-1]
+            continue
+        run[base_key] = seed_value
+
+
+def _family_order(trials: Sequence[TrialResult]) -> list[str]:
+    families: list[str] = []
+    for trial in trials:
+        if trial.family not in families:
+            families.append(trial.family)
+    return families
+
+
+def _loss_curves_from_trial(trial: TrialResult | None) -> list[list[float]]:
+    if trial is None:
+        return []
+    raw_curves = trial.extra.get("train_loss_curve_per_seed")
+    if not isinstance(raw_curves, list):
+        return []
+    curves: list[list[float]] = []
+    for raw_curve in raw_curves:
+        if not isinstance(raw_curve, list):
+            continue
+        curve = [
+            float(value)
+            for value in raw_curve
+            if isinstance(value, int | float) and not isinstance(value, bool)
+        ]
+        if curve:
+            curves.append(curve)
+    return curves
+
+
+def _mean_curve(curves: Sequence[Sequence[float]]) -> list[float]:
+    if not curves:
+        return []
+    length = min(len(curve) for curve in curves)
+    if length == 0:
+        return []
+    return [
+        sum(curve[index] for curve in curves) / len(curves) for index in range(length)
+    ]
+
+
 def _format_value(value: Any) -> str:
     if isinstance(value, float):
         return f"{value:.4g}"
@@ -491,5 +879,7 @@ __all__ = [
     "select_best_per_family",
     "select_reference_trial_for_all_families",
     "step_progress_bar",
+    "write_loss_curve_plots",
+    "write_training_params",
     "write_tuning_log",
 ]

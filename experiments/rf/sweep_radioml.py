@@ -45,6 +45,8 @@ from experiments._sweep import (
     select_best_per_family,
     select_reference_trial_for_all_families,
     step_progress_bar,
+    write_loss_curve_plots,
+    write_training_params,
     write_tuning_log,
 )
 from experiments.rf.path_config import (
@@ -176,6 +178,7 @@ def _train_one(
     start = time.perf_counter()
     model.train()
     last_loss = float("nan")
+    loss_curve: list[float] = []
     for step in range(n_steps):
         indices = torch.randint(0, n_train, (batch_size,), generator=batch_gen)
         optimizer.zero_grad()
@@ -183,8 +186,9 @@ def _train_one(
         loss = F.cross_entropy(logits, train_actual_labels[indices])
         loss.backward()  # type: ignore[no-untyped-call]
         optimizer.step()
+        last_loss = float(loss.detach().cpu().item())
+        loss_curve.append(last_loss)
         if inner_bar is not None:
-            last_loss = float(loss.detach().cpu().item())
             if step == n_steps - 1 or step % max(1, n_steps // 50) == 0:
                 inner_bar.set_postfix_str(f"loss={last_loss:.4f}", refresh=False)
             inner_bar.update(1)
@@ -211,6 +215,8 @@ def _train_one(
         train_seconds=train_seconds,
         extra={
             "parameter_count": parameter_count,
+            "final_train_loss": last_loss,
+            "train_loss_curve": loss_curve,
             "test_accuracy_by_snr_db": test_accuracy_by_snr_db,
         },
     )
@@ -498,6 +504,20 @@ def main() -> int:
         type=Path,
         default=Path("results/radioml_modulation_sweep"),
     )
+    parser.add_argument(
+        "--checkpoint-path",
+        type=Path,
+        default=None,
+        help=(
+            "JSON seed-level checkpoint. Defaults to checkpoint.json inside "
+            "--output-dir."
+        ),
+    )
+    parser.add_argument(
+        "--resume",
+        action="store_true",
+        help="resume from the checkpoint and skip completed seed runs",
+    )
     args = parser.parse_args()
 
     paths = resolve_radioml_paths(
@@ -531,6 +551,7 @@ def main() -> int:
             args.output_dir = Path(
                 f"results/radioml_modulation_sweep_full_{args.activation}"
             )
+    checkpoint_path = args.checkpoint_path or (args.output_dir / "checkpoint.json")
 
     dtype = torch.complex64 if args.dtype == "complex64" else torch.complex128
     device = torch.device(args.device)
@@ -599,6 +620,8 @@ def main() -> int:
         n_trials=args.n_trials,
         sweep_seed=args.sweep_seed,
         train_fn=train_fn,
+        checkpoint_path=checkpoint_path,
+        resume=args.resume,
     )
     independent_selections = select_best_per_family(trials)
     matched_selections = select_reference_trial_for_all_families(trials)
@@ -626,6 +649,8 @@ def main() -> int:
         "device": args.device,
         "dtype": args.dtype,
         "sweep_seed": args.sweep_seed,
+        "checkpoint_path": str(checkpoint_path),
+        "resume": args.resume,
         "search_space": {
             name: list(spec) for name, spec in space.distributions.items()
         },
@@ -636,6 +661,16 @@ def main() -> int:
         args.output_dir,
         task_name="RadioML 2018.01A Modulation Classification",
         sweep_config=sweep_config,
+        trials=trials,
+        selections=matched_selections,
+    )
+    training_params_path = write_training_params(
+        args.output_dir,
+        sweep_config=sweep_config,
+        trials=trials,
+    )
+    plot_artifacts = write_loss_curve_plots(
+        args.output_dir,
         trials=trials,
         selections=matched_selections,
     )
@@ -671,10 +706,13 @@ def main() -> int:
             "description": "DeepSig RadioML 2018.01A modulation classification",
         },
         artifacts={
+            "checkpoint_json": str(checkpoint_path),
             "trials_json": str(args.output_dir / "trials.json"),
+            "training_params_json": str(training_params_path),
             "tuning_log_markdown": str(args.output_dir / "tuning_log.md"),
             "summary_markdown": str(args.output_dir / "summary.md"),
             "summary_json": str(args.output_dir / "summary.json"),
+            **plot_artifacts,
         },
         environment=environment,
     )
