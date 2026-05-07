@@ -171,12 +171,14 @@ git pull && git status
 
 # Full 24-class run on the headline activation (CReLU)
 uv run python experiments/rf/sweep_radioml.py --device cuda \
-    --preset full --activation crelu --seeds 0 1 2 --resume
+    --preset full --activation crelu --seeds 0 1 2 --resume \
+    --cache-data-device device
 
 # Optional: ablate a stable activation (zrelu) on the full task to test
 # whether the robustness asymmetry survives at scale
 uv run python experiments/rf/sweep_radioml.py --device cuda \
-    --preset full --activation zrelu --seeds 0 1 2 --resume
+    --preset full --activation zrelu --seeds 0 1 2 --resume \
+    --cache-data-device device
 ```
 
 When done:
@@ -207,6 +209,12 @@ loss_curves_selected.png
 hyperparameter sample, metric, runtime, parameter count, and final training
 loss. The PNGs plot all trial mean loss curves and the selected-trial seed
 curves.
+
+On large-memory GPUs (A100/H100 80GB), `--cache-data-device device` keeps the
+filtered per-seed RadioML tensors on GPU for the life of the process. This
+trades a few GB of GPU memory for less repeated host-to-device copying across
+the 192 seed runs in a full activation sweep. Leave it off if GPU memory is
+tight or if you disable `--max-per-class-per-snr`.
 
 ## Citation
 

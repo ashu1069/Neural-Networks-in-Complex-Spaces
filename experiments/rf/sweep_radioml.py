@@ -108,6 +108,7 @@ def _train_one(
     data_path: Path,
     classes_path: Path | None,
     data_cache: dict[tuple[Any, ...], RFModulationData] | None,
+    data_cache_device: torch.device | None,
     architecture: ArchitectureName,
     kernel_size: int,
     modulations: Sequence[str],
@@ -128,6 +129,7 @@ def _train_one(
         data_path=data_path,
         classes_path=classes_path,
         data_cache=data_cache,
+        data_cache_device=data_cache_device,
         modulations=modulations,
         snr_db_levels=snr_db_levels,
         max_per_class_per_snr=max_per_class_per_snr,
@@ -227,6 +229,7 @@ def _load_data_for_run(
     data_path: Path,
     classes_path: Path | None,
     data_cache: dict[tuple[Any, ...], RFModulationData] | None,
+    data_cache_device: torch.device | None,
     modulations: Sequence[str],
     snr_db_levels: Sequence[int],
     max_per_class_per_snr: int | None,
@@ -243,6 +246,7 @@ def _load_data_for_run(
         sample_length,
         seed,
         str(dtype),
+        str(data_cache_device) if data_cache_device is not None else "cpu",
     )
     if data_cache is not None and cache_key in data_cache:
         return data_cache[cache_key]
@@ -259,8 +263,24 @@ def _load_data_for_run(
         classes_path=classes_path,
     )
     if data_cache is not None:
+        if data_cache_device is not None:
+            data = _data_to_device(data, data_cache_device)
         data_cache[cache_key] = data
     return data
+
+
+def _data_to_device(data: RFModulationData, device: torch.device) -> RFModulationData:
+    return RFModulationData(
+        train_inputs=data.train_inputs.to(device),
+        train_labels=data.train_labels.to(device),
+        train_snr_db=data.train_snr_db.to(device),
+        test_inputs=data.test_inputs.to(device),
+        test_labels=data.test_labels.to(device),
+        test_snr_db=data.test_snr_db.to(device),
+        modulation_names=data.modulation_names,
+        snr_db_levels=data.snr_db_levels,
+        sample_length=data.sample_length,
+    )
 
 
 def _accuracy_by_snr_db(
@@ -488,6 +508,15 @@ def main() -> int:
             "are cached per seed/filter split"
         ),
     )
+    parser.add_argument(
+        "--cache-data-device",
+        choices=["cpu", "device"],
+        default="cpu",
+        help=(
+            "where to keep cached RadioML tensors. Use `device` on large-memory "
+            "GPUs to avoid repeated CPU-to-GPU copies across trials."
+        ),
+    )
     parser.add_argument("--sample-length", type=int, default=128)
     parser.add_argument("--val-fraction", type=float, default=0.2)
     parser.add_argument("--architecture", choices=["mlp", "conv"], default="conv")
@@ -563,6 +592,9 @@ def main() -> int:
     data_cache: dict[tuple[Any, ...], RFModulationData] | None = (
         {} if cache_data else None
     )
+    data_cache_device = (
+        device if cache_data and args.cache_data_device == "device" else None
+    )
 
     # Wider search space for the full preset: 24 classes need more capacity
     # than 3, and the larger train set tolerates bigger batches. Subset stays
@@ -599,6 +631,7 @@ def main() -> int:
             data_path=args.data_path,
             classes_path=args.classes_path,
             data_cache=data_cache,
+            data_cache_device=data_cache_device,
             architecture=architecture,
             kernel_size=args.kernel_size,
             modulations=args.modulations,
@@ -640,6 +673,7 @@ def main() -> int:
         "snr_db_levels": list(args.snr_db_levels),
         "max_per_class_per_snr": args.max_per_class_per_snr,
         "cache_data": cache_data,
+        "cache_data_device": str(data_cache_device) if data_cache_device else "cpu",
         "sample_length": args.sample_length,
         "val_fraction": args.val_fraction,
         "architecture": args.architecture,

@@ -96,5 +96,8 @@ All sweep scripts support `--resume`. They write `checkpoint.json` after each
 completed seed run, plus `training_params.json`, `loss_curves_all.png`, and
 `loss_curves_selected.png` after a completed sweep.
 
+For H100/A100 runs with enough GPU memory, add `--cache-data-device device` to
+RadioML sweeps so capped dataset tensors stay on GPU between trials.
+
 The full RF sweep is GPU-oriented. CPU smoke runs should reduce
 `--sample-length`, `--n-per-class-per-snr`, and/or `--n-trials`.
