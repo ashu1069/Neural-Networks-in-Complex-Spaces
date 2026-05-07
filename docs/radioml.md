@@ -173,14 +173,16 @@ git pull && git status
 uv run python experiments/rf/sweep_radioml.py --device cuda \
     --preset full --activation crelu --seeds 0 1 2 --resume \
     --cache-data-device device \
-    --dataset-cache-dir /scratch/$USER/radioml-filter-cache
+    --dataset-cache-dir /scratch/$USER/radioml-filter-cache \
+    --eval-batch-size 512
 
 # Optional: ablate a stable activation (zrelu) on the full task to test
 # whether the robustness asymmetry survives at scale
 uv run python experiments/rf/sweep_radioml.py --device cuda \
     --preset full --activation zrelu --seeds 0 1 2 --resume \
     --cache-data-device device \
-    --dataset-cache-dir /scratch/$USER/radioml-filter-cache
+    --dataset-cache-dir /scratch/$USER/radioml-filter-cache \
+    --eval-batch-size 512
 ```
 
 When done:
@@ -222,6 +224,10 @@ tight or if you disable `--max-per-class-per-snr`.
 the next activation sweep can load cached `.pt` shards instead of re-scanning
 the large HDF5 archive. Put this directory on local NVMe/scratch, not Google
 Drive or network storage.
+
+Full-archive validation/test splits are also evaluated in mini-batches via
+`--eval-batch-size`; do not set this to the full validation size, because the
+intermediate conv activations can exceed 80GB even on H100.
 
 ## Citation
 

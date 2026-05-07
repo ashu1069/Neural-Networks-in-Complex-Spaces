@@ -120,6 +120,7 @@ def _train_one(
     val_fraction: float,
     activation: str,
     real_activation: str,
+    eval_batch_size: int,
     device: torch.device,
     dtype: torch.dtype,
 ) -> TrialSeedOutcome:
@@ -203,8 +204,12 @@ def _train_one(
 
     model.eval()
     with torch.no_grad():
-        val_predictions = model(val_inputs).argmax(dim=-1)
-        test_predictions = model(test_inputs).argmax(dim=-1)
+        val_predictions = _predict_argmax_in_batches(
+            model, val_inputs, batch_size=eval_batch_size
+        )
+        test_predictions = _predict_argmax_in_batches(
+            model, test_inputs, batch_size=eval_batch_size
+        )
         val_acc = float((val_predictions == val_labels).float().mean().item())
         test_acc = float((test_predictions == test_labels).float().mean().item())
         test_accuracy_by_snr_db = _accuracy_by_snr_db(
@@ -225,6 +230,22 @@ def _train_one(
             "test_accuracy_by_snr_db": test_accuracy_by_snr_db,
         },
     )
+
+
+def _predict_argmax_in_batches(
+    model: torch.nn.Module,
+    inputs: torch.Tensor,
+    *,
+    batch_size: int,
+) -> torch.Tensor:
+    if batch_size <= 0:
+        msg = "eval_batch_size must be positive"
+        raise ValueError(msg)
+    predictions: list[torch.Tensor] = []
+    for start in range(0, inputs.shape[0], batch_size):
+        batch = inputs[start : start + batch_size]
+        predictions.append(model(batch).argmax(dim=-1))
+    return torch.cat(predictions, dim=0)
 
 
 def _load_data_for_run(
@@ -621,6 +642,15 @@ def main() -> int:
     )
     parser.add_argument("--sample-length", type=int, default=128)
     parser.add_argument("--val-fraction", type=float, default=0.2)
+    parser.add_argument(
+        "--eval-batch-size",
+        type=int,
+        default=512,
+        help=(
+            "validation/test forward batch size. Full RadioML conv activations "
+            "are too large to evaluate in one pass on an 80GB GPU."
+        ),
+    )
     parser.add_argument("--architecture", choices=["mlp", "conv"], default="conv")
     parser.add_argument("--kernel-size", type=int, default=7)
     parser.add_argument("--activation", default="crelu")
@@ -744,6 +774,7 @@ def main() -> int:
             val_fraction=args.val_fraction,
             activation=args.activation,
             real_activation=args.real_activation,
+            eval_batch_size=args.eval_batch_size,
             device=device,
             dtype=dtype,
         )
@@ -782,6 +813,7 @@ def main() -> int:
         ),
         "sample_length": args.sample_length,
         "val_fraction": args.val_fraction,
+        "eval_batch_size": args.eval_batch_size,
         "architecture": args.architecture,
         "kernel_size": args.kernel_size,
         "activation": args.activation,
