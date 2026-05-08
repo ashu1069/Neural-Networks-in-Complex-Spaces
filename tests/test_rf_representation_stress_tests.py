@@ -79,6 +79,7 @@ def test_rf_stress_script_writes_index_and_condition_outputs(tmp_path: Path) -> 
             "16",
             "--bootstrap-samples",
             "20",
+            "--no-progress",
             "--output-dir",
             str(tmp_path),
         ],

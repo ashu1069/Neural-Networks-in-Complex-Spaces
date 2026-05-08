@@ -119,6 +119,7 @@ class StressRunConfig:
     """Shared training knobs for every condition."""
 
     preset: PresetName
+    progress: bool
     seeds: tuple[int, ...]
     n_per_class_per_snr: int
     sample_length: int
@@ -356,14 +357,28 @@ def train_rf_stress_condition(
     batch_generator = torch.Generator(device="cpu").manual_seed(seed + 1_000_000)
     start = time.perf_counter()
     train_loss = torch.tensor(float("nan"), device=device)
+    inner_bar = _step_progress_bar(
+        config.steps,
+        enabled=config.progress,
+        desc=f"{condition.condition_id}:{model_family}/s{seed}",
+    )
     model.train()
-    for _ in range(config.steps):
+    for step in range(config.steps):
         indices = torch.randint(0, n_train, (batch_size,), generator=batch_generator)
         optimizer.zero_grad()
         logits = model(train_inputs[indices])
         train_loss = F.cross_entropy(logits, train_labels[indices])
         train_loss.backward()  # type: ignore[no-untyped-call]
         optimizer.step()
+        if inner_bar is not None:
+            if step == config.steps - 1 or step % max(1, config.steps // 50) == 0:
+                inner_bar.set_postfix_str(
+                    f"loss={float(train_loss.detach().cpu().item()):.4f}",
+                    refresh=False,
+                )
+            inner_bar.update(1)
+    if inner_bar is not None:
+        inner_bar.close()
     train_seconds = time.perf_counter() - start
 
     model.eval()
@@ -438,6 +453,7 @@ def run_condition(
     output_dir: Path,
     environment: Environment,
     resume: bool,
+    progress_bar: Any | None = None,
 ) -> tuple[list[RFRunResult], list[RFSummary]]:
     """Run or load one condition directory."""
 
@@ -455,7 +471,10 @@ def run_condition(
         ]
         return loaded_runs, loaded_summaries
 
-    print(f"[{condition.condition_id}] starting")
+    if progress_bar is not None:
+        progress_bar.set_description_str(condition.condition_id)
+    else:
+        print(f"[{condition.condition_id}] starting")
     runs: list[RFRunResult] = []
     for model_family in condition.model_families:
         for seed in config.seeds:
@@ -468,10 +487,18 @@ def run_condition(
                 )
             )
             latest = runs[-1]
-            print(
-                f"[{condition.condition_id}] {model_family}/seed{seed}: "
-                f"acc={latest.test_accuracy:.4f}"
-            )
+            if progress_bar is not None:
+                progress_bar.set_description_str(condition.condition_id)
+                progress_bar.set_postfix_str(
+                    f"{model_family}/s{seed} acc={latest.test_accuracy:.4f}",
+                    refresh=False,
+                )
+                progress_bar.update(1)
+            else:
+                print(
+                    f"[{condition.condition_id}] {model_family}/seed{seed}: "
+                    f"acc={latest.test_accuracy:.4f}"
+                )
 
     summaries = summarize_rf_runs(
         runs,
@@ -766,6 +793,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="skip condition directories that already have summary.json",
     )
+    parser.add_argument(
+        "--no-progress",
+        action="store_true",
+        help="disable tqdm progress bars",
+    )
     return parser.parse_args()
 
 
@@ -775,15 +807,30 @@ def main() -> int:
     conditions = _select_conditions(args.tests, build_stress_conditions())
     environment = collect_environment(device=config.device, dtype=config.dtype)
     condition_results: list[tuple[StressCondition, Sequence[RFSummary]]] = []
-    for condition in conditions:
-        _, summaries = run_condition(
-            condition,
-            config,
+    progress_bar = _progress_bar(
+        _unfinished_run_count(
+            conditions,
+            config=config,
             output_dir=args.output_dir,
-            environment=environment,
             resume=args.resume,
-        )
-        condition_results.append((condition, summaries))
+        ),
+        enabled=config.progress,
+        desc="rf stress",
+    )
+    try:
+        for condition in conditions:
+            _, summaries = run_condition(
+                condition,
+                config,
+                output_dir=args.output_dir,
+                environment=environment,
+                resume=args.resume,
+                progress_bar=progress_bar,
+            )
+            condition_results.append((condition, summaries))
+    finally:
+        if progress_bar is not None:
+            progress_bar.close()
     write_suite_index(
         args.output_dir,
         config=config,
@@ -799,6 +846,7 @@ def _config_from_args(args: argparse.Namespace) -> StressRunConfig:
     defaults = _preset_defaults(preset)
     return StressRunConfig(
         preset=preset,
+        progress=not args.no_progress,
         seeds=tuple(args.seeds)
         if args.seeds is not None
         else cast(tuple[int, ...], defaults["seeds"]),
@@ -877,6 +925,64 @@ def _select_conditions(
             raise ValueError(msg)
         selected.append(by_id[condition_id])
     return tuple(selected)
+
+
+def _unfinished_run_count(
+    conditions: Sequence[StressCondition],
+    *,
+    config: StressRunConfig,
+    output_dir: Path,
+    resume: bool,
+) -> int:
+    if not resume:
+        return sum(
+            len(condition.model_families) * len(config.seeds)
+            for condition in conditions
+        )
+    return sum(
+        len(condition.model_families) * len(config.seeds)
+        for condition in conditions
+        if not (output_dir / condition.condition_id / "summary.json").exists()
+    )
+
+
+def _progress_bar(total: int, *, enabled: bool, desc: str) -> Any:
+    if not enabled or total <= 0:
+        return None
+    tqdm = _load_tqdm()
+    if tqdm is None:
+        return None
+    return tqdm(total=total, desc=desc, dynamic_ncols=True, leave=True)
+
+
+def _step_progress_bar(
+    total: int,
+    *,
+    enabled: bool,
+    desc: str,
+    min_steps: int = 50,
+    mininterval: float = 0.5,
+) -> Any:
+    if not enabled or total < min_steps:
+        return None
+    tqdm = _load_tqdm()
+    if tqdm is None:
+        return None
+    return tqdm(
+        total=total,
+        desc=desc,
+        dynamic_ncols=True,
+        leave=False,
+        mininterval=mininterval,
+    )
+
+
+def _load_tqdm() -> Any:
+    try:
+        from tqdm.auto import tqdm  # type: ignore[import-untyped]
+    except ImportError:
+        return None
+    return tqdm
 
 
 def _parse_complex_dtype(name: str) -> torch.dtype:
