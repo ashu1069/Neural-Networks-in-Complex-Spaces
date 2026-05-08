@@ -1,0 +1,289 @@
+{
+  "artifacts": {
+    "raw_runs": "results/rf_synthetic_representation_stress_tests/activation_zrelu/raw_runs.json",
+    "summary_json": "results/rf_synthetic_representation_stress_tests/activation_zrelu/summary.json",
+    "summary_markdown": "results/rf_synthetic_representation_stress_tests/activation_zrelu/summary.md"
+  },
+  "config": {
+    "condition": {
+      "activation": "zrelu",
+      "condition_id": "activation_zrelu",
+      "contradiction_signal": "the complex result changes enough across activations that the broad 'complex NN' claim is underspecified.",
+      "model_families": [
+        "complex",
+        "real_stacked"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk"
+      ],
+      "question": "How much does complex activation `zrelu` matter?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    "run_config": {
+      "architecture": "conv",
+      "batch_size": 128,
+      "bootstrap_samples": 1000,
+      "confidence": 0.95,
+      "device": "cuda",
+      "dtype": "complex64",
+      "hidden_features": 16,
+      "kernel_size": 5,
+      "learning_rate": 0.01,
+      "n_per_class_per_snr": 128,
+      "preset": "standard",
+      "progress": true,
+      "sample_length": 64,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "steps": 200,
+      "train_fraction": 0.8
+    }
+  },
+  "created_at": "2026-05-08T19:56:49.679967+00:00",
+  "dataset": {
+    "description": "synthetic IQ PSK/QAM symbols + AWGN with optional input transforms",
+    "name": "rf_synthetic_modulation",
+    "version": "0.1.0"
+  },
+  "environment": {
+    "cuda_available": true,
+    "cuda_device": "NVIDIA A100-SXM4-40GB",
+    "cuda_version": "13.0",
+    "device": "cuda",
+    "dtype": "complex64",
+    "git_commit": "dd42313345f46a5885f35bfa11f56d4dd5b4021f",
+    "git_dirty": false,
+    "macos": null,
+    "mps_available": false,
+    "platform": "Linux-6.6.122+-x86_64-with-glibc2.35",
+    "python": "3.12.12",
+    "torch": "2.11.0+cu130"
+  },
+  "metrics": {
+    "condition": {
+      "activation": "zrelu",
+      "condition_id": "activation_zrelu",
+      "contradiction_signal": "the complex result changes enough across activations that the broad 'complex NN' claim is underspecified.",
+      "model_families": [
+        "complex",
+        "real_stacked"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk"
+      ],
+      "question": "How much does complex activation `zrelu` matter?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    "config": {
+      "architecture": "conv",
+      "batch_size": 128,
+      "bootstrap_samples": 1000,
+      "confidence": 0.95,
+      "device": "cuda",
+      "dtype": "complex64",
+      "hidden_features": 16,
+      "kernel_size": 5,
+      "learning_rate": 0.01,
+      "n_per_class_per_snr": 128,
+      "preset": "standard",
+      "progress": true,
+      "sample_length": 64,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "steps": 200,
+      "train_fraction": 0.8
+    },
+    "raw_runs": [
+      {
+        "accuracy_by_snr_db": {
+          "0": 0.7051281929016113,
+          "10": 0.8589743971824646,
+          "20": 0.9230769276618958
+        },
+        "estimated_forward_madds": 348352,
+        "hidden_features": 16,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 2886,
+        "seed": 0,
+        "steps": 200,
+        "test_accuracy": 0.829059898853302,
+        "test_loss": 0.3582635819911957,
+        "train_loss": 0.26973724365234375,
+        "train_seconds": 0.7861011170000438
+      },
+      {
+        "accuracy_by_snr_db": {
+          "0": 0.7307692170143127,
+          "10": 0.8461538553237915,
+          "20": 0.884615421295166
+        },
+        "estimated_forward_madds": 348352,
+        "hidden_features": 16,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 2886,
+        "seed": 1,
+        "steps": 200,
+        "test_accuracy": 0.8205128908157349,
+        "test_loss": 0.40880557894706726,
+        "train_loss": 0.3051636219024658,
+        "train_seconds": 0.7940098590000275
+      },
+      {
+        "accuracy_by_snr_db": {
+          "0": 0.7307692170143127,
+          "10": 0.884615421295166,
+          "20": 0.9102564454078674
+        },
+        "estimated_forward_madds": 348352,
+        "hidden_features": 16,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 2886,
+        "seed": 2,
+        "steps": 200,
+        "test_accuracy": 0.8418803811073303,
+        "test_loss": 0.3680030107498169,
+        "train_loss": 0.30382317304611206,
+        "train_seconds": 0.7902004449999822
+      },
+      {
+        "accuracy_by_snr_db": {
+          "0": 0.6153846383094788,
+          "10": 0.7820512652397156,
+          "20": 0.884615421295166
+        },
+        "estimated_forward_madds": 92208,
+        "hidden_features": 16,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 1523,
+        "seed": 0,
+        "steps": 200,
+        "test_accuracy": 0.7606837749481201,
+        "test_loss": 0.39965423941612244,
+        "train_loss": 0.38711491227149963,
+        "train_seconds": 0.3270420260000151
+      },
+      {
+        "accuracy_by_snr_db": {
+          "0": 0.692307710647583,
+          "10": 0.7051281929016113,
+          "20": 0.6666666865348816
+        },
+        "estimated_forward_madds": 92208,
+        "hidden_features": 16,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 1523,
+        "seed": 1,
+        "steps": 200,
+        "test_accuracy": 0.6880342364311218,
+        "test_loss": 0.45484617352485657,
+        "train_loss": 0.3677535057067871,
+        "train_seconds": 0.32992551800003866
+      },
+      {
+        "accuracy_by_snr_db": {
+          "0": 0.5641025900840759,
+          "10": 0.8205128312110901,
+          "20": 0.8205128312110901
+        },
+        "estimated_forward_madds": 92208,
+        "hidden_features": 16,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 1523,
+        "seed": 2,
+        "steps": 200,
+        "test_accuracy": 0.7350427508354187,
+        "test_loss": 0.4533802568912506,
+        "train_loss": 0.4137437343597412,
+        "train_seconds": 0.32234867299996495
+      }
+    ],
+    "summaries": [
+      {
+        "accuracy_by_snr_db_mean": {
+          "0": 0.7222222089767456,
+          "10": 0.8632478912671407,
+          "20": 0.9059829314549764
+        },
+        "estimated_forward_madds": 348352,
+        "hidden_features": 16,
+        "model_family": "complex",
+        "n_runs": 3,
+        "parameter_count": 2886,
+        "test_accuracy_ci_high": 0.8418803811073303,
+        "test_accuracy_ci_low": 0.8205128908157349,
+        "test_accuracy_mean": 0.8304843902587891,
+        "test_accuracy_std": 0.01075473347710609,
+        "test_loss_mean": 0.3783573905626933,
+        "train_seconds_mean": 0.7901038070000178
+      },
+      {
+        "accuracy_by_snr_db_mean": {
+          "0": 0.6239316463470459,
+          "10": 0.7692307631174723,
+          "20": 0.7905983130137125
+        },
+        "estimated_forward_madds": 92208,
+        "hidden_features": 16,
+        "model_family": "real_stacked",
+        "n_runs": 3,
+        "parameter_count": 1523,
+        "test_accuracy_ci_high": 0.7606837749481201,
+        "test_accuracy_ci_low": 0.6880342364311218,
+        "test_accuracy_mean": 0.7279202540715536,
+        "test_accuracy_std": 0.03684475989603755,
+        "test_loss_mean": 0.43596022327740985,
+        "train_seconds_mean": 0.32643873900000625
+      }
+    ]
+  },
+  "notes": null,
+  "run_id": "rf-representation-stress-activation_zrelu",
+  "schema_version": "0.1.0",
+  "seeds": [
+    0,
+    1,
+    2
+  ]
+}
