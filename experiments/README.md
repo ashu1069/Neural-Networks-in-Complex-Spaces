@@ -101,6 +101,22 @@ uv run python experiments/rf/synthetic_modulation.py \
   --output-dir results/rf_synthetic_representation_ablation
 ```
 
+To run the full sequence of contradiction/stress tests for the representation
+claim:
+
+```bash
+uv run python experiments/rf/representation_stress_tests.py \
+  --preset standard \
+  --device cuda \
+  --resume
+```
+
+The stress suite writes an `index.md` and per-condition summaries under
+`results/rf_synthetic_representation_stress_tests/`. Conditions include
+PSK-only, QAM-only, mixed PSK+QAM, low/high SNR, unit-magnitude and unit-power
+normalization, fixed carrier-phase rotation, random-rotation augmentation, and
+a complex-activation sweep.
+
 The real RadioML 2018.01A loader expects the local archive at
 `data/GOLD_XYZ_OSC.0001_1024.hdf5` and the fixed class-order sidecar next to it:
 
