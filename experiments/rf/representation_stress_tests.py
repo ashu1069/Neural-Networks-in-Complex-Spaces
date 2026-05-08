@@ -68,6 +68,24 @@ REPRESENTATION_ONLY_FAMILIES: tuple[ModelFamily, ...] = (
     "real_magnitude",
 )
 ACTIVATION_SWEEP_FAMILIES: tuple[ModelFamily, ...] = ("complex", "real_stacked")
+PLOTTED_MODEL_FAMILIES: tuple[ModelFamily, ...] = (
+    "complex",
+    "real_stacked",
+    "real_matched_params",
+    "real_matched_flops",
+    "real_polar",
+    "real_phase",
+    "real_magnitude",
+)
+MODEL_COLORS: dict[str, str] = {
+    "complex": "#355c9c",
+    "real_stacked": "#4c956c",
+    "real_matched_params": "#7b2cbf",
+    "real_matched_flops": "#f77f00",
+    "real_polar": "#2a9d8f",
+    "real_phase": "#e76f51",
+    "real_magnitude": "#6c757d",
+}
 
 
 @dataclass(frozen=True)
@@ -469,6 +487,20 @@ def run_condition(
             _summary_from_dict(cast(dict[str, Any], item))
             for item in cast(list[object], payload["summaries"])
         ]
+        plot_artifacts = write_condition_plots(
+            condition_dir,
+            condition=condition,
+            summaries=loaded_summaries,
+        )
+        (condition_dir / "summary.md").write_text(
+            format_condition_markdown(
+                condition,
+                config=config,
+                summaries=loaded_summaries,
+                plot_artifacts=plot_artifacts,
+            )
+            + "\n"
+        )
         return loaded_runs, loaded_summaries
 
     if progress_bar is not None:
@@ -546,8 +578,19 @@ def write_condition_outputs(
     (output_dir / "summary.json").write_text(
         json.dumps(summary_payload, indent=2, sort_keys=True) + "\n"
     )
+    plot_artifacts = write_condition_plots(
+        output_dir,
+        condition=condition,
+        summaries=summaries,
+    )
     (output_dir / "summary.md").write_text(
-        format_condition_markdown(condition, config=config, summaries=summaries) + "\n"
+        format_condition_markdown(
+            condition,
+            config=config,
+            summaries=summaries,
+            plot_artifacts=plot_artifacts,
+        )
+        + "\n"
     )
     manifest = new_manifest(
         run_id=f"rf-representation-stress-{condition.condition_id}",
@@ -570,6 +613,7 @@ def write_condition_outputs(
             "raw_runs": str(output_dir / "raw_runs.json"),
             "summary_json": str(output_dir / "summary.json"),
             "summary_markdown": str(output_dir / "summary.md"),
+            **plot_artifacts,
         },
         environment=environment,
     )
@@ -615,7 +659,13 @@ def write_suite_index(
     (output_dir / "index.json").write_text(
         json.dumps(index_payload, indent=2, sort_keys=True) + "\n"
     )
-    (output_dir / "index.md").write_text(format_index_markdown(rows) + "\n")
+    plot_artifacts = write_suite_plots(
+        output_dir,
+        condition_results=condition_results,
+    )
+    (output_dir / "index.md").write_text(
+        format_index_markdown(rows, plot_artifacts=plot_artifacts) + "\n"
+    )
     manifest = new_manifest(
         run_id="rf-representation-stress-suite",
         config=config.to_dict(),
@@ -631,10 +681,198 @@ def write_suite_index(
         artifacts={
             "index_json": str(output_dir / "index.json"),
             "index_markdown": str(output_dir / "index.md"),
+            **plot_artifacts,
         },
         environment=environment,
     )
     manifest.write_json(output_dir / "manifest.json")
+
+
+def write_condition_plots(
+    output_dir: Path,
+    *,
+    condition: StressCondition,
+    summaries: Sequence[RFSummary],
+) -> dict[str, str]:
+    """Write plots for one stress-test condition."""
+
+    if not summaries:
+        return {}
+    plt = _load_pyplot()
+    output_dir.mkdir(parents=True, exist_ok=True)
+    artifacts: dict[str, str] = {}
+
+    labels = [summary.model_family for summary in summaries]
+    accuracies = [summary.test_accuracy_mean for summary in summaries]
+    yerr_low = [
+        max(0.0, summary.test_accuracy_mean - summary.test_accuracy_ci_low)
+        for summary in summaries
+    ]
+    yerr_high = [
+        max(0.0, summary.test_accuracy_ci_high - summary.test_accuracy_mean)
+        for summary in summaries
+    ]
+    colors = [MODEL_COLORS.get(label, "#495057") for label in labels]
+
+    fig, ax = plt.subplots(figsize=(max(7.0, 1.05 * len(labels)), 4.6))
+    ax.bar(
+        labels,
+        accuracies,
+        yerr=[yerr_low, yerr_high],
+        color=colors,
+        edgecolor="#222222",
+        linewidth=0.6,
+        capsize=3,
+    )
+    ax.set_title(condition.condition_id)
+    ax.set_ylabel("test accuracy")
+    ax.set_ylim(0.0, 1.0)
+    ax.grid(True, axis="y", linestyle=":", alpha=0.35)
+    ax.tick_params(axis="x", rotation=30)
+    for tick in ax.get_xticklabels():
+        tick.set_horizontalalignment("right")
+    fig.tight_layout()
+    bar_path = output_dir / "accuracy_bar.png"
+    fig.savefig(bar_path, dpi=180)
+    plt.close(fig)
+    artifacts["accuracy_bar"] = str(bar_path)
+
+    snr_keys = sorted(
+        {key for summary in summaries for key in summary.accuracy_by_snr_db_mean},
+        key=lambda value: int(value),
+    )
+    if snr_keys:
+        fig, ax = plt.subplots(figsize=(7.8, 4.6))
+        snr_values = [int(key) for key in snr_keys]
+        for summary in summaries:
+            values = [
+                summary.accuracy_by_snr_db_mean.get(key, float("nan"))
+                for key in snr_keys
+            ]
+            ax.plot(
+                snr_values,
+                values,
+                marker="o",
+                linewidth=2.0,
+                label=summary.model_family,
+                color=MODEL_COLORS.get(summary.model_family),
+            )
+        ax.set_title(f"{condition.condition_id}: accuracy by SNR")
+        ax.set_xlabel("SNR (dB)")
+        ax.set_ylabel("test accuracy")
+        ax.set_ylim(0.0, 1.0)
+        ax.grid(True, linestyle=":", alpha=0.35)
+        ax.legend(frameon=False, fontsize=8, ncols=2)
+        fig.tight_layout()
+        snr_path = output_dir / "accuracy_by_snr.png"
+        fig.savefig(snr_path, dpi=180)
+        plt.close(fig)
+        artifacts["accuracy_by_snr"] = str(snr_path)
+
+    return artifacts
+
+
+def write_suite_plots(
+    output_dir: Path,
+    *,
+    condition_results: Sequence[tuple[StressCondition, Sequence[RFSummary]]],
+) -> dict[str, str]:
+    """Write root-level plots across all conditions."""
+
+    if not condition_results:
+        return {}
+    plt = _load_pyplot()
+    output_dir.mkdir(parents=True, exist_ok=True)
+    artifacts: dict[str, str] = {}
+
+    condition_labels = [condition.condition_id for condition, _ in condition_results]
+    model_labels = [
+        model
+        for model in PLOTTED_MODEL_FAMILIES
+        if any(
+            _accuracy_for(model, summaries) is not None
+            for _, summaries in condition_results
+        )
+    ]
+    if model_labels:
+        import numpy as np
+
+        matrix = np.array(
+            [
+                [
+                    _accuracy_for(model, summaries)
+                    if _accuracy_for(model, summaries) is not None
+                    else np.nan
+                    for model in model_labels
+                ]
+                for _, summaries in condition_results
+            ],
+            dtype=float,
+        )
+        fig, ax = plt.subplots(
+            figsize=(
+                max(8.5, 1.15 * len(model_labels)),
+                max(4.8, 0.42 * len(condition_labels)),
+            )
+        )
+        image = ax.imshow(matrix, aspect="auto", vmin=0.0, vmax=1.0, cmap="viridis")
+        ax.set_xticks(range(len(model_labels)), model_labels, rotation=35, ha="right")
+        ax.set_yticks(range(len(condition_labels)), condition_labels)
+        ax.set_title("RF stress tests: accuracy heatmap")
+        cbar = fig.colorbar(image, ax=ax)
+        cbar.set_label("test accuracy")
+        for row_idx, row in enumerate(matrix):
+            for col_idx, value in enumerate(row):
+                if not np.isnan(value):
+                    ax.text(
+                        col_idx,
+                        row_idx,
+                        f"{value:.2f}",
+                        ha="center",
+                        va="center",
+                        color="white" if value < 0.65 else "black",
+                        fontsize=7,
+                    )
+        fig.tight_layout()
+        heatmap_path = output_dir / "accuracy_heatmap.png"
+        fig.savefig(heatmap_path, dpi=180)
+        plt.close(fig)
+        artifacts["accuracy_heatmap"] = str(heatmap_path)
+
+    best_values = [
+        _best_summary(summaries).test_accuracy_mean if summaries else 0.0
+        for _, summaries in condition_results
+    ]
+    best_models = [
+        _best_summary(summaries).model_family if summaries else ""
+        for _, summaries in condition_results
+    ]
+    fig, ax = plt.subplots(figsize=(max(9.0, 0.55 * len(condition_labels)), 4.8))
+    bar_colors = [MODEL_COLORS.get(model, "#495057") for model in best_models]
+    ax.bar(condition_labels, best_values, color=bar_colors, edgecolor="#222222")
+    ax.set_title("Best model accuracy by stress condition")
+    ax.set_ylabel("test accuracy")
+    ax.set_ylim(0.0, 1.0)
+    ax.grid(True, axis="y", linestyle=":", alpha=0.35)
+    ax.tick_params(axis="x", rotation=35)
+    for tick in ax.get_xticklabels():
+        tick.set_horizontalalignment("right")
+    for index, (value, model) in enumerate(zip(best_values, best_models, strict=True)):
+        ax.text(
+            index,
+            min(0.98, value + 0.025),
+            model,
+            ha="center",
+            va="bottom",
+            fontsize=7,
+        )
+    fig.tight_layout()
+    best_path = output_dir / "best_accuracy_by_condition.png"
+    fig.savefig(best_path, dpi=180)
+    plt.close(fig)
+    artifacts["best_accuracy_by_condition"] = str(best_path)
+
+    return artifacts
 
 
 def format_condition_markdown(
@@ -642,6 +880,7 @@ def format_condition_markdown(
     *,
     config: StressRunConfig,
     summaries: Sequence[RFSummary],
+    plot_artifacts: dict[str, str] | None = None,
 ) -> str:
     """Format a condition-level markdown table."""
 
@@ -661,9 +900,19 @@ def format_condition_markdown(
             f"Test transform: `{condition.test_transform.name}`."
         ),
         "",
-        "| model | hidden | params | MAdds | accuracy | std | 95% CI | loss | s/run |",
-        "| --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |",
     ]
+    if plot_artifacts:
+        rows.extend(_plot_markdown_lines(plot_artifacts))
+        rows.append("")
+    rows.extend(
+        [
+            (
+                "| model | hidden | params | MAdds | accuracy | std | 95% CI | "
+                "loss | s/run |"
+            ),
+            "| --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |",
+        ]
+    )
     for summary in summaries:
         rows.append(
             " | ".join(
@@ -708,7 +957,11 @@ def format_condition_markdown(
     return "\n".join(rows)
 
 
-def format_index_markdown(rows: Sequence[dict[str, object]]) -> str:
+def format_index_markdown(
+    rows: Sequence[dict[str, object]],
+    *,
+    plot_artifacts: dict[str, str] | None = None,
+) -> str:
     """Format the root suite index."""
 
     lines = [
@@ -720,12 +973,19 @@ def format_index_markdown(rows: Sequence[dict[str, object]]) -> str:
             "choice, phase information, augmentation, or compute budget."
         ),
         "",
-        (
-            "| condition | best | acc | complex | real_stack | phase | polar | "
-            "magnitude |"
-        ),
-        "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
+    if plot_artifacts:
+        lines.extend(_plot_markdown_lines(plot_artifacts))
+        lines.append("")
+    lines.extend(
+        [
+            (
+                "| condition | best | acc | complex | real_stack | phase | polar | "
+                "magnitude |"
+            ),
+            "| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+        ]
+    )
     for row in rows:
         lines.append(
             " | ".join(
@@ -749,6 +1009,15 @@ def format_index_markdown(rows: Sequence[dict[str, object]]) -> str:
         ]
     )
     return "\n".join(lines)
+
+
+def _plot_markdown_lines(plot_artifacts: dict[str, str]) -> list[str]:
+    lines = ["## Plots", ""]
+    for name, path in plot_artifacts.items():
+        title = name.replace("_", " ")
+        lines.append(f"![{title}]({Path(path).name})")
+        lines.append("")
+    return lines
 
 
 def parse_args() -> argparse.Namespace:
@@ -983,6 +1252,15 @@ def _load_tqdm() -> Any:
     except ImportError:
         return None
     return tqdm
+
+
+def _load_pyplot() -> Any:
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    return plt
 
 
 def _parse_complex_dtype(name: str) -> torch.dtype:

@@ -91,6 +91,10 @@ def test_rf_stress_script_writes_index_and_condition_outputs(tmp_path: Path) -> 
     index = json.loads((tmp_path / "index.json").read_text())
 
     assert (tmp_path / "index.md").exists()
+    assert (tmp_path / "accuracy_heatmap.png").exists()
+    assert (tmp_path / "best_accuracy_by_condition.png").exists()
     assert len(index["results"]) == 2
     assert (tmp_path / "psk_representation" / "summary.md").exists()
+    assert (tmp_path / "psk_representation" / "accuracy_bar.png").exists()
+    assert (tmp_path / "psk_representation" / "accuracy_by_snr.png").exists()
     assert (tmp_path / "fixed_rotation_psk" / "summary.json").exists()
