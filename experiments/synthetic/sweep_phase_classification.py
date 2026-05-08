@@ -35,8 +35,10 @@ from experiments._sweep import (
     write_tuning_log,
 )
 from experiments.synthetic.phase_classification import (
+    ALL_MODEL_FAMILIES,
     DEFAULT_MODEL_FAMILIES,
     ModelFamily,
+    _features_for_family,
     _make_model,
     make_phase_classification,
 )
@@ -92,14 +94,9 @@ def _train_one(
         dtype=dtype,
     )
 
-    def _features(x: torch.Tensor) -> torch.Tensor:
-        if family == "complex":
-            return x
-        return torch.cat([x.real, x.imag], dim=-1)
-
-    train_inputs = _features(train_actual_inputs)
-    val_inputs = _features(val_inputs_complex)
-    test_inputs = _features(test_inputs_complex)
+    train_inputs = _features_for_family(train_actual_inputs, model_family)
+    val_inputs = _features_for_family(val_inputs_complex, model_family)
+    test_inputs = _features_for_family(test_inputs_complex, model_family)
 
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=hp["learning_rate"], weight_decay=0.0
@@ -245,7 +242,7 @@ def main() -> int:
     parser.add_argument(
         "--model-families",
         nargs="+",
-        choices=list(DEFAULT_MODEL_FAMILIES),
+        choices=list(ALL_MODEL_FAMILIES),
         default=list(DEFAULT_MODEL_FAMILIES),
     )
     parser.add_argument("--n-train", type=int, default=1024)

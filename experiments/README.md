@@ -35,6 +35,9 @@ Phase 4 adds a phase-classification benchmark with these model families:
   parameter count.
 - `real_matched_flops`: real MLP sized to match the complex model's estimated
   forward multiply-add count.
+- `real_polar`: real MLP over `(|z|, cos phase, sin phase)`.
+- `real_phase`: real MLP over `(cos phase, sin phase)`.
+- `real_magnitude`: real MLP over `|z|` only.
 
 Run the default CPU benchmark:
 
@@ -51,6 +54,15 @@ uv run python experiments/synthetic/phase_classification.py \
   --n-test 128 \
   --steps 80 \
   --output-dir results/synthetic_phase_classification_smoke
+```
+
+To test whether phase performance comes from native complex arithmetic or from
+the representation itself:
+
+```bash
+uv run python experiments/synthetic/phase_classification.py \
+  --model-families complex real_stacked real_polar real_phase real_magnitude \
+  --output-dir results/synthetic_phase_representation_ablation
 ```
 
 Each run writes:

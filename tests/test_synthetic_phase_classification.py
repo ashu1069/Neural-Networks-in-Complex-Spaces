@@ -84,6 +84,34 @@ def test_phase_benchmark_smoke_run_reports_all_requested_families() -> None:
     assert all(run.test_accuracy >= 0.95 for run in runs)
 
 
+def test_phase_representation_ablation_separates_magnitude_from_phase() -> None:
+    polar_result = train_phase_classifier(
+        seed=0,
+        model_family="real_polar",
+        n_train=256,
+        n_test=256,
+        n_classes=4,
+        hidden_features=16,
+        steps=120,
+        learning_rate=0.02,
+        noise_std=0.05,
+    )
+    magnitude_result = train_phase_classifier(
+        seed=0,
+        model_family="real_magnitude",
+        n_train=256,
+        n_test=256,
+        n_classes=4,
+        hidden_features=16,
+        steps=120,
+        learning_rate=0.02,
+        noise_std=0.05,
+    )
+
+    assert polar_result.test_accuracy >= 0.95
+    assert magnitude_result.test_accuracy <= 0.5
+
+
 def test_phase_classification_script_writes_evidence_files(tmp_path: Path) -> None:
     completed = subprocess.run(
         [

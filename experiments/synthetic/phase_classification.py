@@ -27,6 +27,9 @@ ModelFamily = Literal[
     "real_stacked",
     "real_matched_params",
     "real_matched_flops",
+    "real_polar",
+    "real_magnitude",
+    "real_phase",
 ]
 
 DEFAULT_MODEL_FAMILIES: tuple[ModelFamily, ...] = (
@@ -34,6 +37,16 @@ DEFAULT_MODEL_FAMILIES: tuple[ModelFamily, ...] = (
     "real_stacked",
     "real_matched_params",
     "real_matched_flops",
+)
+
+ALL_MODEL_FAMILIES: tuple[ModelFamily, ...] = (
+    "complex",
+    "real_stacked",
+    "real_matched_params",
+    "real_matched_flops",
+    "real_polar",
+    "real_magnitude",
+    "real_phase",
 )
 
 
@@ -183,6 +196,7 @@ class RealPhaseClassifier(nn.Module):
     def __init__(
         self,
         *,
+        input_features: int = 2,
         hidden_features: int,
         n_classes: int,
         activation: RealActivationName,
@@ -191,7 +205,7 @@ class RealPhaseClassifier(nn.Module):
     ) -> None:
         super().__init__()
         self.network = nn.Sequential(
-            nn.Linear(2, hidden_features, device=device, dtype=dtype),
+            nn.Linear(input_features, hidden_features, device=device, dtype=dtype),
             _real_activation_module(activation),
             nn.Linear(hidden_features, n_classes, device=device, dtype=dtype),
         )
@@ -624,6 +638,7 @@ def _make_model(
         )
         return model, complex_hidden_features, madds
 
+    input_features = _real_input_features(model_family)
     complex_madds = _complex_mlp_madds(
         in_features=1,
         hidden_features=complex_hidden_features,
@@ -640,25 +655,34 @@ def _make_model(
         real_hidden = choose_real_hidden_for_parameter_budget(
             budget=complex_parameter_budget,
             n_classes=n_classes,
+            input_features=input_features,
         )
     elif model_family == "real_matched_flops":
         real_hidden = choose_real_hidden_for_madds_budget(
             budget=complex_madds,
             n_classes=n_classes,
+            input_features=input_features,
         )
+    elif model_family in {"real_polar", "real_magnitude", "real_phase"}:
+        real_hidden = complex_hidden_features
     else:
         msg = f"unsupported model family: {model_family}"
         raise ValueError(msg)
 
     real_dtype = torch.float64 if dtype == torch.complex128 else torch.float32
     model = RealPhaseClassifier(
+        input_features=input_features,
         hidden_features=real_hidden,
         n_classes=n_classes,
         activation=real_activation,
         device=device,
         dtype=real_dtype,
     )
-    madds = _real_mlp_madds(hidden_features=real_hidden, n_classes=n_classes)
+    madds = _real_mlp_madds(
+        input_features=input_features,
+        hidden_features=real_hidden,
+        n_classes=n_classes,
+    )
     return model, real_hidden, madds
 
 
@@ -666,6 +690,7 @@ def choose_real_hidden_for_parameter_budget(
     *,
     budget: int,
     n_classes: int,
+    input_features: int = 2,
     max_hidden: int = 4096,
 ) -> int:
     """Choose the real hidden width closest to a scalar parameter budget."""
@@ -673,7 +698,11 @@ def choose_real_hidden_for_parameter_budget(
     return min(
         range(1, max_hidden + 1),
         key=lambda hidden: abs(
-            _real_mlp_parameter_count(hidden_features=hidden, n_classes=n_classes)
+            _real_mlp_parameter_count(
+                input_features=input_features,
+                hidden_features=hidden,
+                n_classes=n_classes,
+            )
             - budget
         ),
     )
@@ -683,6 +712,7 @@ def choose_real_hidden_for_madds_budget(
     *,
     budget: int,
     n_classes: int,
+    input_features: int = 2,
     max_hidden: int = 4096,
 ) -> int:
     """Choose the real hidden width closest to an estimated forward budget."""
@@ -690,7 +720,12 @@ def choose_real_hidden_for_madds_budget(
     return min(
         range(1, max_hidden + 1),
         key=lambda hidden: abs(
-            _real_mlp_madds(hidden_features=hidden, n_classes=n_classes) - budget
+            _real_mlp_madds(
+                input_features=input_features,
+                hidden_features=hidden,
+                n_classes=n_classes,
+            )
+            - budget
         ),
     )
 
@@ -710,9 +745,17 @@ def _complex_mlp_parameter_count(
     return 2 * complex_slots
 
 
-def _real_mlp_parameter_count(*, hidden_features: int, n_classes: int) -> int:
+def _real_mlp_parameter_count(
+    *,
+    input_features: int = 2,
+    hidden_features: int,
+    n_classes: int,
+) -> int:
     return (
-        2 * hidden_features + hidden_features + hidden_features * n_classes + n_classes
+        input_features * hidden_features
+        + hidden_features
+        + hidden_features * n_classes
+        + n_classes
     )
 
 
@@ -725,14 +768,38 @@ def _complex_mlp_madds(
     return 4 * (in_features * hidden_features + hidden_features * out_features)
 
 
-def _real_mlp_madds(*, hidden_features: int, n_classes: int) -> int:
-    return 2 * hidden_features + hidden_features * n_classes
+def _real_mlp_madds(
+    *,
+    input_features: int = 2,
+    hidden_features: int,
+    n_classes: int,
+) -> int:
+    return input_features * hidden_features + hidden_features * n_classes
 
 
 def _features_for_family(inputs: Tensor, model_family: ModelFamily) -> Tensor:
     if model_family == "complex":
         return inputs
+    magnitude = inputs.abs()
+    if model_family == "real_magnitude":
+        return magnitude
+    denominator = magnitude.clamp_min(torch.finfo(magnitude.dtype).eps)
+    phase_features = torch.cat(
+        [inputs.real / denominator, inputs.imag / denominator], dim=-1
+    )
+    if model_family == "real_phase":
+        return phase_features
+    if model_family == "real_polar":
+        return torch.cat([magnitude, phase_features], dim=-1)
     return torch.cat([inputs.real, inputs.imag], dim=-1)
+
+
+def _real_input_features(model_family: ModelFamily) -> int:
+    if model_family == "real_magnitude":
+        return 1
+    if model_family == "real_polar":
+        return 3
+    return 2
 
 
 def _activation_factory(activation: ActivationName) -> Callable[[], nn.Module]:
@@ -828,17 +895,10 @@ def _parse_complex_dtype(name: str) -> torch.dtype:
 def _parse_model_families(values: Sequence[str]) -> tuple[ModelFamily, ...]:
     parsed: list[ModelFamily] = []
     for value in values:
-        if value == "complex":
-            parsed.append("complex")
-        elif value == "real_stacked":
-            parsed.append("real_stacked")
-        elif value == "real_matched_params":
-            parsed.append("real_matched_params")
-        elif value == "real_matched_flops":
-            parsed.append("real_matched_flops")
-        else:
+        if value not in ALL_MODEL_FAMILIES:
             msg = f"unsupported model family: {value}"
             raise ValueError(msg)
+        parsed.append(value)
     return tuple(parsed)
 
 
@@ -864,7 +924,7 @@ def main() -> int:
     parser.add_argument(
         "--model-families",
         nargs="+",
-        choices=list(DEFAULT_MODEL_FAMILIES),
+        choices=list(ALL_MODEL_FAMILIES),
         default=list(DEFAULT_MODEL_FAMILIES),
     )
     parser.add_argument("--n-train", type=int, default=1024)
