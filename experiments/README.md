@@ -91,6 +91,16 @@ The paper-track RF results currently use synthetic IQ + AWGN:
 uv run python experiments/rf/synthetic_modulation.py
 ```
 
+To test the same phase/magnitude representation question on RF synthetic:
+
+```bash
+uv run python experiments/rf/synthetic_modulation.py \
+  --architecture conv \
+  --activation zrelu \
+  --model-families complex real_stacked real_polar real_phase real_magnitude \
+  --output-dir results/rf_synthetic_representation_ablation
+```
+
 The real RadioML 2018.01A loader expects the local archive at
 `data/GOLD_XYZ_OSC.0001_1024.hdf5` and the fixed class-order sidecar next to it:
 

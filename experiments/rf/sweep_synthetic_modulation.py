@@ -48,6 +48,7 @@ from experiments._sweep import (
     write_tuning_log,
 )
 from experiments.rf.synthetic_modulation import (
+    ALL_MODEL_FAMILIES,
     DEFAULT_MODEL_FAMILIES,
     DEFAULT_MODULATIONS,
     DEFAULT_SNR_DB,
@@ -271,7 +272,7 @@ def main() -> int:
     parser.add_argument(
         "--model-families",
         nargs="+",
-        choices=list(DEFAULT_MODEL_FAMILIES),
+        choices=list(ALL_MODEL_FAMILIES),
         default=list(DEFAULT_MODEL_FAMILIES),
     )
     parser.add_argument(

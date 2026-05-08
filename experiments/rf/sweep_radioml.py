@@ -56,6 +56,7 @@ from experiments.rf.path_config import (
 )
 from experiments.rf.radioml import load_radioml_2018_01a
 from experiments.rf.synthetic_modulation import (
+    ALL_MODEL_FAMILIES,
     DEFAULT_MODEL_FAMILIES,
     ArchitectureName,
     ModelFamily,
@@ -596,7 +597,7 @@ def main() -> int:
     parser.add_argument(
         "--model-families",
         nargs="+",
-        choices=list(DEFAULT_MODEL_FAMILIES),
+        choices=list(ALL_MODEL_FAMILIES),
         default=list(DEFAULT_MODEL_FAMILIES),
     )
     parser.add_argument(

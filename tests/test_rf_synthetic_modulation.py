@@ -165,6 +165,39 @@ def test_rf_conv_architecture_runs() -> None:
     assert 0.0 <= result.test_accuracy <= 1.0
 
 
+def test_rf_representation_baselines_separate_phase_from_magnitude() -> None:
+    common_kwargs = dict(
+        seed=0,
+        modulations=("bpsk", "qpsk", "8psk"),
+        snr_db_levels=(10, 20),
+        n_per_class_per_snr=48,
+        sample_length=32,
+        hidden_features=8,
+        steps=60,
+        batch_size=64,
+        learning_rate=0.01,
+        architecture="conv",
+        kernel_size=5,
+    )
+
+    phase_result = train_rf_classifier(
+        model_family="real_phase",
+        **common_kwargs,  # type: ignore[arg-type]
+    )
+    polar_result = train_rf_classifier(
+        model_family="real_polar",
+        **common_kwargs,  # type: ignore[arg-type]
+    )
+    magnitude_result = train_rf_classifier(
+        model_family="real_magnitude",
+        **common_kwargs,  # type: ignore[arg-type]
+    )
+
+    assert phase_result.test_accuracy >= 0.55
+    assert polar_result.test_accuracy >= 0.55
+    assert magnitude_result.test_accuracy <= 0.45
+
+
 def test_rf_classification_script_writes_evidence_files(tmp_path: Path) -> None:
     completed = subprocess.run(
         [
