@@ -141,3 +141,26 @@ RadioML tensors across separate activation sweeps.
 
 The full RF sweep is GPU-oriented. CPU smoke runs should reduce
 `--sample-length`, `--n-per-class-per-snr`, and/or `--n-trials`.
+
+## Physics
+
+The quantum wavefunction pilot tests the same representation question on
+1-D complex fields. It includes a momentum-from-phase task, a potential-inverse
+task after split-step Schrodinger evolution, and global-phase stress tests:
+
+```bash
+uv run python experiments/physics/quantum_wavefunction.py \
+  --preset standard \
+  --resume
+```
+
+For a fast CPU smoke run:
+
+```bash
+uv run python experiments/physics/quantum_wavefunction.py \
+  --preset smoke \
+  --output-dir results/physics_quantum_wavefunction_pilot_smoke
+```
+
+The pilot writes `index.md`, `index.json`, plots, manifests, and per-condition
+summaries under `results/physics_quantum_wavefunction_pilot/`.

@@ -1,0 +1,240 @@
+{
+  "artifacts": {
+    "accuracy_heatmap": "results/physics_quantum_wavefunction_pilot/accuracy_heatmap.png",
+    "best_accuracy_by_condition": "results/physics_quantum_wavefunction_pilot/best_accuracy_by_condition.png",
+    "index_json": "results/physics_quantum_wavefunction_pilot/index.json",
+    "index_markdown": "results/physics_quantum_wavefunction_pilot/index.md"
+  },
+  "config": {
+    "activation": "zrelu",
+    "architecture": "conv",
+    "batch_size": 128,
+    "bootstrap_samples": 1000,
+    "confidence": 0.95,
+    "device": "cpu",
+    "dtype": "complex64",
+    "evolution_dt": 0.03,
+    "evolution_steps": 40,
+    "examples_per_class": 128,
+    "grid_size": 96,
+    "hidden_features": 16,
+    "kernel_size": 5,
+    "learning_rate": 0.01,
+    "observation_noise_std": 0.0,
+    "preset": "standard",
+    "progress": true,
+    "real_activation": "relu",
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "train_fraction": 0.8,
+    "train_steps": 140,
+    "x_max": 8.0,
+    "x_min": -8.0
+  },
+  "created_at": "2026-05-11T20:57:36.006067+00:00",
+  "dataset": {
+    "description": "sequential quantum-wavefunction representation pilot",
+    "name": "quantum_wavefunction_pilot",
+    "version": "0.1.0"
+  },
+  "environment": {
+    "cuda_available": false,
+    "cuda_device": null,
+    "cuda_version": null,
+    "device": "cpu",
+    "dtype": "complex64",
+    "git_commit": "08213e264ec2f717bc9c33e2cb889faaa9c4f0cd",
+    "git_dirty": true,
+    "macos": "14.6",
+    "mps_available": true,
+    "platform": "macOS-14.6-arm64-arm-64bit",
+    "python": "3.12.12",
+    "torch": "2.11.0"
+  },
+  "metrics": {
+    "conditions": [
+      {
+        "condition_id": "momentum_phase",
+        "expected_signal": "magnitude-only should sit near chance; phase-aware and Cartesian encodings should recover the momentum classes.",
+        "model_families": [
+          "complex",
+          "real_stacked",
+          "real_polar",
+          "real_phase",
+          "real_magnitude"
+        ],
+        "question": "Can models infer wavepacket momentum when the label is stored in the phase gradient rather than in |psi|?",
+        "task": "momentum_phase",
+        "test_transform": {
+          "name": "none",
+          "rotation_radians": 0.0
+        },
+        "train_transform": {
+          "name": "none",
+          "rotation_radians": 0.0
+        }
+      },
+      {
+        "condition_id": "potential_inverse",
+        "expected_signal": "full complex/Cartesian/polar inputs should outperform phase-only or density-only views when both amplitude and phase carry scattering information.",
+        "model_families": [
+          "complex",
+          "real_stacked",
+          "real_polar",
+          "real_phase",
+          "real_magnitude"
+        ],
+        "question": "Can models infer which potential generated the observed final wavefunction after 1D Schrodinger evolution?",
+        "task": "potential_inverse",
+        "test_transform": {
+          "name": "none",
+          "rotation_radians": 0.0
+        },
+        "train_transform": {
+          "name": "none",
+          "rotation_radians": 0.0
+        }
+      },
+      {
+        "condition_id": "global_phase_shift",
+        "expected_signal": "coordinate-dependent models may degrade under an unseen global phase; magnitude-only is invariant but information-poor.",
+        "model_families": [
+          "complex",
+          "real_stacked",
+          "real_polar",
+          "real_phase",
+          "real_magnitude"
+        ],
+        "question": "Do models trained in one global-phase convention respect the physical invariance psi -> exp(i theta) psi?",
+        "task": "potential_inverse",
+        "test_transform": {
+          "name": "fixed_global_phase",
+          "rotation_radians": 1.5707963267948966
+        },
+        "train_transform": {
+          "name": "none",
+          "rotation_radians": 0.0
+        }
+      },
+      {
+        "condition_id": "global_phase_augmented",
+        "expected_signal": "phase-aware models should improve relative to the unaugmented global-phase stress test.",
+        "model_families": [
+          "complex",
+          "real_stacked",
+          "real_polar",
+          "real_phase",
+          "real_magnitude"
+        ],
+        "question": "Does random global-phase augmentation recover robustness to an unseen fixed global phase?",
+        "task": "potential_inverse",
+        "test_transform": {
+          "name": "fixed_global_phase",
+          "rotation_radians": 1.5707963267948966
+        },
+        "train_transform": {
+          "name": "random_global_phase",
+          "rotation_radians": 0.0
+        }
+      }
+    ],
+    "config": {
+      "activation": "zrelu",
+      "architecture": "conv",
+      "batch_size": 128,
+      "bootstrap_samples": 1000,
+      "confidence": 0.95,
+      "device": "cpu",
+      "dtype": "complex64",
+      "evolution_dt": 0.03,
+      "evolution_steps": 40,
+      "examples_per_class": 128,
+      "grid_size": 96,
+      "hidden_features": 16,
+      "kernel_size": 5,
+      "learning_rate": 0.01,
+      "observation_noise_std": 0.0,
+      "preset": "standard",
+      "progress": true,
+      "real_activation": "relu",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "train_fraction": 0.8,
+      "train_steps": 140,
+      "x_max": 8.0,
+      "x_min": -8.0
+    },
+    "results": [
+      {
+        "best_accuracy": 1.0,
+        "best_model": "complex",
+        "complex_accuracy": 1.0,
+        "condition_id": "momentum_phase",
+        "expected_signal": "magnitude-only should sit near chance; phase-aware and Cartesian encodings should recover the momentum classes.",
+        "question": "Can models infer wavepacket momentum when the label is stored in the phase gradient rather than in |psi|?",
+        "real_magnitude_accuracy": 0.25,
+        "real_phase_accuracy": 1.0,
+        "real_polar_accuracy": 1.0,
+        "real_stacked_accuracy": 1.0,
+        "summary_markdown": "results/physics_quantum_wavefunction_pilot/momentum_phase/summary.md",
+        "task": "momentum_phase"
+      },
+      {
+        "best_accuracy": 0.4615384638309479,
+        "best_model": "real_stacked",
+        "complex_accuracy": 0.4307692348957062,
+        "condition_id": "potential_inverse",
+        "expected_signal": "full complex/Cartesian/polar inputs should outperform phase-only or density-only views when both amplitude and phase carry scattering information.",
+        "question": "Can models infer which potential generated the observed final wavefunction after 1D Schrodinger evolution?",
+        "real_magnitude_accuracy": 0.33076924085617065,
+        "real_phase_accuracy": 0.40512821078300476,
+        "real_polar_accuracy": 0.41794873277346295,
+        "real_stacked_accuracy": 0.4615384638309479,
+        "summary_markdown": "results/physics_quantum_wavefunction_pilot/potential_inverse/summary.md",
+        "task": "potential_inverse"
+      },
+      {
+        "best_accuracy": 0.42820513248443604,
+        "best_model": "real_polar",
+        "complex_accuracy": 0.32307693362236023,
+        "condition_id": "global_phase_shift",
+        "expected_signal": "coordinate-dependent models may degrade under an unseen global phase; magnitude-only is invariant but information-poor.",
+        "question": "Do models trained in one global-phase convention respect the physical invariance psi -> exp(i theta) psi?",
+        "real_magnitude_accuracy": 0.33076924085617065,
+        "real_phase_accuracy": 0.37435898184776306,
+        "real_polar_accuracy": 0.42820513248443604,
+        "real_stacked_accuracy": 0.3820512890815735,
+        "summary_markdown": "results/physics_quantum_wavefunction_pilot/global_phase_shift/summary.md",
+        "task": "potential_inverse"
+      },
+      {
+        "best_accuracy": 0.4025641083717346,
+        "best_model": "real_polar",
+        "complex_accuracy": 0.3948718011379242,
+        "condition_id": "global_phase_augmented",
+        "expected_signal": "phase-aware models should improve relative to the unaugmented global-phase stress test.",
+        "question": "Does random global-phase augmentation recover robustness to an unseen fixed global phase?",
+        "real_magnitude_accuracy": 0.33076924085617065,
+        "real_phase_accuracy": 0.36153846482435864,
+        "real_polar_accuracy": 0.4025641083717346,
+        "real_stacked_accuracy": 0.39230769872665405,
+        "summary_markdown": "results/physics_quantum_wavefunction_pilot/global_phase_augmented/summary.md",
+        "task": "potential_inverse"
+      }
+    ]
+  },
+  "notes": null,
+  "run_id": "quantum-wavefunction-pilot-suite",
+  "schema_version": "0.1.0",
+  "seeds": [
+    0,
+    1,
+    2
+  ]
+}

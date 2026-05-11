@@ -1,5 +1,7 @@
 {
   "artifacts": {
+    "accuracy_heatmap": "results/rf_synthetic_representation_stress_tests/accuracy_heatmap.png",
+    "best_accuracy_by_condition": "results/rf_synthetic_representation_stress_tests/best_accuracy_by_condition.png",
     "index_json": "results/rf_synthetic_representation_stress_tests/index.json",
     "index_markdown": "results/rf_synthetic_representation_stress_tests/index.md"
   },
@@ -15,7 +17,7 @@
     "learning_rate": 0.01,
     "n_per_class_per_snr": 128,
     "preset": "standard",
-    "progress": true,
+    "progress": false,
     "sample_length": 64,
     "seeds": [
       0,
@@ -25,25 +27,25 @@
     "steps": 200,
     "train_fraction": 0.8
   },
-  "created_at": "2026-05-08T19:57:01.255596+00:00",
+  "created_at": "2026-05-08T20:05:10.663550+00:00",
   "dataset": {
     "description": "sequential synthetic RF contradiction tests",
     "name": "rf_synthetic_modulation",
     "version": "0.1.0"
   },
   "environment": {
-    "cuda_available": true,
-    "cuda_device": "NVIDIA A100-SXM4-40GB",
-    "cuda_version": "13.0",
+    "cuda_available": false,
+    "cuda_device": null,
+    "cuda_version": null,
     "device": "cuda",
     "dtype": "complex64",
-    "git_commit": "dd42313345f46a5885f35bfa11f56d4dd5b4021f",
+    "git_commit": "08213e264ec2f717bc9c33e2cb889faaa9c4f0cd",
     "git_dirty": false,
-    "macos": null,
-    "mps_available": false,
-    "platform": "Linux-6.6.122+-x86_64-with-glibc2.35",
+    "macos": "14.6",
+    "mps_available": true,
+    "platform": "macOS-14.6-arm64-arm-64bit",
     "python": "3.12.12",
-    "torch": "2.11.0+cu130"
+    "torch": "2.11.0"
   },
   "metrics": {
     "conditions": [
@@ -508,7 +510,7 @@
       "learning_rate": 0.01,
       "n_per_class_per_snr": 128,
       "preset": "standard",
-      "progress": true,
+      "progress": false,
       "sample_length": 64,
       "seeds": [
         0,

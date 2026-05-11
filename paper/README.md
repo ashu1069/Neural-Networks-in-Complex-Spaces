@@ -71,5 +71,6 @@ details, per-activation results across all four baseline families,
 gradient telemetry per-layer per-step traces, the synthetic-data
 replication of the threshold mechanism, RadioML loader edge cases,
 the manifest schema and CI guards, and the full-archive scale-up plan.
-The appendix is unbounded under NeurIPS rules; main body is 9 pages,
-total PDF is 15 pages.
+The appendix is unbounded under NeurIPS rules; after the RF
+representation stress-test and quantum pilot updates, the working draft
+builds to 22 pages total.

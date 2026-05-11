@@ -1,0 +1,317 @@
+[
+  {
+    "accuracy_by_class": {
+      "k=-1.5": 1.0,
+      "k=-3": 1.0,
+      "k=1.5": 1.0,
+      "k=3": 1.0
+    },
+    "condition_id": "momentum_phase",
+    "estimated_forward_madds": 522496,
+    "hidden_features": 16,
+    "learning_rate": 0.01,
+    "model_family": "complex",
+    "parameter_count": 2920,
+    "seed": 0,
+    "steps": 140,
+    "task": "momentum_phase",
+    "test_accuracy": 1.0,
+    "test_loss": 0.016252301633358,
+    "train_loss": 0.011120776645839214,
+    "train_seconds": 4.983480459079146
+  },
+  {
+    "accuracy_by_class": {
+      "k=-1.5": 1.0,
+      "k=-3": 1.0,
+      "k=1.5": 1.0,
+      "k=3": 1.0
+    },
+    "condition_id": "momentum_phase",
+    "estimated_forward_madds": 522496,
+    "hidden_features": 16,
+    "learning_rate": 0.01,
+    "model_family": "complex",
+    "parameter_count": 2920,
+    "seed": 1,
+    "steps": 140,
+    "task": "momentum_phase",
+    "test_accuracy": 1.0,
+    "test_loss": 0.02466185949742794,
+    "train_loss": 0.01800711266696453,
+    "train_seconds": 5.136900000274181
+  },
+  {
+    "accuracy_by_class": {
+      "k=-1.5": 1.0,
+      "k=-3": 1.0,
+      "k=1.5": 1.0,
+      "k=3": 1.0
+    },
+    "condition_id": "momentum_phase",
+    "estimated_forward_madds": 522496,
+    "hidden_features": 16,
+    "learning_rate": 0.01,
+    "model_family": "complex",
+    "parameter_count": 2920,
+    "seed": 2,
+    "steps": 140,
+    "task": "momentum_phase",
+    "test_accuracy": 1.0,
+    "test_loss": 0.02342928759753704,
+    "train_loss": 0.02196279913187027,
+    "train_seconds": 5.140575124882162
+  },
+  {
+    "accuracy_by_class": {
+      "k=-1.5": 1.0,
+      "k=-3": 1.0,
+      "k=1.5": 1.0,
+      "k=3": 1.0
+    },
+    "condition_id": "momentum_phase",
+    "estimated_forward_madds": 138304,
+    "hidden_features": 16,
+    "learning_rate": 0.01,
+    "model_family": "real_stacked",
+    "parameter_count": 1540,
+    "seed": 0,
+    "steps": 140,
+    "task": "momentum_phase",
+    "test_accuracy": 1.0,
+    "test_loss": 0.016769131645560265,
+    "train_loss": 0.014935323968529701,
+    "train_seconds": 1.549305958673358
+  },
+  {
+    "accuracy_by_class": {
+      "k=-1.5": 1.0,
+      "k=-3": 1.0,
+      "k=1.5": 1.0,
+      "k=3": 1.0
+    },
+    "condition_id": "momentum_phase",
+    "estimated_forward_madds": 138304,
+    "hidden_features": 16,
+    "learning_rate": 0.01,
+    "model_family": "real_stacked",
+    "parameter_count": 1540,
+    "seed": 1,
+    "steps": 140,
+    "task": "momentum_phase",
+    "test_accuracy": 1.0,
+    "test_loss": 0.017371905967593193,
+    "train_loss": 0.016686219722032547,
+    "train_seconds": 1.5463253743946552
+  },
+  {
+    "accuracy_by_class": {
+      "k=-1.5": 1.0,
+      "k=-3": 1.0,
+      "k=1.5": 1.0,
+      "k=3": 1.0
+    },
+    "condition_id": "momentum_phase",
+    "estimated_forward_madds": 138304,
+    "hidden_features": 16,
+    "learning_rate": 0.01,
+    "model_family": "real_stacked",
+    "parameter_count": 1540,
+    "seed": 2,
+    "steps": 140,
+    "task": "momentum_phase",
+    "test_accuracy": 1.0,
+    "test_loss": 0.01351192407310009,
+    "train_loss": 0.012661430984735489,
+    "train_seconds": 1.5561432493850589
+  },
+  {
+    "accuracy_by_class": {
+      "k=-1.5": 1.0,
+      "k=-3": 1.0,
+      "k=1.5": 1.0,
+      "k=3": 1.0
+    },
+    "condition_id": "momentum_phase",
+    "estimated_forward_madds": 145984,
+    "hidden_features": 16,
+    "learning_rate": 0.01,
+    "model_family": "real_polar",
+    "parameter_count": 1620,
+    "seed": 0,
+    "steps": 140,
+    "task": "momentum_phase",
+    "test_accuracy": 1.0,
+    "test_loss": 0.001360889058560133,
+    "train_loss": 0.0010169504676014185,
+    "train_seconds": 1.6528352508321404
+  },
+  {
+    "accuracy_by_class": {
+      "k=-1.5": 1.0,
+      "k=-3": 1.0,
+      "k=1.5": 1.0,
+      "k=3": 1.0
+    },
+    "condition_id": "momentum_phase",
+    "estimated_forward_madds": 145984,
+    "hidden_features": 16,
+    "learning_rate": 0.01,
+    "model_family": "real_polar",
+    "parameter_count": 1620,
+    "seed": 1,
+    "steps": 140,
+    "task": "momentum_phase",
+    "test_accuracy": 1.0,
+    "test_loss": 0.0010167944710701704,
+    "train_loss": 0.0007769113872200251,
+    "train_seconds": 1.6657375004142523
+  },
+  {
+    "accuracy_by_class": {
+      "k=-1.5": 1.0,
+      "k=-3": 1.0,
+      "k=1.5": 1.0,
+      "k=3": 1.0
+    },
+    "condition_id": "momentum_phase",
+    "estimated_forward_madds": 145984,
+    "hidden_features": 16,
+    "learning_rate": 0.01,
+    "model_family": "real_polar",
+    "parameter_count": 1620,
+    "seed": 2,
+    "steps": 140,
+    "task": "momentum_phase",
+    "test_accuracy": 1.0,
+    "test_loss": 0.0010528835700824857,
+    "train_loss": 0.0012496820418164134,
+    "train_seconds": 1.701906207948923
+  },
+  {
+    "accuracy_by_class": {
+      "k=-1.5": 1.0,
+      "k=-3": 1.0,
+      "k=1.5": 1.0,
+      "k=3": 1.0
+    },
+    "condition_id": "momentum_phase",
+    "estimated_forward_madds": 138304,
+    "hidden_features": 16,
+    "learning_rate": 0.01,
+    "model_family": "real_phase",
+    "parameter_count": 1540,
+    "seed": 0,
+    "steps": 140,
+    "task": "momentum_phase",
+    "test_accuracy": 1.0,
+    "test_loss": 0.0013195091160014272,
+    "train_loss": 0.0008052532793954015,
+    "train_seconds": 1.6789807500317693
+  },
+  {
+    "accuracy_by_class": {
+      "k=-1.5": 1.0,
+      "k=-3": 1.0,
+      "k=1.5": 1.0,
+      "k=3": 1.0
+    },
+    "condition_id": "momentum_phase",
+    "estimated_forward_madds": 138304,
+    "hidden_features": 16,
+    "learning_rate": 0.01,
+    "model_family": "real_phase",
+    "parameter_count": 1540,
+    "seed": 1,
+    "steps": 140,
+    "task": "momentum_phase",
+    "test_accuracy": 1.0,
+    "test_loss": 0.0011782387737184763,
+    "train_loss": 0.000867821101564914,
+    "train_seconds": 1.6575573747977614
+  },
+  {
+    "accuracy_by_class": {
+      "k=-1.5": 1.0,
+      "k=-3": 1.0,
+      "k=1.5": 1.0,
+      "k=3": 1.0
+    },
+    "condition_id": "momentum_phase",
+    "estimated_forward_madds": 138304,
+    "hidden_features": 16,
+    "learning_rate": 0.01,
+    "model_family": "real_phase",
+    "parameter_count": 1540,
+    "seed": 2,
+    "steps": 140,
+    "task": "momentum_phase",
+    "test_accuracy": 1.0,
+    "test_loss": 0.0009592860587872565,
+    "train_loss": 0.0010315123945474625,
+    "train_seconds": 1.5649743331596255
+  },
+  {
+    "accuracy_by_class": {
+      "k=-1.5": 0.0,
+      "k=-3": 1.0,
+      "k=1.5": 0.0,
+      "k=3": 0.0
+    },
+    "condition_id": "momentum_phase",
+    "estimated_forward_madds": 130624,
+    "hidden_features": 16,
+    "learning_rate": 0.01,
+    "model_family": "real_magnitude",
+    "parameter_count": 1460,
+    "seed": 0,
+    "steps": 140,
+    "task": "momentum_phase",
+    "test_accuracy": 0.25,
+    "test_loss": 1.3871420621871948,
+    "train_loss": 1.39146089553833,
+    "train_seconds": 1.5695681665092707
+  },
+  {
+    "accuracy_by_class": {
+      "k=-1.5": 0.0,
+      "k=-3": 0.0,
+      "k=1.5": 0.0,
+      "k=3": 1.0
+    },
+    "condition_id": "momentum_phase",
+    "estimated_forward_madds": 130624,
+    "hidden_features": 16,
+    "learning_rate": 0.01,
+    "model_family": "real_magnitude",
+    "parameter_count": 1460,
+    "seed": 1,
+    "steps": 140,
+    "task": "momentum_phase",
+    "test_accuracy": 0.25,
+    "test_loss": 1.3866175413131714,
+    "train_loss": 1.3858271837234497,
+    "train_seconds": 1.565024457871914
+  },
+  {
+    "accuracy_by_class": {
+      "k=-1.5": 0.0,
+      "k=-3": 0.0,
+      "k=1.5": 1.0,
+      "k=3": 0.0
+    },
+    "condition_id": "momentum_phase",
+    "estimated_forward_madds": 130624,
+    "hidden_features": 16,
+    "learning_rate": 0.01,
+    "model_family": "real_magnitude",
+    "parameter_count": 1460,
+    "seed": 2,
+    "steps": 140,
+    "task": "momentum_phase",
+    "test_accuracy": 0.25,
+    "test_loss": 1.386510968208313,
+    "train_loss": 1.3847743272781372,
+    "train_seconds": 1.565381416119635
+  }
+]

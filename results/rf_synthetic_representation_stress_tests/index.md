@@ -2,6 +2,13 @@
 
 Sequential contradiction tests for whether complex-valued RF models help because of native complex arithmetic, coordinate choice, phase information, augmentation, or compute budget.
 
+## Plots
+
+![accuracy heatmap](accuracy_heatmap.png)
+
+![best accuracy by condition](best_accuracy_by_condition.png)
+
+
 | condition | best | acc | complex | real_stack | phase | polar | magnitude |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | `psk_representation` | `complex` | 0.8205 | 0.8205 | 0.7279 | 0.7350 | 0.7479 | 0.3333 |

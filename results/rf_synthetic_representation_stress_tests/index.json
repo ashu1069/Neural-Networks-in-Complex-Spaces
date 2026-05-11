@@ -461,7 +461,7 @@
     "learning_rate": 0.01,
     "n_per_class_per_snr": 128,
     "preset": "standard",
-    "progress": true,
+    "progress": false,
     "sample_length": 64,
     "seeds": [
       0,
