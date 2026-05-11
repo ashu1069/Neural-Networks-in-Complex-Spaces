@@ -6,6 +6,13 @@ Contradiction signal: complex or phase-only still performs on QAM after amplitud
 
 Modulations: `['bpsk', 'qpsk', '8psk', 'qam16', 'qam64']`. SNR (dB): `[0, 10, 20]`. Architecture: `conv`. Activation: `zrelu`. Train transform: `unit_magnitude`. Test transform: `unit_magnitude`.
 
+## Plots
+
+![accuracy bar](accuracy_bar.png)
+
+![accuracy by snr](accuracy_by_snr.png)
+
+
 | model | hidden | params | MAdds | accuracy | std | 95% CI | loss | s/run |
 | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
 | `complex` | 16 | 2954 | 348480 | 0.4761 | 0.0082 | [0.4667, 0.4821] | 1.1 | 0.77 |

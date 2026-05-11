@@ -6,6 +6,13 @@ Contradiction signal: all coordinate-dependent models fail under a fixed test ro
 
 Modulations: `['bpsk', 'qpsk', '8psk']`. SNR (dB): `[0, 10, 20]`. Architecture: `conv`. Activation: `zrelu`. Train transform: `none`. Test transform: `fixed_rotation`.
 
+## Plots
+
+![accuracy bar](accuracy_bar.png)
+
+![accuracy by snr](accuracy_by_snr.png)
+
+
 | model | hidden | params | MAdds | accuracy | std | 95% CI | loss | s/run |
 | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
 | `complex` | 16 | 2886 | 348352 | 0.2521 | 0.0299 | [0.2222, 0.2821] | 3.98 | 0.78 |

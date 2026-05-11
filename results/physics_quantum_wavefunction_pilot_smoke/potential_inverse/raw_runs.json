@@ -1,0 +1,112 @@
+[
+  {
+    "accuracy_by_class": {
+      "barrier": 1.0,
+      "double_barrier": 0.0,
+      "free": 0.0,
+      "harmonic": 0.0,
+      "well": 0.0
+    },
+    "condition_id": "potential_inverse",
+    "estimated_forward_madds": 69280,
+    "hidden_features": 8,
+    "learning_rate": 0.01,
+    "model_family": "complex",
+    "parameter_count": 842,
+    "seed": 0,
+    "steps": 30,
+    "task": "potential_inverse",
+    "test_accuracy": 0.20000000298023224,
+    "test_loss": 1.6099157333374023,
+    "train_loss": 1.6093792915344238,
+    "train_seconds": 0.33776925038546324
+  },
+  {
+    "accuracy_by_class": {
+      "barrier": 1.0,
+      "double_barrier": 0.0,
+      "free": 0.0,
+      "harmonic": 0.0,
+      "well": 0.0
+    },
+    "condition_id": "potential_inverse",
+    "estimated_forward_madds": 19240,
+    "hidden_features": 8,
+    "learning_rate": 0.01,
+    "model_family": "real_stacked",
+    "parameter_count": 461,
+    "seed": 0,
+    "steps": 30,
+    "task": "potential_inverse",
+    "test_accuracy": 0.20000000298023224,
+    "test_loss": 1.6091642379760742,
+    "train_loss": 1.608746886253357,
+    "train_seconds": 0.08399791736155748
+  },
+  {
+    "accuracy_by_class": {
+      "barrier": 0.0,
+      "double_barrier": 0.4000000059604645,
+      "free": 0.0,
+      "harmonic": 0.0,
+      "well": 0.0
+    },
+    "condition_id": "potential_inverse",
+    "estimated_forward_madds": 21160,
+    "hidden_features": 8,
+    "learning_rate": 0.01,
+    "model_family": "real_polar",
+    "parameter_count": 501,
+    "seed": 0,
+    "steps": 30,
+    "task": "potential_inverse",
+    "test_accuracy": 0.07999999821186066,
+    "test_loss": 1.6218582391738892,
+    "train_loss": 1.5814131498336792,
+    "train_seconds": 0.08344741631299257
+  },
+  {
+    "accuracy_by_class": {
+      "barrier": 0.0,
+      "double_barrier": 0.800000011920929,
+      "free": 0.0,
+      "harmonic": 0.0,
+      "well": 0.20000000298023224
+    },
+    "condition_id": "potential_inverse",
+    "estimated_forward_madds": 19240,
+    "hidden_features": 8,
+    "learning_rate": 0.01,
+    "model_family": "real_phase",
+    "parameter_count": 461,
+    "seed": 0,
+    "steps": 30,
+    "task": "potential_inverse",
+    "test_accuracy": 0.20000000298023224,
+    "test_loss": 1.6575740575790405,
+    "train_loss": 1.5728026628494263,
+    "train_seconds": 0.08319429215043783
+  },
+  {
+    "accuracy_by_class": {
+      "barrier": 0.0,
+      "double_barrier": 1.0,
+      "free": 0.0,
+      "harmonic": 0.0,
+      "well": 0.0
+    },
+    "condition_id": "potential_inverse",
+    "estimated_forward_madds": 17320,
+    "hidden_features": 8,
+    "learning_rate": 0.01,
+    "model_family": "real_magnitude",
+    "parameter_count": 421,
+    "seed": 0,
+    "steps": 30,
+    "task": "potential_inverse",
+    "test_accuracy": 0.20000000298023224,
+    "test_loss": 1.6107138395309448,
+    "train_loss": 1.6119896173477173,
+    "train_seconds": 0.07722862437367439
+  }
+]

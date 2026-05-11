@@ -6,6 +6,13 @@ Contradiction signal: a hand-chosen real coordinate system matches or beats the 
 
 Modulations: `['bpsk', 'qpsk', '8psk', 'qam16', 'qam64']`. SNR (dB): `[0, 10, 20]`. Architecture: `conv`. Activation: `zrelu`. Train transform: `none`. Test transform: `none`.
 
+## Plots
+
+![accuracy bar](accuracy_bar.png)
+
+![accuracy by snr](accuracy_by_snr.png)
+
+
 | model | hidden | params | MAdds | accuracy | std | 95% CI | loss | s/run |
 | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
 | `complex` | 16 | 2954 | 348480 | 0.5068 | 0.0231 | [0.4846, 0.5308] | 1.08 | 0.77 |

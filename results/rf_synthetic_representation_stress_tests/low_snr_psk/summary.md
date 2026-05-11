@@ -6,6 +6,13 @@ Contradiction signal: Cartesian or magnitude-heavy encodings beat phase/polar at
 
 Modulations: `['bpsk', 'qpsk', '8psk']`. SNR (dB): `[-10, -5, 0]`. Architecture: `conv`. Activation: `zrelu`. Train transform: `none`. Test transform: `none`.
 
+## Plots
+
+![accuracy bar](accuracy_bar.png)
+
+![accuracy by snr](accuracy_by_snr.png)
+
+
 | model | hidden | params | MAdds | accuracy | std | 95% CI | loss | s/run |
 | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
 | `complex` | 16 | 2886 | 348352 | 0.5256 | 0.0513 | [0.4744, 0.5769] | 0.922 | 0.78 |

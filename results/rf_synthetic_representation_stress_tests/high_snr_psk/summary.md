@@ -6,6 +6,13 @@ Contradiction signal: complex only separates from real baselines when the phase 
 
 Modulations: `['bpsk', 'qpsk', '8psk']`. SNR (dB): `[10, 15, 20]`. Architecture: `conv`. Activation: `zrelu`. Train transform: `none`. Test transform: `none`.
 
+## Plots
+
+![accuracy bar](accuracy_bar.png)
+
+![accuracy by snr](accuracy_by_snr.png)
+
+
 | model | hidden | params | MAdds | accuracy | std | 95% CI | loss | s/run |
 | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
 | `complex` | 16 | 2886 | 348352 | 0.9487 | 0.0280 | [0.9231, 0.9786] | 0.12 | 0.79 |

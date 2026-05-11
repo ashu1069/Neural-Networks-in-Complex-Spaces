@@ -1,0 +1,264 @@
+{
+  "condition": {
+    "condition_id": "global_phase_shift",
+    "expected_signal": "coordinate-dependent models may degrade under an unseen global phase; magnitude-only is invariant but information-poor.",
+    "model_families": [
+      "complex",
+      "real_stacked",
+      "real_polar",
+      "real_phase",
+      "real_magnitude"
+    ],
+    "question": "Do models trained in one global-phase convention respect the physical invariance psi -> exp(i theta) psi?",
+    "task": "potential_inverse",
+    "test_transform": {
+      "name": "fixed_global_phase",
+      "rotation_radians": 1.5707963267948966
+    },
+    "train_transform": {
+      "name": "none",
+      "rotation_radians": 0.0
+    }
+  },
+  "config": {
+    "activation": "zrelu",
+    "architecture": "conv",
+    "batch_size": 48,
+    "bootstrap_samples": 100,
+    "confidence": 0.95,
+    "device": "cpu",
+    "dtype": "complex64",
+    "evolution_dt": 0.03,
+    "evolution_steps": 12,
+    "examples_per_class": 24,
+    "grid_size": 48,
+    "hidden_features": 8,
+    "kernel_size": 5,
+    "learning_rate": 0.01,
+    "observation_noise_std": 0.0,
+    "preset": "smoke",
+    "progress": true,
+    "real_activation": "relu",
+    "seeds": [
+      0
+    ],
+    "train_fraction": 0.8,
+    "train_steps": 30,
+    "x_max": 8.0,
+    "x_min": -8.0
+  },
+  "raw_runs": [
+    {
+      "accuracy_by_class": {
+        "barrier": 1.0,
+        "double_barrier": 0.0,
+        "free": 0.0,
+        "harmonic": 0.0,
+        "well": 0.0
+      },
+      "condition_id": "global_phase_shift",
+      "estimated_forward_madds": 69280,
+      "hidden_features": 8,
+      "learning_rate": 0.01,
+      "model_family": "complex",
+      "parameter_count": 842,
+      "seed": 0,
+      "steps": 30,
+      "task": "potential_inverse",
+      "test_accuracy": 0.20000000298023224,
+      "test_loss": 1.6077301502227783,
+      "train_loss": 1.6093792915344238,
+      "train_seconds": 0.2349410830065608
+    },
+    {
+      "accuracy_by_class": {
+        "barrier": 0.800000011920929,
+        "double_barrier": 0.0,
+        "free": 0.0,
+        "harmonic": 0.0,
+        "well": 0.20000000298023224
+      },
+      "condition_id": "global_phase_shift",
+      "estimated_forward_madds": 19240,
+      "hidden_features": 8,
+      "learning_rate": 0.01,
+      "model_family": "real_stacked",
+      "parameter_count": 461,
+      "seed": 0,
+      "steps": 30,
+      "task": "potential_inverse",
+      "test_accuracy": 0.20000000298023224,
+      "test_loss": 1.60750150680542,
+      "train_loss": 1.608746886253357,
+      "train_seconds": 0.08151716645807028
+    },
+    {
+      "accuracy_by_class": {
+        "barrier": 0.6000000238418579,
+        "double_barrier": 0.800000011920929,
+        "free": 0.0,
+        "harmonic": 0.0,
+        "well": 0.0
+      },
+      "condition_id": "global_phase_shift",
+      "estimated_forward_madds": 21160,
+      "hidden_features": 8,
+      "learning_rate": 0.01,
+      "model_family": "real_polar",
+      "parameter_count": 501,
+      "seed": 0,
+      "steps": 30,
+      "task": "potential_inverse",
+      "test_accuracy": 0.2800000011920929,
+      "test_loss": 1.6044487953186035,
+      "train_loss": 1.5814131498336792,
+      "train_seconds": 0.081128666177392
+    },
+    {
+      "accuracy_by_class": {
+        "barrier": 0.0,
+        "double_barrier": 0.800000011920929,
+        "free": 0.0,
+        "harmonic": 0.20000000298023224,
+        "well": 0.4000000059604645
+      },
+      "condition_id": "global_phase_shift",
+      "estimated_forward_madds": 19240,
+      "hidden_features": 8,
+      "learning_rate": 0.01,
+      "model_family": "real_phase",
+      "parameter_count": 461,
+      "seed": 0,
+      "steps": 30,
+      "task": "potential_inverse",
+      "test_accuracy": 0.2800000011920929,
+      "test_loss": 1.6063956022262573,
+      "train_loss": 1.5728026628494263,
+      "train_seconds": 0.07902933284640312
+    },
+    {
+      "accuracy_by_class": {
+        "barrier": 0.0,
+        "double_barrier": 1.0,
+        "free": 0.0,
+        "harmonic": 0.0,
+        "well": 0.0
+      },
+      "condition_id": "global_phase_shift",
+      "estimated_forward_madds": 17320,
+      "hidden_features": 8,
+      "learning_rate": 0.01,
+      "model_family": "real_magnitude",
+      "parameter_count": 421,
+      "seed": 0,
+      "steps": 30,
+      "task": "potential_inverse",
+      "test_accuracy": 0.20000000298023224,
+      "test_loss": 1.6107138395309448,
+      "train_loss": 1.6119896173477173,
+      "train_seconds": 0.0771937919780612
+    }
+  ],
+  "summaries": [
+    {
+      "accuracy_by_class_mean": {
+        "barrier": 1.0,
+        "double_barrier": 0.0,
+        "free": 0.0,
+        "harmonic": 0.0,
+        "well": 0.0
+      },
+      "estimated_forward_madds": 69280,
+      "hidden_features": 8,
+      "model_family": "complex",
+      "n_runs": 1,
+      "parameter_count": 842,
+      "test_accuracy_ci_high": 0.20000000298023224,
+      "test_accuracy_ci_low": 0.20000000298023224,
+      "test_accuracy_mean": 0.20000000298023224,
+      "test_accuracy_std": 0.0,
+      "test_loss_mean": 1.6077301502227783,
+      "train_seconds_mean": 0.2349410830065608
+    },
+    {
+      "accuracy_by_class_mean": {
+        "barrier": 0.800000011920929,
+        "double_barrier": 0.0,
+        "free": 0.0,
+        "harmonic": 0.0,
+        "well": 0.20000000298023224
+      },
+      "estimated_forward_madds": 19240,
+      "hidden_features": 8,
+      "model_family": "real_stacked",
+      "n_runs": 1,
+      "parameter_count": 461,
+      "test_accuracy_ci_high": 0.20000000298023224,
+      "test_accuracy_ci_low": 0.20000000298023224,
+      "test_accuracy_mean": 0.20000000298023224,
+      "test_accuracy_std": 0.0,
+      "test_loss_mean": 1.60750150680542,
+      "train_seconds_mean": 0.08151716645807028
+    },
+    {
+      "accuracy_by_class_mean": {
+        "barrier": 0.6000000238418579,
+        "double_barrier": 0.800000011920929,
+        "free": 0.0,
+        "harmonic": 0.0,
+        "well": 0.0
+      },
+      "estimated_forward_madds": 21160,
+      "hidden_features": 8,
+      "model_family": "real_polar",
+      "n_runs": 1,
+      "parameter_count": 501,
+      "test_accuracy_ci_high": 0.2800000011920929,
+      "test_accuracy_ci_low": 0.2800000011920929,
+      "test_accuracy_mean": 0.2800000011920929,
+      "test_accuracy_std": 0.0,
+      "test_loss_mean": 1.6044487953186035,
+      "train_seconds_mean": 0.081128666177392
+    },
+    {
+      "accuracy_by_class_mean": {
+        "barrier": 0.0,
+        "double_barrier": 0.800000011920929,
+        "free": 0.0,
+        "harmonic": 0.20000000298023224,
+        "well": 0.4000000059604645
+      },
+      "estimated_forward_madds": 19240,
+      "hidden_features": 8,
+      "model_family": "real_phase",
+      "n_runs": 1,
+      "parameter_count": 461,
+      "test_accuracy_ci_high": 0.2800000011920929,
+      "test_accuracy_ci_low": 0.2800000011920929,
+      "test_accuracy_mean": 0.2800000011920929,
+      "test_accuracy_std": 0.0,
+      "test_loss_mean": 1.6063956022262573,
+      "train_seconds_mean": 0.07902933284640312
+    },
+    {
+      "accuracy_by_class_mean": {
+        "barrier": 0.0,
+        "double_barrier": 1.0,
+        "free": 0.0,
+        "harmonic": 0.0,
+        "well": 0.0
+      },
+      "estimated_forward_madds": 17320,
+      "hidden_features": 8,
+      "model_family": "real_magnitude",
+      "n_runs": 1,
+      "parameter_count": 421,
+      "test_accuracy_ci_high": 0.20000000298023224,
+      "test_accuracy_ci_low": 0.20000000298023224,
+      "test_accuracy_mean": 0.20000000298023224,
+      "test_accuracy_std": 0.0,
+      "test_loss_mean": 1.6107138395309448,
+      "train_seconds_mean": 0.0771937919780612
+    }
+  ]
+}

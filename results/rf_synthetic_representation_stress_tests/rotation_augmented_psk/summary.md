@@ -6,6 +6,13 @@ Contradiction signal: random train rotations close the gap to complex under fixe
 
 Modulations: `['bpsk', 'qpsk', '8psk']`. SNR (dB): `[0, 10, 20]`. Architecture: `conv`. Activation: `zrelu`. Train transform: `random_rotation`. Test transform: `fixed_rotation`.
 
+## Plots
+
+![accuracy bar](accuracy_bar.png)
+
+![accuracy by snr](accuracy_by_snr.png)
+
+
 | model | hidden | params | MAdds | accuracy | std | 95% CI | loss | s/run |
 | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
 | `complex` | 16 | 2886 | 348352 | 0.6538 | 0.0606 | [0.5855, 0.7009] | 0.529 | 0.79 |

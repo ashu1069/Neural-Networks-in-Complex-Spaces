@@ -1,0 +1,269 @@
+{
+  "artifacts": {
+    "accuracy_heatmap": "results/neuro_eeg_analytic_signal_pilot_crelu_tmp/accuracy_heatmap.png",
+    "best_accuracy_by_condition": "results/neuro_eeg_analytic_signal_pilot_crelu_tmp/best_accuracy_by_condition.png",
+    "index_json": "results/neuro_eeg_analytic_signal_pilot_crelu_tmp/index.json",
+    "index_markdown": "results/neuro_eeg_analytic_signal_pilot_crelu_tmp/index.md"
+  },
+  "config": {
+    "activation": "crelu",
+    "architecture": "mlp",
+    "batch_size": 128,
+    "bootstrap_samples": 1000,
+    "confidence": 0.95,
+    "device": "cpu",
+    "dtype": "complex64",
+    "examples_per_class": 128,
+    "hidden_features": 24,
+    "kernel_size": 5,
+    "learning_rate": 0.01,
+    "n_channels": 4,
+    "observation_noise_std": 0.03,
+    "preset": "standard",
+    "progress": true,
+    "real_activation": "relu",
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "time_steps": 64,
+    "train_fraction": 0.8,
+    "train_steps": 120
+  },
+  "created_at": "2026-05-11T21:14:33.278131+00:00",
+  "dataset": {
+    "description": "sequential EEG analytic-signal representation pilot",
+    "name": "eeg_analytic_signal_pilot",
+    "version": "0.1.0"
+  },
+  "environment": {
+    "cuda_available": false,
+    "cuda_device": null,
+    "cuda_version": null,
+    "device": "cpu",
+    "dtype": "complex64",
+    "git_commit": "1e87121b61f90bd4d52f6738a3eba4c51b62892d",
+    "git_dirty": true,
+    "macos": "14.6",
+    "mps_available": true,
+    "platform": "macOS-14.6-arm64-arm-64bit",
+    "python": "3.12.12",
+    "torch": "2.11.0"
+  },
+  "metrics": {
+    "conditions": [
+      {
+        "condition_id": "phase_locking",
+        "expected_signal": "phase-aware and Cartesian views should learn; magnitude-only should remain near chance.",
+        "model_families": [
+          "complex",
+          "real_stacked",
+          "real_polar",
+          "real_phase",
+          "real_magnitude"
+        ],
+        "question": "Can models classify inter-channel phase locking when amplitude envelopes are randomized independently of the label?",
+        "task": "phase_locking",
+        "test_transform": {
+          "name": "none",
+          "rotation_radians": 0.0
+        },
+        "train_transform": {
+          "name": "none",
+          "rotation_radians": 0.0
+        }
+      },
+      {
+        "condition_id": "amplitude_event",
+        "expected_signal": "magnitude, polar, Cartesian, and complex views should learn; phase-only should remain near chance.",
+        "model_families": [
+          "complex",
+          "real_stacked",
+          "real_polar",
+          "real_phase",
+          "real_magnitude"
+        ],
+        "question": "Can models classify which sensor carries an amplitude burst when phase is independent of the label?",
+        "task": "amplitude_event",
+        "test_transform": {
+          "name": "none",
+          "rotation_radians": 0.0
+        },
+        "train_transform": {
+          "name": "none",
+          "rotation_radians": 0.0
+        }
+      },
+      {
+        "condition_id": "phase_amplitude_coupling",
+        "expected_signal": "full complex/Cartesian/polar views should outperform pure phase or pure magnitude because the label is relational.",
+        "model_families": [
+          "complex",
+          "real_stacked",
+          "real_polar",
+          "real_phase",
+          "real_magnitude"
+        ],
+        "question": "Can models detect phase-amplitude coupling when the high-band amplitude is locked to a low-band phase offset?",
+        "task": "phase_amplitude_coupling",
+        "test_transform": {
+          "name": "none",
+          "rotation_radians": 0.0
+        },
+        "train_transform": {
+          "name": "none",
+          "rotation_radians": 0.0
+        }
+      },
+      {
+        "condition_id": "reference_phase_shift",
+        "expected_signal": "coordinate-dependent models may degrade under the reference shift; magnitude-only remains invariant but information-poor.",
+        "model_families": [
+          "complex",
+          "real_stacked",
+          "real_polar",
+          "real_phase",
+          "real_magnitude"
+        ],
+        "question": "Does a model trained in one sensor-reference phase convention respect a common unseen analytic-signal rotation?",
+        "task": "phase_locking",
+        "test_transform": {
+          "name": "fixed_reference_phase",
+          "rotation_radians": 1.5707963267948966
+        },
+        "train_transform": {
+          "name": "none",
+          "rotation_radians": 0.0
+        }
+      },
+      {
+        "condition_id": "reference_phase_augmented",
+        "expected_signal": "phase-aware models should improve relative to the unaugmented reference-shift condition.",
+        "model_families": [
+          "complex",
+          "real_stacked",
+          "real_polar",
+          "real_phase",
+          "real_magnitude"
+        ],
+        "question": "Does random reference-phase augmentation recover robustness to the unseen fixed reference shift?",
+        "task": "phase_locking",
+        "test_transform": {
+          "name": "fixed_reference_phase",
+          "rotation_radians": 1.5707963267948966
+        },
+        "train_transform": {
+          "name": "random_reference_phase",
+          "rotation_radians": 0.0
+        }
+      }
+    ],
+    "config": {
+      "activation": "crelu",
+      "architecture": "mlp",
+      "batch_size": 128,
+      "bootstrap_samples": 1000,
+      "confidence": 0.95,
+      "device": "cpu",
+      "dtype": "complex64",
+      "examples_per_class": 128,
+      "hidden_features": 24,
+      "kernel_size": 5,
+      "learning_rate": 0.01,
+      "n_channels": 4,
+      "observation_noise_std": 0.03,
+      "preset": "standard",
+      "progress": true,
+      "real_activation": "relu",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "time_steps": 64,
+      "train_fraction": 0.8,
+      "train_steps": 120
+    },
+    "results": [
+      {
+        "best_accuracy": 1.0,
+        "best_model": "real_phase",
+        "complex_accuracy": 0.9262820482254028,
+        "condition_id": "phase_locking",
+        "expected_signal": "phase-aware and Cartesian views should learn; magnitude-only should remain near chance.",
+        "question": "Can models classify inter-channel phase locking when amplitude envelopes are randomized independently of the label?",
+        "real_magnitude_accuracy": 0.25,
+        "real_phase_accuracy": 1.0,
+        "real_polar_accuracy": 0.9711538553237915,
+        "real_stacked_accuracy": 0.9807692368825277,
+        "summary_markdown": "results/neuro_eeg_analytic_signal_pilot_crelu_tmp/phase_locking/summary.md",
+        "task": "phase_locking"
+      },
+      {
+        "best_accuracy": 0.9455128113428751,
+        "best_model": "real_magnitude",
+        "complex_accuracy": 0.49358974893887836,
+        "condition_id": "amplitude_event",
+        "expected_signal": "magnitude, polar, Cartesian, and complex views should learn; phase-only should remain near chance.",
+        "question": "Can models classify which sensor carries an amplitude burst when phase is independent of the label?",
+        "real_magnitude_accuracy": 0.9455128113428751,
+        "real_phase_accuracy": 0.25641025106112164,
+        "real_polar_accuracy": 0.9326923290888468,
+        "real_stacked_accuracy": 0.310897429784139,
+        "summary_markdown": "results/neuro_eeg_analytic_signal_pilot_crelu_tmp/amplitude_event/summary.md",
+        "task": "amplitude_event"
+      },
+      {
+        "best_accuracy": 0.3621794879436493,
+        "best_model": "real_polar",
+        "complex_accuracy": 0.28525640567143756,
+        "condition_id": "phase_amplitude_coupling",
+        "expected_signal": "full complex/Cartesian/polar views should outperform pure phase or pure magnitude because the label is relational.",
+        "question": "Can models detect phase-amplitude coupling when the high-band amplitude is locked to a low-band phase offset?",
+        "real_magnitude_accuracy": 0.24358974397182465,
+        "real_phase_accuracy": 0.2275641014178594,
+        "real_polar_accuracy": 0.3621794879436493,
+        "real_stacked_accuracy": 0.2307692269484202,
+        "summary_markdown": "results/neuro_eeg_analytic_signal_pilot_crelu_tmp/phase_amplitude_coupling/summary.md",
+        "task": "phase_amplitude_coupling"
+      },
+      {
+        "best_accuracy": 0.9935897588729858,
+        "best_model": "real_phase",
+        "complex_accuracy": 0.9198717872301737,
+        "condition_id": "reference_phase_shift",
+        "expected_signal": "coordinate-dependent models may degrade under the reference shift; magnitude-only remains invariant but information-poor.",
+        "question": "Does a model trained in one sensor-reference phase convention respect a common unseen analytic-signal rotation?",
+        "real_magnitude_accuracy": 0.25,
+        "real_phase_accuracy": 0.9935897588729858,
+        "real_polar_accuracy": 0.9711538553237915,
+        "real_stacked_accuracy": 0.9711538354555765,
+        "summary_markdown": "results/neuro_eeg_analytic_signal_pilot_crelu_tmp/reference_phase_shift/summary.md",
+        "task": "phase_locking"
+      },
+      {
+        "best_accuracy": 0.9903846184412638,
+        "best_model": "real_phase",
+        "complex_accuracy": 0.8910256226857504,
+        "condition_id": "reference_phase_augmented",
+        "expected_signal": "phase-aware models should improve relative to the unaugmented reference-shift condition.",
+        "question": "Does random reference-phase augmentation recover robustness to the unseen fixed reference shift?",
+        "real_magnitude_accuracy": 0.25,
+        "real_phase_accuracy": 0.9903846184412638,
+        "real_polar_accuracy": 0.942307690779368,
+        "real_stacked_accuracy": 0.9839743574460348,
+        "summary_markdown": "results/neuro_eeg_analytic_signal_pilot_crelu_tmp/reference_phase_augmented/summary.md",
+        "task": "phase_locking"
+      }
+    ]
+  },
+  "notes": null,
+  "run_id": "eeg-analytic-signal-pilot-suite",
+  "schema_version": "0.1.0",
+  "seeds": [
+    0,
+    1,
+    2
+  ]
+}

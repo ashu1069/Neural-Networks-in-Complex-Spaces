@@ -1,0 +1,548 @@
+{
+  "artifacts": {
+    "accuracy_bar": "results/neuro_eeg_analytic_signal_pilot_crelu_tmp/reference_phase_shift/accuracy_bar.png",
+    "raw_runs": "results/neuro_eeg_analytic_signal_pilot_crelu_tmp/reference_phase_shift/raw_runs.json",
+    "summary_json": "results/neuro_eeg_analytic_signal_pilot_crelu_tmp/reference_phase_shift/summary.json",
+    "summary_markdown": "results/neuro_eeg_analytic_signal_pilot_crelu_tmp/reference_phase_shift/summary.md"
+  },
+  "config": {
+    "condition": {
+      "condition_id": "reference_phase_shift",
+      "expected_signal": "coordinate-dependent models may degrade under the reference shift; magnitude-only remains invariant but information-poor.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "question": "Does a model trained in one sensor-reference phase convention respect a common unseen analytic-signal rotation?",
+      "task": "phase_locking",
+      "test_transform": {
+        "name": "fixed_reference_phase",
+        "rotation_radians": 1.5707963267948966
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    "run_config": {
+      "activation": "crelu",
+      "architecture": "mlp",
+      "batch_size": 128,
+      "bootstrap_samples": 1000,
+      "confidence": 0.95,
+      "device": "cpu",
+      "dtype": "complex64",
+      "examples_per_class": 128,
+      "hidden_features": 24,
+      "kernel_size": 5,
+      "learning_rate": 0.01,
+      "n_channels": 4,
+      "observation_noise_std": 0.03,
+      "preset": "standard",
+      "progress": true,
+      "real_activation": "relu",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "time_steps": 64,
+      "train_fraction": 0.8,
+      "train_steps": 120
+    }
+  },
+  "created_at": "2026-05-11T21:14:32.337815+00:00",
+  "dataset": {
+    "description": "synthetic complex analytic EEG signals for phase locking, amplitude events, and phase-amplitude coupling",
+    "name": "eeg_analytic_signal_pilot",
+    "version": "0.1.0"
+  },
+  "environment": {
+    "cuda_available": false,
+    "cuda_device": null,
+    "cuda_version": null,
+    "device": "cpu",
+    "dtype": "complex64",
+    "git_commit": "1e87121b61f90bd4d52f6738a3eba4c51b62892d",
+    "git_dirty": true,
+    "macos": "14.6",
+    "mps_available": true,
+    "platform": "macOS-14.6-arm64-arm-64bit",
+    "python": "3.12.12",
+    "torch": "2.11.0"
+  },
+  "metrics": {
+    "condition": {
+      "condition_id": "reference_phase_shift",
+      "expected_signal": "coordinate-dependent models may degrade under the reference shift; magnitude-only remains invariant but information-poor.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "question": "Does a model trained in one sensor-reference phase convention respect a common unseen analytic-signal rotation?",
+      "task": "phase_locking",
+      "test_transform": {
+        "name": "fixed_reference_phase",
+        "rotation_radians": 1.5707963267948966
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    "config": {
+      "activation": "crelu",
+      "architecture": "mlp",
+      "batch_size": 128,
+      "bootstrap_samples": 1000,
+      "confidence": 0.95,
+      "device": "cpu",
+      "dtype": "complex64",
+      "examples_per_class": 128,
+      "hidden_features": 24,
+      "kernel_size": 5,
+      "learning_rate": 0.01,
+      "n_channels": 4,
+      "observation_noise_std": 0.03,
+      "preset": "standard",
+      "progress": true,
+      "real_activation": "relu",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "time_steps": 64,
+      "train_fraction": 0.8,
+      "train_steps": 120
+    },
+    "raw_runs": [
+      {
+        "accuracy_by_class": {
+          "lag0": 0.8461538553237915,
+          "lag180": 0.807692289352417,
+          "lag270": 0.7307692170143127,
+          "lag90": 0.807692289352417
+        },
+        "condition_id": "reference_phase_shift",
+        "estimated_forward_madds": 27264,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 13736,
+        "seed": 0,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.7980769276618958,
+        "test_loss": 1.0869948863983154,
+        "train_loss": 0.000656216754578054,
+        "train_seconds": 0.07098337449133396
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 1.0,
+          "lag180": 0.9230769276618958,
+          "lag270": 0.9615384340286255,
+          "lag90": 0.9615384340286255
+        },
+        "condition_id": "reference_phase_shift",
+        "estimated_forward_madds": 27264,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 13736,
+        "seed": 1,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.9615384340286255,
+        "test_loss": 0.09133964031934738,
+        "train_loss": 0.00026945810532197356,
+        "train_seconds": 0.07040429022163153
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 1.0,
+          "lag180": 1.0,
+          "lag270": 1.0,
+          "lag90": 1.0
+        },
+        "condition_id": "reference_phase_shift",
+        "estimated_forward_madds": 27264,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 13736,
+        "seed": 2,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 1.0,
+        "test_loss": 0.008152173832058907,
+        "train_loss": 0.0003733252524398267,
+        "train_seconds": 0.07105412520468235
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 1.0,
+          "lag180": 1.0,
+          "lag270": 1.0,
+          "lag90": 1.0
+        },
+        "condition_id": "reference_phase_shift",
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 13012,
+        "seed": 0,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 1.0,
+        "test_loss": 0.015389751642942429,
+        "train_loss": 0.0001031894571497105,
+        "train_seconds": 0.03810683451592922
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 0.9615384340286255,
+          "lag180": 0.9615384340286255,
+          "lag270": 0.9615384340286255,
+          "lag90": 0.9230769276618958
+        },
+        "condition_id": "reference_phase_shift",
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 13012,
+        "seed": 1,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.9519230723381042,
+        "test_loss": 0.11058074980974197,
+        "train_loss": 9.790381591301411e-05,
+        "train_seconds": 0.03970108274370432
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 0.9230769276618958,
+          "lag180": 1.0,
+          "lag270": 1.0,
+          "lag90": 0.9230769276618958
+        },
+        "condition_id": "reference_phase_shift",
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 13012,
+        "seed": 2,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.9615384340286255,
+        "test_loss": 0.10812600702047348,
+        "train_loss": 4.824288043892011e-05,
+        "train_seconds": 0.03801037557423115
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 0.9230769276618958,
+          "lag180": 0.9615384340286255,
+          "lag270": 1.0,
+          "lag90": 0.8846153616905212
+        },
+        "condition_id": "reference_phase_shift",
+        "estimated_forward_madds": 19104,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_polar",
+        "parameter_count": 19156,
+        "seed": 0,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.942307710647583,
+        "test_loss": 0.14937736093997955,
+        "train_loss": 0.0022294861264526844,
+        "train_seconds": 0.04171808436512947
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 1.0,
+          "lag180": 0.9615384340286255,
+          "lag270": 1.0,
+          "lag90": 0.9615384340286255
+        },
+        "condition_id": "reference_phase_shift",
+        "estimated_forward_madds": 19104,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_polar",
+        "parameter_count": 19156,
+        "seed": 1,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.9807692170143127,
+        "test_loss": 0.143747016787529,
+        "train_loss": 0.0015368361491709948,
+        "train_seconds": 0.039449166506528854
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 1.0,
+          "lag180": 1.0,
+          "lag270": 1.0,
+          "lag90": 0.9615384340286255
+        },
+        "condition_id": "reference_phase_shift",
+        "estimated_forward_madds": 19104,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_polar",
+        "parameter_count": 19156,
+        "seed": 2,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.9903846383094788,
+        "test_loss": 0.06321918964385986,
+        "train_loss": 0.00012193607835797593,
+        "train_seconds": 0.04214358236640692
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 1.0,
+          "lag180": 1.0,
+          "lag270": 1.0,
+          "lag90": 1.0
+        },
+        "condition_id": "reference_phase_shift",
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_phase",
+        "parameter_count": 13012,
+        "seed": 0,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 1.0,
+        "test_loss": 0.006814459338784218,
+        "train_loss": 9.790984768187627e-05,
+        "train_seconds": 0.03796166740357876
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 1.0,
+          "lag180": 1.0,
+          "lag270": 1.0,
+          "lag90": 0.9615384340286255
+        },
+        "condition_id": "reference_phase_shift",
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_phase",
+        "parameter_count": 13012,
+        "seed": 1,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.9903846383094788,
+        "test_loss": 0.03473974019289017,
+        "train_loss": 6.326244329102337e-05,
+        "train_seconds": 0.03908462543040514
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 1.0,
+          "lag180": 0.9615384340286255,
+          "lag270": 1.0,
+          "lag90": 1.0
+        },
+        "condition_id": "reference_phase_shift",
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_phase",
+        "parameter_count": 13012,
+        "seed": 2,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.9903846383094788,
+        "test_loss": 0.016334939748048782,
+        "train_loss": 2.6608062398736365e-05,
+        "train_seconds": 0.037857250310480595
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 0.0,
+          "lag180": 0.0,
+          "lag270": 1.0,
+          "lag90": 0.0
+        },
+        "condition_id": "reference_phase_shift",
+        "estimated_forward_madds": 6816,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_magnitude",
+        "parameter_count": 6868,
+        "seed": 0,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.25,
+        "test_loss": 1.3863675594329834,
+        "train_loss": 1.3906795978546143,
+        "train_seconds": 0.03668300062417984
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 0.0,
+          "lag180": 0.0,
+          "lag270": 1.0,
+          "lag90": 0.0
+        },
+        "condition_id": "reference_phase_shift",
+        "estimated_forward_madds": 6816,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_magnitude",
+        "parameter_count": 6868,
+        "seed": 1,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.25,
+        "test_loss": 1.3888506889343262,
+        "train_loss": 1.3808958530426025,
+        "train_seconds": 0.03628220967948437
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 0.0,
+          "lag180": 1.0,
+          "lag270": 0.0,
+          "lag90": 0.0
+        },
+        "condition_id": "reference_phase_shift",
+        "estimated_forward_madds": 6816,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_magnitude",
+        "parameter_count": 6868,
+        "seed": 2,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.25,
+        "test_loss": 1.38785982131958,
+        "train_loss": 1.3848419189453125,
+        "train_seconds": 0.04878195747733116
+      }
+    ],
+    "summaries": [
+      {
+        "accuracy_by_class_mean": {
+          "lag0": 0.9487179517745972,
+          "lag180": 0.9102564056714376,
+          "lag270": 0.8974358836809794,
+          "lag90": 0.9230769077936808
+        },
+        "estimated_forward_madds": 27264,
+        "hidden_features": 24,
+        "model_family": "complex",
+        "n_runs": 3,
+        "parameter_count": 13736,
+        "test_accuracy_ci_high": 1.0,
+        "test_accuracy_ci_low": 0.7980769276618958,
+        "test_accuracy_mean": 0.9198717872301737,
+        "test_accuracy_std": 0.1072162015610748,
+        "test_loss_mean": 0.3954955668499072,
+        "train_seconds_mean": 0.07081392997254927
+      },
+      {
+        "accuracy_by_class_mean": {
+          "lag0": 0.9615384538968405,
+          "lag180": 0.9871794780095419,
+          "lag270": 0.9871794780095419,
+          "lag90": 0.9487179517745972
+        },
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "model_family": "real_stacked",
+        "n_runs": 3,
+        "parameter_count": 13012,
+        "test_accuracy_ci_high": 1.0,
+        "test_accuracy_ci_low": 0.9519230723381042,
+        "test_accuracy_mean": 0.9711538354555765,
+        "test_accuracy_std": 0.025439923384374587,
+        "test_loss_mean": 0.07803216949105263,
+        "train_seconds_mean": 0.03860609761128823
+      },
+      {
+        "accuracy_by_class_mean": {
+          "lag0": 0.9743589758872986,
+          "lag180": 0.9743589560190836,
+          "lag270": 1.0,
+          "lag90": 0.9358974099159241
+        },
+        "estimated_forward_madds": 19104,
+        "hidden_features": 24,
+        "model_family": "real_polar",
+        "n_runs": 3,
+        "parameter_count": 19156,
+        "test_accuracy_ci_high": 0.9903846383094788,
+        "test_accuracy_ci_low": 0.942307710647583,
+        "test_accuracy_mean": 0.9711538553237915,
+        "test_accuracy_std": 0.02543991212015967,
+        "test_loss_mean": 0.11878118912378947,
+        "train_seconds_mean": 0.04110361107935508
+      },
+      {
+        "accuracy_by_class_mean": {
+          "lag0": 1.0,
+          "lag180": 0.9871794780095419,
+          "lag270": 1.0,
+          "lag90": 0.9871794780095419
+        },
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "model_family": "real_phase",
+        "n_runs": 3,
+        "parameter_count": 13012,
+        "test_accuracy_ci_high": 1.0,
+        "test_accuracy_ci_low": 0.9903846383094788,
+        "test_accuracy_mean": 0.9935897588729858,
+        "test_accuracy_std": 0.005551431660378053,
+        "test_loss_mean": 0.019296379759907722,
+        "train_seconds_mean": 0.03830118104815483
+      },
+      {
+        "accuracy_by_class_mean": {
+          "lag0": 0.0,
+          "lag180": 0.3333333333333333,
+          "lag270": 0.6666666666666666,
+          "lag90": 0.0
+        },
+        "estimated_forward_madds": 6816,
+        "hidden_features": 24,
+        "model_family": "real_magnitude",
+        "n_runs": 3,
+        "parameter_count": 6868,
+        "test_accuracy_ci_high": 0.25,
+        "test_accuracy_ci_low": 0.25,
+        "test_accuracy_mean": 0.25,
+        "test_accuracy_std": 0.0,
+        "test_loss_mean": 1.3876926898956299,
+        "train_seconds_mean": 0.04058238926033179
+      }
+    ]
+  },
+  "notes": null,
+  "run_id": "eeg-analytic-signal-reference_phase_shift",
+  "schema_version": "0.1.0",
+  "seeds": [
+    0,
+    1,
+    2
+  ]
+}

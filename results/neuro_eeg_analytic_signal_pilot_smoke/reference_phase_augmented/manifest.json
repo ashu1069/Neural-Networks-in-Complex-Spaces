@@ -1,0 +1,332 @@
+{
+  "artifacts": {
+    "accuracy_bar": "results/neuro_eeg_analytic_signal_pilot_smoke/reference_phase_augmented/accuracy_bar.png",
+    "raw_runs": "results/neuro_eeg_analytic_signal_pilot_smoke/reference_phase_augmented/raw_runs.json",
+    "summary_json": "results/neuro_eeg_analytic_signal_pilot_smoke/reference_phase_augmented/summary.json",
+    "summary_markdown": "results/neuro_eeg_analytic_signal_pilot_smoke/reference_phase_augmented/summary.md"
+  },
+  "config": {
+    "condition": {
+      "condition_id": "reference_phase_augmented",
+      "expected_signal": "phase-aware models should improve relative to the unaugmented reference-shift condition.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "question": "Does random reference-phase augmentation recover robustness to the unseen fixed reference shift?",
+      "task": "phase_locking",
+      "test_transform": {
+        "name": "fixed_reference_phase",
+        "rotation_radians": 1.5707963267948966
+      },
+      "train_transform": {
+        "name": "random_reference_phase",
+        "rotation_radians": 0.0
+      }
+    },
+    "run_config": {
+      "activation": "zrelu",
+      "architecture": "mlp",
+      "batch_size": 48,
+      "bootstrap_samples": 100,
+      "confidence": 0.95,
+      "device": "cpu",
+      "dtype": "complex64",
+      "examples_per_class": 24,
+      "hidden_features": 8,
+      "kernel_size": 5,
+      "learning_rate": 0.01,
+      "n_channels": 4,
+      "observation_noise_std": 0.03,
+      "preset": "smoke",
+      "progress": true,
+      "real_activation": "relu",
+      "seeds": [
+        0
+      ],
+      "time_steps": 32,
+      "train_fraction": 0.8,
+      "train_steps": 25
+    }
+  },
+  "created_at": "2026-05-11T21:13:57.477173+00:00",
+  "dataset": {
+    "description": "synthetic complex analytic EEG signals for phase locking, amplitude events, and phase-amplitude coupling",
+    "name": "eeg_analytic_signal_pilot",
+    "version": "0.1.0"
+  },
+  "environment": {
+    "cuda_available": false,
+    "cuda_device": null,
+    "cuda_version": null,
+    "device": "cpu",
+    "dtype": "complex64",
+    "git_commit": "1e87121b61f90bd4d52f6738a3eba4c51b62892d",
+    "git_dirty": true,
+    "macos": "14.6",
+    "mps_available": true,
+    "platform": "macOS-14.6-arm64-arm-64bit",
+    "python": "3.12.12",
+    "torch": "2.11.0"
+  },
+  "metrics": {
+    "condition": {
+      "condition_id": "reference_phase_augmented",
+      "expected_signal": "phase-aware models should improve relative to the unaugmented reference-shift condition.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "question": "Does random reference-phase augmentation recover robustness to the unseen fixed reference shift?",
+      "task": "phase_locking",
+      "test_transform": {
+        "name": "fixed_reference_phase",
+        "rotation_radians": 1.5707963267948966
+      },
+      "train_transform": {
+        "name": "random_reference_phase",
+        "rotation_radians": 0.0
+      }
+    },
+    "config": {
+      "activation": "zrelu",
+      "architecture": "mlp",
+      "batch_size": 48,
+      "bootstrap_samples": 100,
+      "confidence": 0.95,
+      "device": "cpu",
+      "dtype": "complex64",
+      "examples_per_class": 24,
+      "hidden_features": 8,
+      "kernel_size": 5,
+      "learning_rate": 0.01,
+      "n_channels": 4,
+      "observation_noise_std": 0.03,
+      "preset": "smoke",
+      "progress": true,
+      "real_activation": "relu",
+      "seeds": [
+        0
+      ],
+      "time_steps": 32,
+      "train_fraction": 0.8,
+      "train_steps": 25
+    },
+    "raw_runs": [
+      {
+        "accuracy_by_class": {
+          "lag0": 0.800000011920929,
+          "lag180": 0.0,
+          "lag270": 0.20000000298023224,
+          "lag90": 0.4000000059604645
+        },
+        "condition_id": "reference_phase_augmented",
+        "estimated_forward_madds": 4480,
+        "hidden_features": 8,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 2280,
+        "seed": 0,
+        "steps": 25,
+        "task": "phase_locking",
+        "test_accuracy": 0.3499999940395355,
+        "test_loss": 1.576198935508728,
+        "train_loss": 1.1479018926620483,
+        "train_seconds": 0.009935708716511726
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 0.20000000298023224,
+          "lag180": 0.4000000059604645,
+          "lag270": 0.20000000298023224,
+          "lag90": 0.800000011920929
+        },
+        "condition_id": "reference_phase_augmented",
+        "estimated_forward_madds": 2144,
+        "hidden_features": 8,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 2164,
+        "seed": 0,
+        "steps": 25,
+        "task": "phase_locking",
+        "test_accuracy": 0.4000000059604645,
+        "test_loss": 1.2910988330841064,
+        "train_loss": 0.6937613487243652,
+        "train_seconds": 0.006794916465878487
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 0.6000000238418579,
+          "lag180": 0.20000000298023224,
+          "lag270": 0.4000000059604645,
+          "lag90": 0.4000000059604645
+        },
+        "condition_id": "reference_phase_augmented",
+        "estimated_forward_madds": 3168,
+        "hidden_features": 8,
+        "learning_rate": 0.01,
+        "model_family": "real_polar",
+        "parameter_count": 3188,
+        "seed": 0,
+        "steps": 25,
+        "task": "phase_locking",
+        "test_accuracy": 0.4000000059604645,
+        "test_loss": 1.3859288692474365,
+        "train_loss": 0.9272911548614502,
+        "train_seconds": 0.007425208576023579
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 0.0,
+          "lag180": 0.6000000238418579,
+          "lag270": 0.6000000238418579,
+          "lag90": 0.800000011920929
+        },
+        "condition_id": "reference_phase_augmented",
+        "estimated_forward_madds": 2144,
+        "hidden_features": 8,
+        "learning_rate": 0.01,
+        "model_family": "real_phase",
+        "parameter_count": 2164,
+        "seed": 0,
+        "steps": 25,
+        "task": "phase_locking",
+        "test_accuracy": 0.5,
+        "test_loss": 1.1256897449493408,
+        "train_loss": 0.693432092666626,
+        "train_seconds": 0.006483833305537701
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 0.0,
+          "lag180": 1.0,
+          "lag270": 0.0,
+          "lag90": 0.0
+        },
+        "condition_id": "reference_phase_augmented",
+        "estimated_forward_madds": 1120,
+        "hidden_features": 8,
+        "learning_rate": 0.01,
+        "model_family": "real_magnitude",
+        "parameter_count": 1140,
+        "seed": 0,
+        "steps": 25,
+        "task": "phase_locking",
+        "test_accuracy": 0.25,
+        "test_loss": 1.385283350944519,
+        "train_loss": 1.3813915252685547,
+        "train_seconds": 0.006513584405183792
+      }
+    ],
+    "summaries": [
+      {
+        "accuracy_by_class_mean": {
+          "lag0": 0.800000011920929,
+          "lag180": 0.0,
+          "lag270": 0.20000000298023224,
+          "lag90": 0.4000000059604645
+        },
+        "estimated_forward_madds": 4480,
+        "hidden_features": 8,
+        "model_family": "complex",
+        "n_runs": 1,
+        "parameter_count": 2280,
+        "test_accuracy_ci_high": 0.3499999940395355,
+        "test_accuracy_ci_low": 0.3499999940395355,
+        "test_accuracy_mean": 0.3499999940395355,
+        "test_accuracy_std": 0.0,
+        "test_loss_mean": 1.576198935508728,
+        "train_seconds_mean": 0.009935708716511726
+      },
+      {
+        "accuracy_by_class_mean": {
+          "lag0": 0.20000000298023224,
+          "lag180": 0.4000000059604645,
+          "lag270": 0.20000000298023224,
+          "lag90": 0.800000011920929
+        },
+        "estimated_forward_madds": 2144,
+        "hidden_features": 8,
+        "model_family": "real_stacked",
+        "n_runs": 1,
+        "parameter_count": 2164,
+        "test_accuracy_ci_high": 0.4000000059604645,
+        "test_accuracy_ci_low": 0.4000000059604645,
+        "test_accuracy_mean": 0.4000000059604645,
+        "test_accuracy_std": 0.0,
+        "test_loss_mean": 1.2910988330841064,
+        "train_seconds_mean": 0.006794916465878487
+      },
+      {
+        "accuracy_by_class_mean": {
+          "lag0": 0.6000000238418579,
+          "lag180": 0.20000000298023224,
+          "lag270": 0.4000000059604645,
+          "lag90": 0.4000000059604645
+        },
+        "estimated_forward_madds": 3168,
+        "hidden_features": 8,
+        "model_family": "real_polar",
+        "n_runs": 1,
+        "parameter_count": 3188,
+        "test_accuracy_ci_high": 0.4000000059604645,
+        "test_accuracy_ci_low": 0.4000000059604645,
+        "test_accuracy_mean": 0.4000000059604645,
+        "test_accuracy_std": 0.0,
+        "test_loss_mean": 1.3859288692474365,
+        "train_seconds_mean": 0.007425208576023579
+      },
+      {
+        "accuracy_by_class_mean": {
+          "lag0": 0.0,
+          "lag180": 0.6000000238418579,
+          "lag270": 0.6000000238418579,
+          "lag90": 0.800000011920929
+        },
+        "estimated_forward_madds": 2144,
+        "hidden_features": 8,
+        "model_family": "real_phase",
+        "n_runs": 1,
+        "parameter_count": 2164,
+        "test_accuracy_ci_high": 0.5,
+        "test_accuracy_ci_low": 0.5,
+        "test_accuracy_mean": 0.5,
+        "test_accuracy_std": 0.0,
+        "test_loss_mean": 1.1256897449493408,
+        "train_seconds_mean": 0.006483833305537701
+      },
+      {
+        "accuracy_by_class_mean": {
+          "lag0": 0.0,
+          "lag180": 1.0,
+          "lag270": 0.0,
+          "lag90": 0.0
+        },
+        "estimated_forward_madds": 1120,
+        "hidden_features": 8,
+        "model_family": "real_magnitude",
+        "n_runs": 1,
+        "parameter_count": 1140,
+        "test_accuracy_ci_high": 0.25,
+        "test_accuracy_ci_low": 0.25,
+        "test_accuracy_mean": 0.25,
+        "test_accuracy_std": 0.0,
+        "test_loss_mean": 1.385283350944519,
+        "train_seconds_mean": 0.006513584405183792
+      }
+    ]
+  },
+  "notes": null,
+  "run_id": "eeg-analytic-signal-reference_phase_augmented",
+  "schema_version": "0.1.0",
+  "seeds": [
+    0
+  ]
+}

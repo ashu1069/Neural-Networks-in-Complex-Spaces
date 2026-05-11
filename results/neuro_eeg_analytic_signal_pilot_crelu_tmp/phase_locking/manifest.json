@@ -1,0 +1,548 @@
+{
+  "artifacts": {
+    "accuracy_bar": "results/neuro_eeg_analytic_signal_pilot_crelu_tmp/phase_locking/accuracy_bar.png",
+    "raw_runs": "results/neuro_eeg_analytic_signal_pilot_crelu_tmp/phase_locking/raw_runs.json",
+    "summary_json": "results/neuro_eeg_analytic_signal_pilot_crelu_tmp/phase_locking/summary.json",
+    "summary_markdown": "results/neuro_eeg_analytic_signal_pilot_crelu_tmp/phase_locking/summary.md"
+  },
+  "config": {
+    "condition": {
+      "condition_id": "phase_locking",
+      "expected_signal": "phase-aware and Cartesian views should learn; magnitude-only should remain near chance.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "question": "Can models classify inter-channel phase locking when amplitude envelopes are randomized independently of the label?",
+      "task": "phase_locking",
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    "run_config": {
+      "activation": "crelu",
+      "architecture": "mlp",
+      "batch_size": 128,
+      "bootstrap_samples": 1000,
+      "confidence": 0.95,
+      "device": "cpu",
+      "dtype": "complex64",
+      "examples_per_class": 128,
+      "hidden_features": 24,
+      "kernel_size": 5,
+      "learning_rate": 0.01,
+      "n_channels": 4,
+      "observation_noise_std": 0.03,
+      "preset": "standard",
+      "progress": true,
+      "real_activation": "relu",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "time_steps": 64,
+      "train_fraction": 0.8,
+      "train_steps": 120
+    }
+  },
+  "created_at": "2026-05-11T21:14:29.917873+00:00",
+  "dataset": {
+    "description": "synthetic complex analytic EEG signals for phase locking, amplitude events, and phase-amplitude coupling",
+    "name": "eeg_analytic_signal_pilot",
+    "version": "0.1.0"
+  },
+  "environment": {
+    "cuda_available": false,
+    "cuda_device": null,
+    "cuda_version": null,
+    "device": "cpu",
+    "dtype": "complex64",
+    "git_commit": "1e87121b61f90bd4d52f6738a3eba4c51b62892d",
+    "git_dirty": true,
+    "macos": "14.6",
+    "mps_available": true,
+    "platform": "macOS-14.6-arm64-arm-64bit",
+    "python": "3.12.12",
+    "torch": "2.11.0"
+  },
+  "metrics": {
+    "condition": {
+      "condition_id": "phase_locking",
+      "expected_signal": "phase-aware and Cartesian views should learn; magnitude-only should remain near chance.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "question": "Can models classify inter-channel phase locking when amplitude envelopes are randomized independently of the label?",
+      "task": "phase_locking",
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    "config": {
+      "activation": "crelu",
+      "architecture": "mlp",
+      "batch_size": 128,
+      "bootstrap_samples": 1000,
+      "confidence": 0.95,
+      "device": "cpu",
+      "dtype": "complex64",
+      "examples_per_class": 128,
+      "hidden_features": 24,
+      "kernel_size": 5,
+      "learning_rate": 0.01,
+      "n_channels": 4,
+      "observation_noise_std": 0.03,
+      "preset": "standard",
+      "progress": true,
+      "real_activation": "relu",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "time_steps": 64,
+      "train_fraction": 0.8,
+      "train_steps": 120
+    },
+    "raw_runs": [
+      {
+        "accuracy_by_class": {
+          "lag0": 0.807692289352417,
+          "lag180": 0.8461538553237915,
+          "lag270": 0.807692289352417,
+          "lag90": 0.8461538553237915
+        },
+        "condition_id": "phase_locking",
+        "estimated_forward_madds": 27264,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 13736,
+        "seed": 0,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.8269230723381042,
+        "test_loss": 1.042272686958313,
+        "train_loss": 0.000656216754578054,
+        "train_seconds": 0.0730968751013279
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 0.9615384340286255,
+          "lag180": 0.8846153616905212,
+          "lag270": 0.9615384340286255,
+          "lag90": 1.0
+        },
+        "condition_id": "phase_locking",
+        "estimated_forward_madds": 27264,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 13736,
+        "seed": 1,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.9519230723381042,
+        "test_loss": 0.09541136771440506,
+        "train_loss": 0.00026945810532197356,
+        "train_seconds": 0.07031254097819328
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 1.0,
+          "lag180": 1.0,
+          "lag270": 1.0,
+          "lag90": 1.0
+        },
+        "condition_id": "phase_locking",
+        "estimated_forward_madds": 27264,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 13736,
+        "seed": 2,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 1.0,
+        "test_loss": 0.030531786382198334,
+        "train_loss": 0.0003733252524398267,
+        "train_seconds": 0.06985316518694162
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 1.0,
+          "lag180": 1.0,
+          "lag270": 0.9615384340286255,
+          "lag90": 1.0
+        },
+        "condition_id": "phase_locking",
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 13012,
+        "seed": 0,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.9903846383094788,
+        "test_loss": 0.011783668771386147,
+        "train_loss": 0.0001031894571497105,
+        "train_seconds": 0.03860979061573744
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 0.8846153616905212,
+          "lag180": 0.9230769276618958,
+          "lag270": 1.0,
+          "lag90": 1.0
+        },
+        "condition_id": "phase_locking",
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 13012,
+        "seed": 1,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.9519230723381042,
+        "test_loss": 0.07329168915748596,
+        "train_loss": 9.790381591301411e-05,
+        "train_seconds": 0.05380854103714228
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 1.0,
+          "lag180": 1.0,
+          "lag270": 1.0,
+          "lag90": 1.0
+        },
+        "condition_id": "phase_locking",
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 13012,
+        "seed": 2,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 1.0,
+        "test_loss": 0.003837910946458578,
+        "train_loss": 4.824288043892011e-05,
+        "train_seconds": 0.0362122505903244
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 0.9230769276618958,
+          "lag180": 1.0,
+          "lag270": 0.9615384340286255,
+          "lag90": 0.8846153616905212
+        },
+        "condition_id": "phase_locking",
+        "estimated_forward_madds": 19104,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_polar",
+        "parameter_count": 19156,
+        "seed": 0,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.942307710647583,
+        "test_loss": 0.13783828914165497,
+        "train_loss": 0.0022294861264526844,
+        "train_seconds": 0.04931974969804287
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 0.9230769276618958,
+          "lag180": 1.0,
+          "lag270": 1.0,
+          "lag90": 1.0
+        },
+        "condition_id": "phase_locking",
+        "estimated_forward_madds": 19104,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_polar",
+        "parameter_count": 19156,
+        "seed": 1,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.9807692170143127,
+        "test_loss": 0.04600983113050461,
+        "train_loss": 0.0015368361491709948,
+        "train_seconds": 0.03912400081753731
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 1.0,
+          "lag180": 1.0,
+          "lag270": 1.0,
+          "lag90": 0.9615384340286255
+        },
+        "condition_id": "phase_locking",
+        "estimated_forward_madds": 19104,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_polar",
+        "parameter_count": 19156,
+        "seed": 2,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.9903846383094788,
+        "test_loss": 0.04026684910058975,
+        "train_loss": 0.00012193607835797593,
+        "train_seconds": 0.04251254256814718
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 1.0,
+          "lag180": 1.0,
+          "lag270": 1.0,
+          "lag90": 1.0
+        },
+        "condition_id": "phase_locking",
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_phase",
+        "parameter_count": 13012,
+        "seed": 0,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 1.0,
+        "test_loss": 0.009607113897800446,
+        "train_loss": 9.790984768187627e-05,
+        "train_seconds": 0.03852583281695843
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 1.0,
+          "lag180": 1.0,
+          "lag270": 1.0,
+          "lag90": 1.0
+        },
+        "condition_id": "phase_locking",
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_phase",
+        "parameter_count": 13012,
+        "seed": 1,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 1.0,
+        "test_loss": 0.004424214828759432,
+        "train_loss": 6.326244329102337e-05,
+        "train_seconds": 0.04043958429247141
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 1.0,
+          "lag180": 1.0,
+          "lag270": 1.0,
+          "lag90": 1.0
+        },
+        "condition_id": "phase_locking",
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_phase",
+        "parameter_count": 13012,
+        "seed": 2,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 1.0,
+        "test_loss": 0.0008230836247093976,
+        "train_loss": 2.6608062398736365e-05,
+        "train_seconds": 0.03808999992907047
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 0.0,
+          "lag180": 0.0,
+          "lag270": 1.0,
+          "lag90": 0.0
+        },
+        "condition_id": "phase_locking",
+        "estimated_forward_madds": 6816,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_magnitude",
+        "parameter_count": 6868,
+        "seed": 0,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.25,
+        "test_loss": 1.3863675594329834,
+        "train_loss": 1.3906795978546143,
+        "train_seconds": 0.03705712500959635
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 0.0,
+          "lag180": 0.0,
+          "lag270": 1.0,
+          "lag90": 0.0
+        },
+        "condition_id": "phase_locking",
+        "estimated_forward_madds": 6816,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_magnitude",
+        "parameter_count": 6868,
+        "seed": 1,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.25,
+        "test_loss": 1.3888506889343262,
+        "train_loss": 1.3808958530426025,
+        "train_seconds": 0.036121416836977005
+      },
+      {
+        "accuracy_by_class": {
+          "lag0": 0.0,
+          "lag180": 1.0,
+          "lag270": 0.0,
+          "lag90": 0.0
+        },
+        "condition_id": "phase_locking",
+        "estimated_forward_madds": 6816,
+        "hidden_features": 24,
+        "learning_rate": 0.01,
+        "model_family": "real_magnitude",
+        "parameter_count": 6868,
+        "seed": 2,
+        "steps": 120,
+        "task": "phase_locking",
+        "test_accuracy": 0.25,
+        "test_loss": 1.38785982131958,
+        "train_loss": 1.3848419189453125,
+        "train_seconds": 0.03794145956635475
+      }
+    ],
+    "summaries": [
+      {
+        "accuracy_by_class_mean": {
+          "lag0": 0.9230769077936808,
+          "lag180": 0.9102564056714376,
+          "lag270": 0.9230769077936808,
+          "lag90": 0.9487179517745972
+        },
+        "estimated_forward_madds": 27264,
+        "hidden_features": 24,
+        "model_family": "complex",
+        "n_runs": 3,
+        "parameter_count": 13736,
+        "test_accuracy_ci_high": 1.0,
+        "test_accuracy_ci_low": 0.8269230723381042,
+        "test_accuracy_mean": 0.9262820482254028,
+        "test_accuracy_std": 0.0893420523067462,
+        "test_loss_mean": 0.3894052803516388,
+        "train_seconds_mean": 0.07108752708882093
+      },
+      {
+        "accuracy_by_class_mean": {
+          "lag0": 0.9615384538968405,
+          "lag180": 0.9743589758872986,
+          "lag270": 0.9871794780095419,
+          "lag90": 1.0
+        },
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "model_family": "real_stacked",
+        "n_runs": 3,
+        "parameter_count": 13012,
+        "test_accuracy_ci_high": 1.0,
+        "test_accuracy_ci_low": 0.9519230723381042,
+        "test_accuracy_mean": 0.9807692368825277,
+        "test_accuracy_std": 0.025439923384374587,
+        "test_loss_mean": 0.029637756291776896,
+        "train_seconds_mean": 0.0428768607477347
+      },
+      {
+        "accuracy_by_class_mean": {
+          "lag0": 0.9487179517745972,
+          "lag180": 1.0,
+          "lag270": 0.9871794780095419,
+          "lag90": 0.9487179319063822
+        },
+        "estimated_forward_madds": 19104,
+        "hidden_features": 24,
+        "model_family": "real_polar",
+        "n_runs": 3,
+        "parameter_count": 19156,
+        "test_accuracy_ci_high": 0.9903846383094788,
+        "test_accuracy_ci_low": 0.942307710647583,
+        "test_accuracy_mean": 0.9711538553237915,
+        "test_accuracy_std": 0.02543991212015967,
+        "test_loss_mean": 0.07470498979091644,
+        "train_seconds_mean": 0.04365209769457579
+      },
+      {
+        "accuracy_by_class_mean": {
+          "lag0": 1.0,
+          "lag180": 1.0,
+          "lag270": 1.0,
+          "lag90": 1.0
+        },
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "model_family": "real_phase",
+        "n_runs": 3,
+        "parameter_count": 13012,
+        "test_accuracy_ci_high": 1.0,
+        "test_accuracy_ci_low": 1.0,
+        "test_accuracy_mean": 1.0,
+        "test_accuracy_std": 0.0,
+        "test_loss_mean": 0.004951470783756425,
+        "train_seconds_mean": 0.03901847234616677
+      },
+      {
+        "accuracy_by_class_mean": {
+          "lag0": 0.0,
+          "lag180": 0.3333333333333333,
+          "lag270": 0.6666666666666666,
+          "lag90": 0.0
+        },
+        "estimated_forward_madds": 6816,
+        "hidden_features": 24,
+        "model_family": "real_magnitude",
+        "n_runs": 3,
+        "parameter_count": 6868,
+        "test_accuracy_ci_high": 0.25,
+        "test_accuracy_ci_low": 0.25,
+        "test_accuracy_mean": 0.25,
+        "test_accuracy_std": 0.0,
+        "test_loss_mean": 1.3876926898956299,
+        "train_seconds_mean": 0.03704000047097603
+      }
+    ]
+  },
+  "notes": null,
+  "run_id": "eeg-analytic-signal-phase_locking",
+  "schema_version": "0.1.0",
+  "seeds": [
+    0,
+    1,
+    2
+  ]
+}

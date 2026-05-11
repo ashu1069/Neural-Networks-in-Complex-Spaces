@@ -6,6 +6,13 @@ Contradiction signal: magnitude-only becomes competitive, or phase-only collapse
 
 Modulations: `['qam16', 'qam64']`. SNR (dB): `[0, 10, 20]`. Architecture: `conv`. Activation: `zrelu`. Train transform: `none`. Test transform: `none`.
 
+## Plots
+
+![accuracy bar](accuracy_bar.png)
+
+![accuracy by snr](accuracy_by_snr.png)
+
+
 | model | hidden | params | MAdds | accuracy | std | 95% CI | loss | s/run |
 | --- | ---: | ---: | ---: | ---: | ---: | --- | ---: | ---: |
 | `complex` | 16 | 2852 | 348288 | 0.5085 | 0.0206 | [0.4936, 0.5321] | 0.744 | 0.79 |

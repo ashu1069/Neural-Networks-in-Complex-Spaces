@@ -53,7 +53,9 @@ layout, and citation style match the NeurIPS template's conventions.
   style ships scalable Type 1 fonts via the `times` package, so the build
   is fine; the `[disable]` is a local workaround.
 - `cleveref` is replaced by lightweight `\providecommand{\Cref}` /
-  `\providecommand{\cref}` shims to avoid the dependency.
+  `\providecommand{\cref}` shims that delegate to `hyperref`'s
+  type-aware `\autoref`, avoiding the dependency while preserving
+  Figure/Table/Section/Lemma prefixes.
 - The bundled `neurips_2025.sty` has been patched to remove the
   `\usepackage{environ}` dependency (TeX Live 2026 basic does not
   ship `environ.sty` / `trimspaces.sty`); the patched version uses a
@@ -73,4 +75,4 @@ replication of the threshold mechanism, RadioML loader edge cases,
 the manifest schema and CI guards, and the full-archive scale-up plan.
 The appendix is unbounded under NeurIPS rules; after the RF
 representation stress-test, quantum pilot, and EEG pilot updates, the
-working draft builds to 23 pages total.
+working draft builds to 22 pages total.
