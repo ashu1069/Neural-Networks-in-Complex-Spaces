@@ -93,7 +93,12 @@ phase-aware models solve momentum-from-wavefunction classification
 perfectly while magnitude-only remains at chance (1.000 vs 0.250),
 but a 1-D potential-inverse task is best matched by an explicit real
 Cartesian view (0.462 vs 0.431 for complex), again emphasizing
-representation rather than universal complex superiority. The headline
+representation rather than universal complex superiority. A second,
+more unexpected EEG analytic-signal pilot shows the same decomposition
+in biomedical oscillatory data: phase-only solves inter-channel phase
+locking (1.000 vs 0.250 for magnitude), magnitude-only solves
+amplitude bursts (0.946 vs 0.256 for phase), and polar coordinates
+solve phase-amplitude coupling (0.881 vs 0.263 for magnitude). The headline
 empirical finding is methodological: on a 3-class RadioML 2018.01A subset,
 matched-shared-trial hyperparameter selection produces a $22.94$~pp
 CVNN-vs-real gap that collapses to $2.46$~pp under independent
@@ -141,16 +146,17 @@ explicit reproducibility:
     polar, phase-only, and magnitude-only baselines together
     (\Cref{sec:representation-stress}) rather than treating
     $(\mathrm{Re}, \mathrm{Im})$ stacking as the only real baseline.
-  \item \textbf{Application pilot claim.} A 1-D quantum wavefunction
-    pilot (\Cref{sec:quantum-pilot}) reproduces the same boundary
-    logic in a non-RF domain. When the label is wavepacket momentum,
-    the information lives in the phase gradient and magnitude-only
-    remains at chance. When the task is inverse potential
-    classification after Schr\"odinger evolution, the task is
-    learnable above chance but the best model is an explicit real
-    Cartesian view, not the complex model. The pilot supports the
-    application scope of representation stress testing; it does not
-    convert the paper into a broad physics benchmark.
+  \item \textbf{Application pilot claim.} Two small non-RF pilots
+    reproduce the same boundary logic. In 1-D quantum wavefunctions
+    (\Cref{sec:quantum-pilot}), momentum labels live in the phase
+    gradient and magnitude-only remains at chance, while inverse
+    potential classification is best matched by an explicit real
+    Cartesian view. In EEG analytic signals
+    (\Cref{sec:eeg-pilot}), phase locking, amplitude bursts, and
+    phase-amplitude coupling select different coordinate views. These
+    pilots support the application scope of representation stress
+    testing; they do not convert the paper into a broad physics or
+    biomedical benchmark.
   \item \textbf{Empirical claim.} Complex-valued networks beat
     capacity-matched real-valued ones on synthetic IQ modulation
     classification (\Cref{sec:synthetic-rf}) and on a 3-class subset of
@@ -244,7 +250,7 @@ used, the exact \code{git\_commit} of the producing code, and a
 they are reviewed deliberately rather than slipping through. A
 structural CI guard checks that the activation characterization
 artifact regenerates without errors and contains all six expected
-activation rows. The companion repository currently has 139 passing
+activation rows. The companion repository currently has 144 passing
 unit and integration tests, with two CUDA-specific tests skipped on the
 local non-CUDA development machine.
 
@@ -543,6 +549,67 @@ global-phase augmentation partially recovers the complex model
 physics pilot therefore strengthens the paper's positioning: complex
 models are plausible for domains with native complex fields, but the
 right claim is still representation- and symmetry-conditional.
+
+\subsection{EEG analytic-signal pilot --- unexpected biomedical application}
+\label{sec:eeg-pilot}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/neuro_eeg_accuracy_heatmap.png}
+  \caption{Synthetic EEG analytic-signal pilot. Rows separate three
+    common oscillatory mechanisms: inter-channel phase locking,
+    amplitude bursts, and phase-amplitude coupling. The winning
+    representation changes with the mechanism: phase-only solves phase
+    locking, magnitude-only solves amplitude events, and polar
+    coordinates solve phase-amplitude coupling.}
+  \label{fig:eeg-pilot}
+\end{figure}
+
+As a deliberately unexpected application, we added a synthetic
+EEG/MEG-style analytic-signal pilot. In many biomedical signal
+pipelines, a real sensor trace is mapped through a Hilbert or wavelet
+transform into a complex analytic signal whose magnitude is an
+amplitude envelope and whose angle is instantaneous phase. This makes
+neuroscience a natural but non-obvious test of the paper's claim:
+does the complex dtype help, or does the relevant coordinate view
+matter more?
+
+\begin{table}[t]
+  \centering
+  \small
+  \caption{EEG analytic-signal pilot, standard preset
+    (3 seeds, 128 examples/class, 4 channels, 64 time steps, 120
+    training steps, \code{crelu}). Chance is 0.25. The result is a
+    representation map, not a claim about clinical EEG performance.}
+  \label{tab:eeg-pilot}
+  \resizebox{\linewidth}{!}{%
+  \begin{tabular}{llrrrrr}
+    \toprule
+    condition & best & complex & real stack & phase & polar & magnitude \\
+    \midrule
+    phase locking & phase 1.000 & 0.926 & 0.981 & 1.000 & 0.971 & 0.250 \\
+    amplitude event & magnitude 0.946 & 0.494 & 0.311 & 0.256 & 0.933 & 0.946 \\
+    phase-amplitude coupling & polar 0.881 & 0.308 & 0.343 & 0.240 & 0.881 & 0.263 \\
+    reference phase shift & phase 0.994 & 0.920 & 0.971 & 0.994 & 0.971 & 0.250 \\
+    reference phase augmented & phase 0.990 & 0.891 & 0.984 & 0.990 & 0.942 & 0.250 \\
+    \bottomrule
+  \end{tabular}
+  }
+\end{table}
+
+\Cref{tab:eeg-pilot} makes the application boundary concrete. For
+phase locking, the class is the phase lag between two channels; phase
+features solve it and magnitude-only is exactly chance. For amplitude
+events, the class is the channel containing an amplitude burst;
+magnitude and polar views solve it while phase-only is chance. For
+phase-amplitude coupling, the class is a relationship between a
+low-frequency phase and a high-frequency amplitude envelope; neither
+phase-only nor magnitude-only is enough, while polar coordinates reach
+0.881. Native complex models are competitive on phase-locking but do
+not dominate the pilot. This is still useful for the paper: it shows
+that the same stress-test protocol can explain an unexpected
+biomedical domain without relying on a blanket ``complex is better''
+story.
 
 \subsection{RadioML 2018.01A --- a positive result with a subtler story}
 \label{sec:radioml}
@@ -1056,12 +1123,13 @@ optimization-side mechanism.
     phase-aware real features automatically solve unseen carrier-phase
     offsets under the current architecture. Rotation augmentation helps
     but does not make the problem disappear.
-  \item \textbf{Physics pilot is deliberately small.} The quantum
+  \item \textbf{Application pilots are deliberately small.} The quantum
     wavefunction study uses 1-D synthetic states, a short split-step
     evolution, five hand-designed potential families, and three seeds.
-    It is evidence that the representation/stress-test protocol
-    transfers outside RF, not evidence about production scientific ML
-    workloads.
+    The EEG study uses synthetic analytic signals rather than clinical
+    sensor data. These are evidence that the representation/stress-test
+    protocol transfers outside RF, not evidence about production
+    scientific or biomedical ML workloads.
   \item \textbf{Six seeds.} CIs are computed from a Gaussian
     approximation of the per-seed mean ($\sigma/\sqrt{n}$). A
     bootstrap CI on this many seeds gives similar widths but is not
@@ -1112,6 +1180,11 @@ optimization-side mechanism.
     richer PDE settings: 2-D wave packets, inverse scattering,
     Fourier-domain operators, and explicit gauge/global-phase
     invariant architectures.
+  \item \textbf{Run the EEG pilot on real analytic-signal data:}
+    sleep staging, seizure detection, brain-computer-interface motor
+    imagery, or anesthesia depth are natural tasks where phase locking,
+    amplitude envelopes, and phase-amplitude coupling have existing
+    signal-processing meaning.
   \item A separate study of per-activation training dynamics: does
     \code{ModReLU}'s bias-sign regime visibly affect convergence?
 \end{itemize}
@@ -1131,6 +1204,8 @@ uv run python experiments/rf/sweep_synthetic_modulation.py --device cuda
 uv run python experiments/rf/representation_stress_tests.py \
     --preset standard --device cuda --resume
 uv run python experiments/physics/quantum_wavefunction.py \
+    --preset standard --resume
+uv run python experiments/neuro/eeg_analytic_signal.py \
     --preset standard --resume
 uv run python experiments/rf/sweep_radioml.py --device cuda \
     --activation crelu --seeds 0 1 2 3 4 5

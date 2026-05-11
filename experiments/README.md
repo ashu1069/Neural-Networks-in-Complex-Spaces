@@ -164,3 +164,26 @@ uv run python experiments/physics/quantum_wavefunction.py \
 
 The pilot writes `index.md`, `index.json`, plots, manifests, and per-condition
 summaries under `results/physics_quantum_wavefunction_pilot/`.
+
+## Neuroscience
+
+The EEG analytic-signal pilot tests the same representation question on
+synthetic complex Hilbert/wavelet-style features. It separates phase locking,
+amplitude bursts, phase-amplitude coupling, and reference-phase stress tests:
+
+```bash
+uv run python experiments/neuro/eeg_analytic_signal.py \
+  --preset standard \
+  --resume
+```
+
+For a fast CPU smoke run:
+
+```bash
+uv run python experiments/neuro/eeg_analytic_signal.py \
+  --preset smoke \
+  --output-dir results/neuro_eeg_analytic_signal_pilot_smoke
+```
+
+The pilot writes `index.md`, `index.json`, plots, manifests, and per-condition
+summaries under `results/neuro_eeg_analytic_signal_pilot/`.

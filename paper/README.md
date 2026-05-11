@@ -72,5 +72,5 @@ gradient telemetry per-layer per-step traces, the synthetic-data
 replication of the threshold mechanism, RadioML loader edge cases,
 the manifest schema and CI guards, and the full-archive scale-up plan.
 The appendix is unbounded under NeurIPS rules; after the RF
-representation stress-test and quantum pilot updates, the working draft
-builds to 22 pages total.
+representation stress-test, quantum pilot, and EEG pilot updates, the
+working draft builds to 23 pages total.
