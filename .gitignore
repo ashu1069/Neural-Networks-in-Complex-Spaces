@@ -232,3 +232,6 @@ outputs/
 wandb/
 results/*.json
 !results/manifest.example.json
+
+# Generated animations (large binaries — host externally)
+**/animations/

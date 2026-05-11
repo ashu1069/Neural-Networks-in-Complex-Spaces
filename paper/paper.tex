@@ -121,6 +121,23 @@ views because they answer different questions: whether information is
 in amplitude, in phase, in their relation, or in the algebraic prior of
 complex multiplication.
 
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/thesis_iq_anatomy.png}
+  \caption{Two RF constellations decide which coordinate view a model
+    needs. PSK-8 lives on the unit circle, so $|z|$ collapses every
+    class to a single peak (no information) while $\arg z$ resolves
+    into eight class-specific spikes. QAM-16 lives on a 4$\times$4
+    grid, so $|z|$ resolves into three rings (the $L^2$-distance
+    classes) while $\arg z$ smears across the angle range. The
+    measured RF stress-test accuracies on the right
+    (\Cref{tab:rf-stress}) confirm this purely visual prediction:
+    phase-only wins PSK at 0.735, magnitude-only wins QAM at 0.524,
+    and the complex model tracks whichever view carries the class
+    signal.}
+  \label{fig:iq-anatomy}
+\end{figure}
+
 \subsection{What a complex layer constrains}
 
 Complex multiplication is not an arbitrary two-channel real linear map.
@@ -223,10 +240,31 @@ Liouville's theorem: a bounded entire function on $\mathbb{C}$ is
 constant.\qed
 \end{proof}
 
-\noindent A useful complex activation must therefore drop at least one
-of \emph{(i)--(iii)}. Each existing activation makes a different
-choice, and the choice is the design variable rather than an
-inconvenience to be hidden:
+\noindent A useful complex activation must therefore drop at least
+one of \emph{(i)--(iii)}. \Cref{fig:liouville-trilemma} draws the
+three trade-off cells the proposition leaves open and places each of
+our six activations in the cell it occupies. Each existing
+activation makes a different choice, and the choice is the design
+variable rather than an inconvenience to be hidden:
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.92\linewidth]{figures/thesis_liouville_trilemma.png}
+  \caption{The Liouville trilemma. The three vertices are the three
+    desiderata of \Cref{prop:trilemma}; the shaded interior is the
+    region Liouville rules out (only constants live there). Every
+    nonconstant complex activation has to pick a cell outside the
+    triangle, opposite the vertex it drops. \code{ComplexTanh}
+    drops boundedness, blowing up at $\pm i(\pi/2+k\pi)$;
+    \code{Siglog}, \code{ModReLU}, and \code{ComplexCardioid} drop
+    holomorphy and live in the bounded $+$ nonconstant cell; the
+    third cell (drop nonconstancy) is degenerate.
+    \code{CReLU} and \code{ZReLU} live in the same cell as
+    \code{Siglog} but additionally violate phase equivariance --- a
+    fourth axis the trilemma does not capture but
+    \Cref{eq:phase-equivariance} does.}
+  \label{fig:liouville-trilemma}
+\end{figure}
 
 \begin{itemize}
   \item \code{ComplexTanh} ($\sigma(z)=\tanh z$) keeps holomorphy and
@@ -467,6 +505,26 @@ everywhere) and never blows up, but its CR residual is everywhere
 positive (p95 = 0.25) --- it is not holomorphic anywhere, by
 construction. The remaining four activations sit between, each making
 a different compromise.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.95\linewidth]{figures/thesis_activation_atlas.png}
+  \caption{Atlas of complex activations on
+    $[-2.5, 2.5]^2 \subset \mathbb{C}$. Rows: the six activations.
+    Columns: $|\sigma(z)|$ (warm colormap), $\arg\sigma(z)$ (cyclic
+    colormap; flat color $=$ flat phase), and the finite-difference
+    estimate of $|\partial_{\bar z}\sigma|$ (a.k.a.\ the
+    Cauchy--Riemann residual; bright $=$ far from holomorphic). The
+    atlas makes the trilemma visible at a glance: \code{ZReLU} is
+    holomorphic on its support (third column nearly black),
+    \code{ComplexTanh} explodes near $z = \pm i\pi/2$ (white-hot
+    spots), \code{ModReLU} has a circular dead zone of radius $|b|$
+    around the origin, and \code{ComplexCardioid}'s phase-gating is
+    visible as a cosine-shaped magnitude pattern. The visual
+    fingerprint each activation leaves on $\mathbb{C}$ is the
+    structured prior the rest of the network inherits.}
+  \label{fig:activation-atlas}
+\end{figure}
 
 This is not a finding about which activation is best in training ---
 it is a visible measurement of the formal trade-off the project is
