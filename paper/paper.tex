@@ -25,20 +25,26 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{url}
 
-% No cleveref dependency -- use \cref-like macros that just delegate to \ref.
-\providecommand{\Cref}[1]{Section~\ref{#1}}
-\providecommand{\cref}[1]{section~\ref{#1}}
+% No cleveref dependency -- use hyperref's type-aware autoref names.
+\def\sectionautorefname{Section}
+\def\subsectionautorefname{Section}
+\def\subsubsectionautorefname{Section}
+\def\figureautorefname{Figure}
+\def\tableautorefname{Table}
+\providecommand{\Cref}[1]{\autoref{#1}}
+\providecommand{\cref}[1]{\autoref{#1}}
 
 % Theorem styles.
 \newtheorem{lemma}{Lemma}
 \newtheorem{proposition}{Proposition}
+\providecommand*{\lemmaautorefname}{Lemma}
+\providecommand*{\propositionautorefname}{Proposition}
 
 % Lightweight code formatting.
 \newcommand{\code}[1]{\texttt{#1}}
 
-\title{Complex spaces as representation, geometry, and optimization:\\
-stress-testing architectural priors and training robustness\\
-in complex-valued neural networks}
+\title{When do complex-valued neural networks help?\\
+A representation-first study of phase, amplitude, and optimization}
 
 \author{%
   Ashutosh Kumar\\
@@ -51,156 +57,272 @@ in complex-valued neural networks}
 \begin{document}
 \maketitle
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\linewidth]{figures/headline_paper_at_a_glance.png}
-  \caption{The paper at a glance. \emph{(A)} Complex-valued networks
-    win on phase-bearing modulations (PSK, mixed) but lose to real
-    magnitude on QAM and to matched-real at low SNR or under fixed
-    carrier-phase rotation; the advantage is conditional on
-    representation/SNR/invariance assumptions.
-    \emph{(B)} The 22.94~pp \code{crelu} gap on a 3-class RadioML
-    subset collapses to 2.46~pp under independent per-family
-    hyperparameter selection --- a 9.3$\times$ change driven entirely
-    by the selection rule, not the data.
-    \emph{(C)} A 2$\times$2 lr-vs-activation disambiguation
-    (\Cref{sec:lr-vs-activation}) shows the dead-seed threshold
-    follows the learning rate, not the activation.
-    \emph{(D)} Phase equivariance of the activation does not predict
-    optimization stability: the four quadrants are populated, so the
-    robustness asymmetry is an optimization-level effect, not a
-    symmetry-level one.}
-  \label{fig:at-a-glance}
-\end{figure}
-
 \begin{abstract}
-Complex-valued neural networks (CVNNs) are usually motivated by
-phase-bearing data, but the phrase ``complex helps'' hides several
-different mechanisms: the coordinate representation of the input,
-the algebraic prior imposed by complex multiplication, and the
-optimization dynamics induced by coupled real/imaginary parameters. We
-study these mechanisms at a scale where they can be separated rather
-than conflated. Synthetic representation stress tests show that the
-complex advantage is conditional: PSK-only IQ data favors the complex
-model (0.821 vs 0.333 for magnitude-only), QAM-only inverts that
-ranking, mixed PSK+QAM gives a small complex edge, and an unseen
-global phase rotation collapses every coordinate-dependent model
-unless rotation augmentation is added. Complex-valued models are
-therefore best framed as a useful inductive bias when the task's
-phase/amplitude geometry matches the model. A feasibility-scale
-quantum wavefunction pilot extends the same question outside RF:
-phase-aware models solve momentum-from-wavefunction classification
-perfectly while magnitude-only remains at chance (1.000 vs 0.250),
-but a 1-D potential-inverse task is best matched by an explicit real
-Cartesian view (0.462 vs 0.431 for complex), again emphasizing
-representation rather than universal complex superiority. A second,
-more unexpected EEG analytic-signal pilot shows the same decomposition
-in biomedical oscillatory data: phase-only solves inter-channel phase
-locking (1.000 vs 0.250 for magnitude), magnitude-only solves
-amplitude bursts (0.946 vs 0.256 for phase), and polar coordinates
-solve phase-amplitude coupling (0.881 vs 0.263 for magnitude). The headline
-empirical finding is methodological: on a 3-class RadioML 2018.01A subset,
-matched-shared-trial hyperparameter selection produces a $22.94$~pp
-CVNN-vs-real gap that collapses to $2.46$~pp under independent
-per-family selection. Per-step gradient telemetry attributes the
-difference to a step-1 \code{head.weight} gradient explosion ---
-50--80$\times$ larger for real baselines than complex --- that pushes
-a fraction of real-baseline seeds into a dead-ReLU region they cannot
-escape. A 2$\times$2 lr-vs-activation disambiguation localizes the
-dead-seed threshold primarily to learning rate: at lr $=$ 0.0024 both
-\code{crelu} and \code{zrelu} produce $0/9$ dead seeds, and at lr
-$=$ 0.0236 both produce dead seeds ($4/9$ on \code{crelu}, $1/9$ on
-\code{zrelu}); activation modulates sensitivity at high lr but does
-not by itself trigger the failure mode. We therefore read
-matched-shared-trial as a robustness stress test, not as the magnitude
-of the complex advantage. The resulting paper is a scoped mechanism
-study: it asks when, why, and under what invariance assumptions
-complex-valued RF models are worth using, and it releases code,
-manifests, stress-test plots, telemetry traces, and figure scripts for
-every claim.
+We show that a widely cited class of complex-vs-real neural-network
+performance gaps is, in part, a hyperparameter-selection artifact.
+On a controlled 3-class RadioML 2018.01A subset, a 22.94~pp
+matched-shared-trial gap under \code{crelu} collapses by
+9.3$\times$ to 2.46~pp under independent per-family tuning, on the
+same data and the same 16-trial search box. Per-step gradient
+telemetry traces the difference to an explosion-into-dead-region
+failure of real baselines at the high-learning-rate first AdamW step,
+a regime the complex family tolerates because its
+$(\mathrm{Re},\mathrm{Im})$ parameter coupling distributes the loss
+signal across more readout slots. A 2$\times$2 learning-rate / activation
+factorial confirms the threshold is hyperparameter-driven, not
+activation-driven.
+
+The methodological finding is embedded in a representation-first study
+of when complex-valued networks help at all. A complex sample
+$z=x+iy=re^{i\theta}$ packages amplitude and phase into one number; a
+real network can see it as Cartesian, polar, magnitude-only, or
+phase-only coordinates, and the right question is which mechanism
+--- representation, the $U(1)$-equivariant subspace constraint of
+complex multiplication, or optimization tolerance --- is doing the
+work. On synthetic RF, PSK-only data favor the complex model (0.821 vs
+0.333 for magnitude-only), QAM-only data favor magnitude, mixed PSK+QAM
+gives a small complex edge, and unseen carrier-phase rotation breaks
+coordinate-dependent models unless augmentation is added. Two
+application pilots support the same reading: in quantum wavefunctions,
+momentum is invisible to $|\psi|$ but recoverable from phase; in EEG
+analytic signals, phase locking, amplitude bursts, and phase-amplitude
+coupling each select different coordinate views. We frame complex
+activations through the Wirtinger calculus and a Liouville trilemma
+(bounded, holomorphic, nonconstant --- pick two), and characterize the
+six standard activations against it. The paper's claim is
+consequently scoped: complex-valued models are useful structured
+inductive biases for phase- and amplitude-bearing data, but their
+advantage is representation-, symmetry-, and optimization-dependent
+--- and apparent CVNN-vs-real gaps should be reported under both
+selection rules before being interpreted as architectural.
 \end{abstract}
 
-\section{Concept and feasibility scope}
+\section{First-principles setup}
 \label{sec:scope}
 
-\subsection{What this paper claims and does not claim}
+\subsection{What a complex input contains}
 
-We make six concrete claims, each at a defensible scale and with
-explicit reproducibility:
+A complex number is a two-dimensional real object with extra
+structure. The same point can be written in Cartesian form
+$z=x+iy$ or polar form $z=re^{i\theta}$, where
+$r=|z|=\sqrt{x^2+y^2}$ is magnitude and $\theta=\arg z$ is phase.
+Equal magnitude does not mean equal information: $5$ and $3+4i$ both
+have magnitude $5$, but their phases differ, their real parts differ,
+and a model that only sees $|z|$ cannot distinguish them. Conversely,
+if the label depends only on energy, phase may be a nuisance rather
+than a signal.
 
-\begin{enumerate}
-  \item \textbf{Architectural claim (formal).}
-    \code{ComplexConv1d} is phase-equivariant in the bias-free case
-    (\Cref{lem:phase-equivariance}); a magnitude-logit head is
-    invariant to global phase rotations of its input features. A real
-    \code{Conv1d} on stacked $(I, Q)$ channels
-    does not get this for free --- it must learn rotation invariance
-    from data via a $2\times 2$ channel mix the complex network gets by
-    construction.
-  \item \textbf{Representation claim.} The complex-vs-real comparison
-    is not meaningful unless we also control the coordinate system
-    presented to real networks. On PSK-only synthetic RF, phase-aware
-    encodings learn while magnitude-only remains at chance; on QAM-only
-    data magnitude becomes competitive; on mixed PSK+QAM the complex
-    edge is small. We therefore report complex, Cartesian real,
-    polar, phase-only, and magnitude-only baselines together
-    (\Cref{sec:representation-stress}) rather than treating
-    $(\mathrm{Re}, \mathrm{Im})$ stacking as the only real baseline.
-  \item \textbf{Application pilot claim.} Two small non-RF pilots
-    reproduce the same boundary logic. In 1-D quantum wavefunctions
-    (\Cref{sec:quantum-pilot}), momentum labels live in the phase
-    gradient and magnitude-only remains at chance, while inverse
-    potential classification is best matched by an explicit real
-    Cartesian view. In EEG analytic signals
-    (\Cref{sec:eeg-pilot}), phase locking, amplitude bursts, and
-    phase-amplitude coupling select different coordinate views. These
-    pilots support the application scope of representation stress
-    testing; they do not convert the paper into a broad physics or
-    biomedical benchmark.
-  \item \textbf{Empirical claim.} Complex-valued networks beat
-    capacity-matched real-valued ones on synthetic IQ modulation
-    classification (\Cref{sec:synthetic-rf}) and on a 3-class subset of
-    RadioML 2018.01A~\cite{oshea2018radioml}
-    (\Cref{sec:radioml}) under matched-budget evaluation, but the
-    magnitude and interpretation of those wins are conditional on
-    representation, SNR, activation, and invariance assumptions. On a
-    task with no temporal phase structure (1-D phase classification,
-    \Cref{sec:phase-classification}), the complex inductive bias offers
-    no measurable advantage. Both positive and null results are
-    reported.
-  \item \textbf{Optimization claim.} The apparent magnitude of the
-    RadioML win is activation-dependent
-    (\Cref{sec:radioml-ablation}) because matched-shared-trial
-    selection picks high-lr regimes under some activations that real
-    baselines cannot tolerate. Per-step gradient telemetry
-    (\Cref{sec:radioml-mechanism}) localizes the failure to a step-1
-    head-gradient explosion that puts a fraction of real-baseline seeds
-    into a dead-ReLU region they cannot escape; the threshold behavior
-    replicates on synthetic data. A 2$\times$2 lr-vs-activation
-    disambiguation (\Cref{sec:lr-vs-activation}) confirms the
-    threshold is primarily lr-driven: at low lr both \code{crelu} and
-    \code{zrelu} produce zero dead seeds; at high lr both produce
-    them, with \code{crelu} more sensitive than \code{zrelu} ($4/9$
-    vs $1/9$). Activation choice modulates the magnitude of the
-    step-1 head explosion but does not by itself trigger the failure
-    mode. Phase equivariance of the \emph{layer} is necessary
-    for the architectural prior, but activation-level phase
-    equivariance does not predict the empirical robustness asymmetry
-    --- locating the asymmetry one level lower, in
-    $(\mathrm{Re}, \mathrm{Im})$ parameter coupling at the optimization
-    level, is what makes the picture self-consistent
-    (\Cref{sec:phase-equivariance}).
-  \item \textbf{Methodological claim.} The matched-shared-trial gap
-    ($+22.94$~pp on \code{crelu}) and the independent-per-family gap
-    ($+2.46$~pp on the same data) differ by an order of magnitude.
-    We read matched-shared-trial as a robustness stress test and
-    independent selection as the better point estimate of best
-    achievable performance under separate tuning. Reporting both is
-    part of the contribution; reporting only one risks overstating or
-    erasing a real but small effect.
-\end{enumerate}
+This simple observation is the reason a complex-vs-real comparison can
+be misleading. A real-valued network on $(x,y)$ sees the full
+Cartesian information. A real network on $(r,\cos\theta,\sin\theta)$
+sees magnitude and phase explicitly. A magnitude-only or phase-only
+network sees a controlled information bottleneck. We use all of these
+views because they answer different questions: whether information is
+in amplitude, in phase, in their relation, or in the algebraic prior of
+complex multiplication.
 
-\noindent We do \emph{not} claim:
+\subsection{What a complex layer constrains}
+
+Complex multiplication is not an arbitrary two-channel real linear map.
+Multiplying $(x+iy)$ by $(a+ib)$ gives
+\[
+  (a+ib)(x+iy) = (ax - by) + i(ay + bx),
+\]
+which is the real matrix
+\[
+  \begin{bmatrix} a & -b \\ b & a \end{bmatrix}
+  \begin{bmatrix} x \\ y \end{bmatrix}.
+\]
+This matrix is a rotation-and-scale coupling between the two real
+channels. A generic real network can learn any $2\times2$ channel mix,
+but the complex layer starts with this structured coupling built in.
+The coupling is not arbitrary: as
+\Cref{prop:equivariant-subspace} makes precise, complex layers are
+exactly the $U(1)$-equivariant subspace of stacked-real $2$-channel
+layers, parameterized by $2$ real numbers per tap instead of $4$. That
+can help when the task respects phase geometry, and it can hurt or be
+irrelevant when the task is amplitude-only or when a hand-chosen real
+coordinate system already exposes the right variables.
+
+The same distinction matters for invariance. If every input is rotated
+by a common phase, $z\mapsto e^{i\varphi}z$, a bias-free complex
+linear or convolutional layer rotates its output by the same phase.
+This is equivariance, not magic invariance: biases, nonlinearities,
+readout choices, and training data determine whether the final model
+is actually robust to an unseen phase convention. Our fixed-rotation
+stress tests are designed to catch this failure mode.
+
+\subsection{Differentiation in the complex plane: Wirtinger calculus and an activation trilemma}
+\label{sec:wirtinger-trilemma}
+
+A common worry when first building a CVNN is that backpropagation
+seems to require holomorphic activations, while Liouville's theorem
+forbids any bounded entire nonlinearity. Both halves of that worry are
+imprecise. The textbook treatment in
+Hirose~\cite{hirose2012complex} and the more recent deep-CVNN survey
+in Trabelsi et al.~\cite{trabelsi2018deep} resolve the issue
+operationally by adopting split or magnitude-gated activations; we
+restate the resolution here in the form most useful for the rest of
+the paper. Backpropagation requires neither holomorphy nor even
+complex-differentiability; what it requires is the standard Wirtinger
+(CR-) calculus, in which every $\mathbb{R}$-differentiable map
+$\mathbb{C}\to\mathbb{C}$ has a well-defined gradient. The genuine
+constraint Liouville imposes is then sharper than ``no good
+activations exist'': it is a three-way trade-off between boundedness,
+holomorphy, and nonconstancy, with phase equivariance as a fourth
+desideratum that further constrains the design space. This subsection
+makes both points precise, since they govern the rest of the paper.
+
+\paragraph{Wirtinger derivatives.}
+For $f:\mathbb{C}\to\mathbb{C}$ written in real coordinates as
+$f(z)=u(x,y)+iv(x,y)$ with $z=x+iy$, define
+\[
+  \partial_z f \;=\; \tfrac{1}{2}\bigl(\partial_x f - i\,\partial_y f\bigr),
+  \qquad
+  \partial_{\bar z} f \;=\; \tfrac{1}{2}\bigl(\partial_x f + i\,\partial_y f\bigr).
+\]
+Both derivatives exist whenever $f$ is real-differentiable as a map
+$\mathbb{R}^2\to\mathbb{R}^2$. The Cauchy--Riemann equations are
+exactly $\partial_{\bar z} f \equiv 0$, so $f$ is holomorphic on an
+open set iff $\partial_{\bar z} f$ vanishes there. Holomorphy is a
+\emph{constraint} on $f$, not a prerequisite for differentiating it.
+
+\paragraph{Backpropagation does not require holomorphy.}
+Let $L:\mathbb{C}^n\to\mathbb{R}$ be a real-valued loss and let
+$w\in\mathbb{C}$ be a parameter. Treating $L$ as a function of the
+real and imaginary parts of $w$, the steepest-descent direction in the
+underlying $\mathbb{R}^2$ corresponds to the conjugate Wirtinger
+gradient
+\[
+  \nabla_w L \;:=\; 2\,\overline{\partial_{w}L}
+  \;=\; 2\,\partial_{\bar w} L,
+\]
+and the gradient update is $w \leftarrow w - \eta\,\partial_{\bar w}L$
+(see~\cite{brandwood1983complex,kreutzdelgado2009complex} for
+derivations). PyTorch's complex autograd stores
+$\partial_{\bar w}L$ in the \code{.grad} field of complex parameters;
+training proceeds with no holomorphy assumption. Activations such as
+\code{CReLU} or \code{ZReLU}, which are nowhere holomorphic, are
+nevertheless mathematically respectable inside this calculus: they are
+real-differentiable almost everywhere, and their Wirtinger derivatives
+exist in the same a.e.\ sense in which $\mathrm{ReLU}'$ exists on
+$\mathbb{R}$.
+
+\paragraph{The Liouville activation trilemma.}
+The actual restriction Liouville imposes is the following.
+
+\begin{proposition}[Activation trilemma]
+\label{prop:trilemma}
+No function $\sigma:\mathbb{C}\to\mathbb{C}$ can simultaneously be
+\emph{(i)}~bounded on all of $\mathbb{C}$, \emph{(ii)}~entire
+(holomorphic on all of $\mathbb{C}$), and \emph{(iii)}~nonconstant.
+\end{proposition}
+
+\begin{proof}
+Liouville's theorem: a bounded entire function on $\mathbb{C}$ is
+constant.\qed
+\end{proof}
+
+\noindent A useful complex activation must therefore drop at least one
+of \emph{(i)--(iii)}. Each existing activation makes a different
+choice, and the choice is the design variable rather than an
+inconvenience to be hidden:
+
+\begin{itemize}
+  \item \code{ComplexTanh} ($\sigma(z)=\tanh z$) keeps holomorphy and
+    nonconstancy but drops boundedness: it is meromorphic on
+    $\mathbb{C}$ with simple poles at $z = i(\pi/2+k\pi)$, $k\in\mathbb{Z}$,
+    and blows up arbitrarily close to those poles.
+  \item \code{Siglog} ($\sigma(z)=z/(1+|z|)$) keeps boundedness and
+    nonconstancy but drops holomorphy globally: it depends on $|z|$,
+    so $\partial_{\bar z}\sigma\not\equiv 0$ on any open set.
+  \item \code{CReLU}, \code{ZReLU}, \code{ModReLU}, and
+    \code{ComplexCardioid} all drop holomorphy outright. They are
+    $\mathbb{R}$-differentiable a.e., bounded only on bounded subsets
+    of $\mathbb{C}$, and chosen for their interaction with magnitude
+    and phase rather than for any analytic property.
+\end{itemize}
+
+\paragraph{A fourth desideratum: phase equivariance.}
+For phase-bearing data the natural symmetry is the $U(1)$ action
+$z\mapsto e^{i\varphi}z$. An activation respects this symmetry iff
+\begin{equation}
+  \label{eq:phase-equivariance}
+  \sigma(e^{i\varphi} z) \;=\; e^{i\varphi}\,\sigma(z)
+  \qquad \forall\,\varphi\in\mathbb{R},\ z\in\mathbb{C}.
+\end{equation}
+Combining \eqref{eq:phase-equivariance} with holomorphy is more
+restrictive than Liouville alone:
+
+\begin{proposition}[Phase-equivariant entire functions are linear]
+\label{prop:equivariant-entire}
+If $\sigma:\mathbb{C}\to\mathbb{C}$ is entire and satisfies
+\eqref{eq:phase-equivariance}, then $\sigma(z)=cz$ for some
+$c\in\mathbb{C}$.
+\end{proposition}
+
+\begin{proof}
+Expand $\sigma(z)=\sum_{n\geq 0}a_n z^n$ on $\mathbb{C}$.
+Equation~\eqref{eq:phase-equivariance} gives
+$\sum_n a_n e^{in\varphi}z^n = \sum_n a_n e^{i\varphi} z^n$ for all
+$\varphi$, hence $a_n(e^{in\varphi}-e^{i\varphi})=0$ for all
+$\varphi\in\mathbb{R}$, which forces $a_n=0$ for $n\neq 1$.\qed
+\end{proof}
+
+So the four desiderata --- bounded, holomorphic, nonconstant,
+phase-equivariant --- are jointly satisfiable only by the trivial
+constant or linear maps. The six activations characterized in
+\Cref{sec:activation-characterization} can be read as a natural
+experiment over this $2\times 2\times 2\times 2$ taxonomy with the
+useless cells removed: \code{ModReLU} and \code{Siglog} keep phase
+equivariance at the cost of holomorphy; \code{ComplexTanh} keeps
+holomorphy at the cost of boundedness; \code{CReLU}, \code{ZReLU},
+and \code{ComplexCardioid} drop both holomorphy and equivariance to
+buy other useful properties (split-channel sparsity, quadrant
+selection, magnitude gating).
+
+\paragraph{The CR-residual is the trilemma made measurable.}
+The Cauchy--Riemann residual reported in
+\Cref{fig:activation-tradeoff} is, up to a factor of two, exactly
+$|\partial_{\bar z}\sigma|$ evaluated on a grid in $\mathbb{C}$. It is
+zero on open sets where $\sigma$ is holomorphic and strictly positive
+elsewhere, so it quantifies the deviation from holomorphy that
+\Cref{prop:trilemma} forces every nonconstant bounded activation to
+incur. Pairing CR-residual against gradient norm at initialization
+turns the abstract trilemma into a per-activation diagnostic: an
+activation either pays a holomorphy cost (positive CR residual) or a
+boundedness cost (large intrinsic Jacobian), and the figure shows
+each candidate's chosen trade.
+
+With this calculus in place, the rest of the paper treats activation
+choice as a structured design decision rather than a workaround for a
+theorem that does not actually obstruct backpropagation.
+
+\subsection{What this paper contributes}
+
+The paper makes three contributions at a scale where the mechanisms
+can be inspected:
+
+\begin{itemize}
+  \item \textbf{A representation-first evaluation protocol.} We compare
+    native complex models against real Cartesian, parameter-matched
+    real, FLOP-matched real, polar, phase-only, and magnitude-only
+    baselines. This separates ``complex arithmetic helped'' from
+    ``the model was simply given the right coordinates.''
+  \item \textbf{Stress tests across domains.} Synthetic RF, quantum
+    wavefunctions, and EEG analytic signals show the same pattern:
+    phase-bearing tasks reward phase-aware views; amplitude-heavy tasks
+    reward magnitude; coupled phase/amplitude tasks reward joint
+    representations; and unseen phase conventions require explicit
+    testing or augmentation.
+  \item \textbf{An optimization caution for RadioML.} On a 3-class
+    RadioML subset, a large matched-shared-trial gap is mostly a
+    high-learning-rate robustness artifact. Independent per-family
+    tuning gives a much smaller gap, and gradient telemetry explains
+    why.
+\end{itemize}
+
+\noindent The paper does \emph{not} claim:
 
 \begin{itemize}
   \item That complex arithmetic is universally better than real-valued
@@ -217,113 +339,100 @@ explicit reproducibility:
     MRI). \code{ComplexConv2d} is not implemented; the project is 1-D
     only.
   \item That the quantum pilot establishes broad physics superiority.
-    It is a deliberately small application probe over 1-D wavefunctions
-    and five potential classes, included to test whether the
-    representation thesis transfers outside RF.
+    The quantum and EEG pilots are deliberately small application
+    probes, included to test whether the representation thesis
+    transfers outside RF.
   \item That CReLU activations generalize across signal-processing
     settings. The activation ablation
     (\Cref{sec:radioml-ablation}) is part of the contribution
-    precisely because activation choice changes the appearance (though
-    not the direction) of CVNN-vs-real gaps.
+    precisely because activation choice changes both the apparent size
+    and, in one row, the direction of CVNN-vs-real gaps.
 \end{itemize}
 
-\subsection{Why feasibility-scale is the right scope}
-
-A mechanism-level study requires the ability to (a) instrument every
-parameter's gradient at every step, (b) run hundreds of training
-configurations within a working budget, and (c) confirm cross-task
-generalization with a second data distribution. All three are tractable
-at the scope chosen --- 60 instrumented runs per data source, a
-re-runnable budgeted sweep, a synthetic stand-in matching the real-data
-benchmark on architecture and hyperparameter regime. They are not
-tractable for paper deadlines at 24-class $\times$ 1024-sample
-$\times$ 100-seed scale. We treat the smaller scope as a positive
-feature: it lets us report what is happening, not just that something
-is happening.
-
-\subsection{Reproducibility as a first-class concern}
-
-Every empirical claim above is backed by a committed result manifest
-that records the Python / PyTorch / OS / device / dtype, every seed
-used, the exact \code{git\_commit} of the producing code, and a
-\code{git\_dirty} boolean. CI surfaces newly added dirty manifests so
-they are reviewed deliberately rather than slipping through. A
-structural CI guard checks that the activation characterization
-artifact regenerates without errors and contains all six expected
-activation rows. The companion repository currently has 144 passing
-unit and integration tests, with two CUDA-specific tests skipped on the
-local non-CUDA development machine.
-
-\section{Framework}
+\section{Experimental design}
 \label{sec:framework}
 
-The infrastructure exists to answer the ``but what about\dots ?''
-questions that ad-hoc CVNN comparisons in the literature routinely
-sidestep.
+\Cref{sec:scope} turns the motivation into three empirical questions:
+what information is present, what algebraic constraint the model
+imposes, and how optimization changes under that constraint. The
+experimental design keeps these questions separate.
 
-\paragraph{CVNN library.}
-We implement \code{ComplexLinear} (matmul + bias-add, deliberately
-bypassing \code{F.linear} to sidestep its documented MPS gap),
-\code{ComplexConv1d} (thin wrapper over \code{F.conv1d}, which natively
-supports complex tensors on CPU/MPS/CUDA), and \code{ComplexDropout}
-using a single shared real Bernoulli mask following Trabelsi
-et~al.~\cite{trabelsi2018deep}. Six activations span the Liouville
-trade-off: \code{CReLU}, \code{ZReLU}, \code{ModReLU}~\cite{arjovsky2016unitary},
-\code{ComplexCardioid}, \code{Siglog}, and \code{ComplexTanh} as the
-cautionary baseline. Initialization (Glorot~\cite{glorot2010understanding}
-and Kaiming~\cite{he2015delving}) is complex-aware in both rectangular
-and polar (Rayleigh-magnitude / uniform-phase) forms.
+\paragraph{Coordinate views.}
+For any complex sequence $z_t=x_t+i y_t$, the same sample can be
+presented as Cartesian channels $(x_t,y_t)$, polar channels
+$(|z_t|,\cos\theta_t,\sin\theta_t)$, phase-only channels
+$(\cos\theta_t,\sin\theta_t)$, or magnitude-only $|z_t|$. These views
+are not weaker or stronger in a single ordering. They encode different
+hypotheses: phase-only should win when labels depend on angle or phase
+lag; magnitude-only should win when labels depend on energy; polar
+should win when amplitude and phase interact; native complex layers
+should help when the rotation-and-scale coupling of complex
+multiplication matches the task geometry.
 
-\paragraph{Activation characterization toolkit.}
-For each candidate activation, we render a Cauchy--Riemann residual map
-over the complex plane, compute summary statistics (median / p95 /
-max), and measure two gradient norms: an MLP-scaffolded one and an
-\emph{intrinsic} one ($|\partial L / \partial \bar{z}|$ for
-$L = \sum |f(z)|^2$ on uniformly sampled $z$). The intrinsic measure
-decouples the activation's contribution from any surrounding linear
-layers --- without it, $\tanh$'s 855 MLP-gradient looks
-$\sim$8$\times$ larger than its 108 intrinsic contribution.
+\paragraph{Model families.}
+Each benchmark compares the native complex network with real-valued
+baselines that control for different confounds: a Cartesian real
+network on stacked real/imaginary channels, a parameter-matched real
+network, a FLOP-matched real network, and a rotation-equivariant real
+reparameterization that constrains each $2$-channel kernel tap to the
+$aI+bJ$ subspace of $M_2(\mathbb{R})$ identified by
+\Cref{prop:equivariant-subspace}. The rotation-equivariant baseline is
+provably equivalent to the complex layer (forward and gradient,
+verified in \code{tests/test\_rotation\_equivariant.py}); we use it as
+a correctness witness rather than a separate experimental row, and
+discuss why the substantive comparison is therefore complex versus the
+unconstrained Cartesian and parameter-matched baselines in
+\Cref{sec:rotation-equivariant-control}. Architecture details and
+parameter formulas are deferred to \Cref{app:architectures}; the main
+point is that every reported win must survive at least one plausible
+real-valued way of seeing the same information.
 
-\paragraph{Baseline matching.}
-Every claim of ``complex beats real'' is backed by four families
-running on the same task with the same shared search space:
-\emph{naive real-stacked} (real net taking $(\mathrm{Re}, \mathrm{Im})$
-as 2 channels; $\sim$2$\times$ the parameters of the complex layer);
-\emph{matched-parameter real} (real net sized down so its real
-\code{numel} equals the complex's, counting each complex slot as 2);
-\emph{matched-FLOP real} (sized to match the complex MAdd count);
-\emph{exact reparameterization} (the block-real $\bigl[\begin{smallmatrix}
-A & -B \\ B & A \end{smallmatrix}\bigr]$ construction proven to
-reproduce the complex forward bit-for-bit; a witness, not a baseline to
-beat).
+\paragraph{Nonlinearity in the complex plane.}
+Activation choice is a first-principles issue rather than a software
+detail. \Cref{sec:wirtinger-trilemma} sets up the Wirtinger calculus
+that makes complex backpropagation well-defined and states the
+trilemma (\Cref{prop:trilemma}) any nonconstant complex activation
+must navigate; in this section we use that taxonomy to fix the
+candidate set. We characterize six activations before using them
+downstream: \code{CReLU}, \code{ZReLU},
+\code{ModReLU}~\cite{arjovsky2016unitary}, \code{ComplexCardioid},
+\code{Siglog}, and \code{ComplexTanh}. Together they cover the
+non-degenerate cells of the trilemma --- bounded but non-holomorphic,
+holomorphic but unbounded, and split-channel constructions that drop
+both holomorphy and phase equivariance to gain other properties.
 
-\paragraph{Representation stress tests.}
-For RF synthetic data we add a second axis of control: what information
-the real network receives. In addition to Cartesian stacking
-$(\mathrm{Re}, \mathrm{Im})$, the stress suite tests polar
-$(|z|, \cos\theta, \sin\theta)$, phase-only
-$(\cos\theta, \sin\theta)$, and magnitude-only $|z|$ views. The same
-runner probes PSK-only, QAM-only, mixed PSK+QAM, low- and high-SNR
-regimes, unit-magnitude and unit-power normalization, fixed carrier
-phase rotation, random-rotation augmentation, and complex activation
-choice. This turns the research question from ``does complex beat
-real?'' into the more falsifiable question ``which representation and
-invariance assumptions explain the gap?''
+\paragraph{Stress-test factors.}
+The RF synthetic suite varies the data-generating mechanism rather
+than only the model: PSK-only, QAM-only, mixed PSK+QAM, low and high
+SNR, unit-magnitude normalization, unit-power normalization, fixed
+carrier-phase rotation, random-rotation augmentation, and activation
+choice. The quantum and EEG pilots reuse the same logic in other
+domains by constructing tasks where the label is known to live in
+phase, magnitude, or a phase-amplitude relation.
 
-\paragraph{Budgeted random search.}
-Every model family draws from the \emph{same} shared search space and
-consumes the same trial $\times$ seed budget. The sweep harness samples
-the hyperparameter list once and runs it against each family in turn.
-The primary matched comparison chooses the complex reference trial by
-mean validation accuracy, then reports every real baseline at that
-same trial index. Independent family winners are also written as
-diagnostics but are not the matched-capacity paper table.
+\paragraph{Selection rules.}
+Every model family draws from the same search space and consumes the
+same trial-by-seed budget. The matched-shared-trial rule chooses the
+complex reference trial by validation accuracy, then reports every
+baseline at that same trial index; this is a stress test for robustness
+under a shared hyperparameter allocation. Independent per-family
+selection is also reported where it changes the interpretation,
+because it estimates best-achievable performance when each family is
+tuned separately.
 
-\section{Findings}
+\section{Experiments and results}
 \label{sec:findings}
 
 \subsection{Activation characterization}
 \label{sec:activation-characterization}
+
+The activation question is where complex-valued neural networks first
+depart from the intuition of ordinary real-valued networks. A useful
+activation must be nonlinear; a globally bounded holomorphic function
+cannot be nonlinear. Practical CVNN activations therefore choose a
+compromise. Some are locally analytic but can blow up; some are bounded
+but explicitly non-holomorphic; some preserve global phase rotations
+while others deliberately break them.
 
 \begin{figure}[t]
   \centering
@@ -344,8 +453,16 @@ diagnostics but are not the matched-capacity paper table.
 visible. \code{complex\_tanh} has near-zero CR residual at the median
 --- it really is locally holomorphic --- but the same metric's max is
 905, because the grid (extent $= 3$) brackets the first pair of poles
-at $z = \pm i\pi/2 \approx \pm 1.5708\,i$. The intrinsic Jacobian mean
-is $\sim$108. By contrast, \code{siglog} is bounded ($|f| < 1$
+at $z = \pm i\pi/2 \approx \pm 1.5708\,i$. We emphasize that this
+large residual is not a Cauchy--Riemann violation in the analytic
+sense: $\tanh$ is holomorphic at every non-pole point, with
+$\partial_{\bar z}\tanh \equiv 0$ exactly there. The plotted residual
+is a finite-difference estimate of $|\partial_{\bar z}\tanh|$, and
+finite differences inflate near singularities. The plot is honest as
+an \emph{operational} diagnostic of activation behaviour on a fixed
+grid (which is what training sees), but the trilemma cell
+\code{complex\_tanh} occupies is ``meromorphic, unbounded'' rather
+than ``never holomorphic.'' The intrinsic Jacobian mean is $\sim$108. By contrast, \code{siglog} is bounded ($|f| < 1$
 everywhere) and never blows up, but its CR residual is everywhere
 positive (p95 = 0.25) --- it is not holomorphic anywhere, by
 construction. The remaining four activations sit between, each making
@@ -354,8 +471,18 @@ a different compromise.
 This is not a finding about which activation is best in training ---
 it is a visible measurement of the formal trade-off the project is
 built around. The choice of activation in the downstream benchmarks
-(default \code{crelu}) is consistent across runs and isolated from the
-architectural variables.
+(default \code{crelu}, following the pragmatic choice in
+Trabelsi et al.~\cite{trabelsi2018deep}) is consistent across runs
+and isolated from the architectural variables. Our results in
+\Cref{sec:radioml-mechanism} and \Cref{sec:lr-vs-activation} qualify the
+\code{crelu} default in a way Trabelsi et al.\ did not have to
+contend with: \code{crelu} interacts asymmetrically with
+matched-shared-trial hyperparameter selection through its split-ReLU
+readout sensitivity, while \code{zrelu} and \code{modrelu}
+(the latter from Arjovsky et al.~\cite{arjovsky2016unitary} and
+extended by Wisdom et al.~\cite{wisdom2016fullcapacity} as the
+unitary-RNN nonlinearity) do not. The activation choice and the
+selection rule cannot be discussed independently.
 
 \subsection{Synthetic phase classification --- null result}
 \label{sec:phase-classification}
@@ -376,10 +503,10 @@ overlapping CIs (\Cref{fig:phase-swept}). On 1-D phase classification,
 \textbf{the complex inductive bias does not help.} A 2-D real network
 on $(\mathrm{Re}, \mathrm{Im})$ already has access to all the
 information the task contains; there is no temporal or geometric
-structure for $\mathbb{C}$-multiplication to exploit. The
-\Cref{lem:phase-equivariance} of \Cref{sec:phase-equivariance} predicts
-exactly this --- a single-sample phase task does not invoke any
-sequence-level equivariance.
+structure for $\mathbb{C}$-multiplication to exploit. This is exactly
+what the phase-equivariance analysis in \Cref{sec:phase-equivariance}
+predicts: a single-sample phase task does not invoke any sequence-level
+equivariance.
 
 \subsection{Synthetic RF modulation --- complex wins under matched budget}
 \label{sec:synthetic-rf}
@@ -388,30 +515,80 @@ sequence-level equivariance.
   \centering
   \caption{Synthetic RF modulation classification, matched
     shared-trial selection after a 16$\times$6 budgeted sweep with the
-    conv architecture. Complex beats every real baseline by
-    $\geq$3.8~pp; CIs do not overlap.}
+    conv architecture ($n=6$ seeds). Per-family $95\%$ CIs use the
+    $t$-distribution ($t_{0.975, 5}=2.571$); the rightmost column
+    reports the paired difference complex $-$ baseline with its $95\%$
+    paired-$t$ CI on per-seed differences. All three paired
+    differences exclude zero with margin.}
   \label{tab:synthetic-rf}
-  \begin{tabular}{lrrrl}
+  \begin{tabular}{lrrrll}
     \toprule
-    family & test acc & std & params & 95\% CI ($\sigma/\sqrt{n}$) \\
+    family & test acc & std & params & 95\% CI ($t_{0.975,5}$) & paired $\Delta$ vs.\ complex \\
     \midrule
-    \textbf{complex} & \textbf{0.8191} & 0.0163 & \textbf{3{,}974} & $[0.8061, 0.8322]$ \\
-    real (stacked) & 0.7740 & 0.0226 & 2{,}099 & $[0.7559, 0.7920]$ \\
-    real ($\approx$params) & 0.7769 & 0.0187 & 3{,}809 & $[0.7619, 0.7918]$ \\
-    real ($\approx$FLOPs) & 0.7810 & 0.0195 & 7{,}779 & $[0.7654, 0.7966]$ \\
+    \textbf{complex} & \textbf{0.8191} & 0.0163 & \textbf{3{,}974} & $[0.8020, 0.8362]$ & --- \\
+    real (stacked) & 0.7740 & 0.0226 & 2{,}099 & $[0.7503, 0.7977]$ & $+0.0452$ $[+0.019, +0.071]$ \\
+    real ($\approx$params) & 0.7769 & 0.0187 & 3{,}809 & $[0.7573, 0.7965]$ & $+0.0423$ $[+0.025, +0.059]$ \\
+    real ($\approx$FLOPs) & 0.7810 & 0.0195 & 7{,}779 & $[0.7606, 0.8015]$ & $+0.0382$ $[+0.027, +0.049]$ \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \Cref{tab:synthetic-rf} reports the matched shared-trial comparison
-after a 16$\times$6 sweep with the conv architecture
+after a 16-trial $\times$ 6-seed sweep with the conv architecture
 (\code{ComplexConv1d} $\to$ activation $\to$ \code{ComplexConv1d} $\to$
 activation $\to$ global mean pool $\to$ \code{ComplexLinear} $\to$
 $|\cdot|$). Complex beats every real baseline by $\geq$3.8~percentage
-points; CIs do not overlap, and Welch two-sample $t$-tests give
-$t \approx 4.2$, $\mathrm{df} \approx 9.8$ versus matched-parameter
-real and $t \approx 3.7$, $\mathrm{df} \approx 9.7$ versus matched-FLOP
-real ($p < 0.01$ in both cases).
+points. Because the matched-shared-trial rule evaluates all four
+families on the same six seeds, we use a \emph{paired} $t$-test on
+per-seed differences (df $=5$) rather than the unpaired Welch
+approximation: pairing removes between-seed variance and is the
+correct test for this design. The paired statistics are
+$t = 4.44$ vs.\ stacked, $t = 6.33$ vs.\ matched-parameter
+($p \approx 0.0014$), and $t = 8.89$ vs.\ matched-FLOP
+($p \approx 0.0003$); all three paired-difference $95\%$ CIs exclude
+zero. The per-family $t$-CIs in the table also exclude overlap with
+complex for the stacked and matched-parameter baselines and touch
+the complex CI at the boundary for matched-FLOP --- the paired test,
+not the per-family CIs, is the load-bearing inference under matched
+seeds.
+
+\subsection{Why no rotation-equivariant baseline row}
+\label{sec:rotation-equivariant-control}
+
+\Cref{prop:equivariant-subspace} characterizes complex layers as
+exactly the $U(1)$-equivariant subspace of stacked-real $2$-channel
+layers. Operationally this means the natural ``complex inductive bias,
+implemented in real coordinates'' baseline --- a real Conv1d whose
+kernel taps are constrained to $aI + bJ$, with channel-wise ReLU and a
+magnitude readout --- is not a separate model; it is the same model as
+\code{ComplexConv1d} with \code{CReLU} and $|\cdot|$ readout, modulo
+the channel layout convention.
+
+We make this concrete in \code{cvnn.baselines.rotation\_equivariant}
+and the test suite \code{tests/test\_rotation\_equivariant.py}, which
+asserts numerical equivalence of the forward pass and per-parameter
+gradients under matched initialization (atol \mbox{$\leq 10^{-6}$})
+and verifies that three AdamW optimization steps from a shared
+self-supervised loss leave $(a, b)$ within $1.5 \times 10^{-8}$ of
+$(\mathrm{Re}(W), \mathrm{Im}(W))$ --- the difference between
+\code{float32} representations of the same trajectory. The empirical
+``rotation-equivariant baseline ablation'' would therefore report
+identical numbers to the complex row, by construction. We elect to
+report the equivalence as a tested theorem rather than a redundant
+table row.
+
+The substantive comparison in \Cref{tab:synthetic-rf} is therefore
+complex (equivalently, rotation-equivariant 2-parameter-per-tap real)
+\emph{versus the unconstrained 4-parameter-per-tap stacked, matched,
+and FLOP-matched real baselines}. The 3.8--4.5~pp matched-shared-trial
+gap is the cost the unconstrained baselines pay for spending the
+extra two parameters per tap on the asymmetric complement of
+$\iota(\mathbb{C})$ --- parameters that, if the task respects $U(1)$,
+are at best wasted and at worst overfit the asymmetry. Read this way,
+the win is not ``complex arithmetic helped''; it is ``the
+$U(1)$-equivariant 2-parameter subspace generalizes better than its
+4-parameter superset on PSK-like data,'' which is exactly what
+\Cref{prop:equivariant-subspace} predicts.
 
 \subsection{RF representation stress tests --- where the claim breaks}
 \label{sec:representation-stress}
@@ -614,14 +791,16 @@ story.
 \subsection{RadioML 2018.01A --- a positive result with a subtler story}
 \label{sec:radioml}
 
-The corrected\footnote{The first attempt at this sweep used the
-synthetic benchmark's odd-stepped SNR list, which the loader silently
-dropped because RadioML 2018.01A only ships even SNRs. The fix raised
-on empty buckets by default; see the released code.}
-\code{CReLU} run on a 3-class subset (BPSK / QPSK / 8PSK at
-$\{-10, -6, -2, 2, 6, 10, 14, 18\}$~dB,
-\code{max\_per\_class\_per\_snr=256}, \code{sample\_length=128}) on an
-NVIDIA A100 produced a striking 23~pp gap:
+The real-data RF study uses a controlled 3-class RadioML 2018.01A
+subset: BPSK / QPSK / 8PSK at
+$\{-10, -6, -2, 2, 6, 10, 14, 18\}$~dB, with
+\code{max\_per\_class\_per\_snr=256} and \code{sample\_length=128}.
+This subset is intentionally narrower than the full archive. It keeps
+the task phase-dominant enough to compare against the synthetic PSK
+stress tests, while remaining large enough to expose real training
+dynamics. A strict loader validates the even-SNR convention used by
+RadioML 2018.01A; details are in \Cref{app:radioml-loader}. The
+\code{CReLU} run on an NVIDIA A100 produced a striking 23~pp gap:
 
 \begin{table}[t]
   \centering
@@ -697,62 +876,6 @@ asymmetry, not a separate phenomenon.
   \end{tabular}
 \end{table}
 
-\subsubsection{Selection rule matters: matched-shared-trial vs.\ independent}
-\label{sec:selection-rules}
-
-The single most important methodological caveat in this paper is that
-the headline 22--23~pp gap on \code{crelu} / \code{cardioid} /
-\code{siglog} is selection-rule-dependent. Re-doing the ablation with
-\emph{independent per-family hyperparameter selection} --- each family
-picks its own best of 16 trials, instead of all four families being
-evaluated at the trial that complex selected --- collapses the
-\code{crelu} comparison from \textbf{0.7293 vs 0.4999 (gap $+22.94$~pp,
-matched-shared-trial)} to \textbf{0.7293 vs 0.7047 (gap $+2.46$~pp,
-independent selection)}. The reduction comes from independent
-selection allowing real baselines to avoid the high-lr trial that
-triggers the step-1 explosion.
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\linewidth]{figures/headline_selection_rule_contrast.png}
-  \caption{Selection rule contrast. \emph{Left:} CVNN and best-real
-    accuracies under the two rules. \emph{Right:} the resulting gap
-    collapses by 9.3$\times$ when each family is allowed to pick its
-    own best trial.}
-  \label{fig:selection-rule-contrast}
-\end{figure}
-
-\begin{table}[t]
-  \centering
-  \caption{Selection rule contrast on the \code{crelu} configuration:
-    same data, same search space, same 16 trials. Matched-shared-trial
-    holds the trial index fixed across families; independent selection
-    lets each family pick its own best trial. The order-of-magnitude
-    gap difference is the methodological finding, not the size of the
-    complex advantage.}
-  \label{tab:selection-rule-contrast}
-  \begin{tabular}{lrrr}
-    \toprule
-    selection rule & complex & best real & gap (pp) \\
-    \midrule
-    matched-shared-trial & 0.7293 & 0.4999 & $+22.94$ \\
-    independent per-family & 0.7293 & 0.7047 & $\phantom{+0}+2.46$ \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-We therefore read matched-shared-trial as a robustness stress test
-that exposes interaction between selection and optimizer
-sensitivity, and independent selection as the better point estimate
-of best-achievable performance under separate tuning. Reporting both
-is necessary; reporting only one risks either overstating the gap
-(matched only) or erasing a real but small effect (independent only).
-Subsequent sections (\Cref{sec:radioml-mechanism},
-\Cref{sec:lr-vs-activation}) explain why the two rules differ so
-much: the matched rule forces all families through a learning-rate
-regime that complex tolerates and ReLU readouts in the real baselines
-do not.
-
 \subsubsection{Per-SNR breakdown}
 
 At $-10$~dB everyone is near chance ($\sim$33\% for 3 classes); from
@@ -793,7 +916,7 @@ expose.
     above $\|\nabla\| \sim 10$ at step~1, then collapse to
     $\sim 10^{-6}$ within five steps and never recover (loss pinned
     at $\ln 3$). Under \code{zrelu}@matched (right) the same
-    families train smoothly. The mechanism is local to the high-lr
+    families train smoothly. The mechanism is local to the high-learning-rate
     AdamW first step, not the rest of training.}
   \label{fig:mechanism-trajectories}
 \end{figure}
@@ -820,8 +943,8 @@ pattern appears within the first 5).
 
 The mechanism is unambiguous (\Cref{fig:telemetry-grad}). On
 \code{crelu} / \code{cardioid} / \code{siglog}, matched-shared-trial
-picks a high-lr / wide-hidden config that complex selects because it
-tolerates it (lr $\in \{0.024, 0.024, 0.040\}$, hidden = 64). At
+picks a high-learning-rate / wide-hidden config that complex selects because it
+tolerates it (learning rate $\in \{0.024, 0.024, 0.040\}$, hidden = 64). At
 step~1, every family sees a large AdamW step away from random init.
 For real baselines this produces a step-1 train loss in $[3, 36]$, a
 total gradient norm in $[6, 42]$, and a \code{head.weight} gradient in
@@ -846,7 +969,7 @@ improvement from random init.
 
 \Cref{tab:dead-seeds} summarizes the dead-seed counts. \textbf{The
 dead-seed rate jumps from 0\% to 33\% as soon as the
-matched-shared-trial selected lr crosses $\sim$0.02.} Two orders of
+matched-shared-trial selected learning rate crosses $\sim$0.02.} Two orders of
 magnitude separation in the step-1 head gradient between the unstable
 and stable activation regimes.
 
@@ -854,13 +977,13 @@ and stable activation regimes.
   \centering
   \caption{Dead-seed counts (out of 9 per activation: three families
     $\times$ three seeds), step-1 \code{head.weight} gradient. The
-    threshold behavior is striking: 0\% $\to$ 33\% as lr crosses
+    threshold behavior is striking: 0\% $\to$ 33\% as learning rate crosses
     $\sim$0.02. The same pattern replicates on synthetic AWGN data
     (\Cref{sec:synthetic-confirmation}).}
   \label{tab:dead-seeds}
   \begin{tabular}{lrrr}
     \toprule
-    activation & lr & dead seeds & step-1 head.weight grad (real, max) \\
+    activation & learning rate & dead seeds & step-1 head.weight grad (real, max) \\
     \midrule
     \code{crelu} & 0.024 & $3/9$ & 13.7 \\
     \code{cardioid} & 0.024 & $3/9$ & 19.5 \\
@@ -876,7 +999,7 @@ and stable activation regimes.
 
 To check whether the explosion-into-dead-region pattern is
 RadioML-specific (pulse shaping, carrier offset, channel effects) or
-generic to the hp regime, we re-ran the same 60-run telemetry against
+generic to the hyperparameter regime, we re-ran the same 60-run telemetry against
 the synthetic AWGN-only RF generator using the same per-activation
 hyperparameters that the RadioML matched-shared-trial selected.
 \Cref{tab:cross-task} shows the side-by-side dead-seed counts.
@@ -888,7 +1011,7 @@ hyperparameters that the RadioML matched-shared-trial selected.
     Dead-seed counts replicate almost exactly; step-1 gradients on
     synthetic are if anything larger than RadioML's because AWGN-only
     signals carry more per-sample variance than pulse-shaped,
-    channel-attenuated ones. \emph{The threshold is hp-driven, not
+    channel-attenuated ones. \emph{The threshold is hyperparameter-driven, not
     data-driven.}}
   \label{tab:cross-task}
   \resizebox{\linewidth}{!}{%
@@ -906,7 +1029,7 @@ hyperparameters that the RadioML matched-shared-trial selected.
   }
 \end{table}
 
-\subsubsection{Lr-vs-activation disambiguation}
+\subsubsection{Learning-rate-vs-activation disambiguation}
 \label{sec:lr-vs-activation}
 
 \Cref{tab:dead-seeds} reads as if some activations
@@ -915,10 +1038,11 @@ unstable and others (\code{modrelu}, \code{zrelu}) are intrinsically
 stable. A skeptical reading is that the same data is just as
 consistent with the dead-seed pattern being driven by the
 \emph{learning rate} that matched-shared-trial selects, not the
-activation: the unstable rows all selected lr in $[0.024, 0.040]$,
-the stable rows lr in $[0.0024, 0.008]$. To disambiguate, we ran a
-2$\times$2 factorial on synthetic AWGN data: \{\code{crelu},
-\code{zrelu}\} $\times$ \{lr$=0.0236$, lr$=0.0024$\}, holding all
+activation: the unstable rows all selected learning rates in
+$[0.024, 0.040]$, the stable rows in $[0.0024, 0.008]$. To
+disambiguate, we ran a 2$\times$2 factorial on synthetic AWGN data:
+\{\code{crelu}, \code{zrelu}\} $\times$
+\{learning rate $=0.0236$, learning rate $=0.0024$\}, holding all
 other hyperparameters at each activation's matched-shared-trial
 selection. Three real families $\times$ three seeds per cell, capped
 at 200 steps.
@@ -926,29 +1050,29 @@ at 200 steps.
 \begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{figures/headline_lr_activation_disambiguation.png}
-  \caption{Lr-vs-activation 2$\times$2. \emph{Left:} dead-seed
+  \caption{Learning-rate-vs-activation 2$\times$2. \emph{Left:} dead-seed
     counts (out of 9 real-baseline runs) per cell; the dashed
     rectangles mark the matched-shared-trial diagonals.
     \emph{Right:} maximum step-1 \code{head.weight} gradient (log
-    color scale). The dead-seed pattern follows the lr column, with
-    activation modulating sensitivity at high lr.}
+    color scale). The dead-seed pattern follows the learning-rate column, with
+    activation modulating sensitivity at high learning rate.}
   \label{fig:lr-vs-activation}
 \end{figure}
 
 \begin{table}[t]
   \centering
-  \caption{Lr-vs-activation disambiguation on synthetic AWGN data.
+  \caption{Learning-rate-vs-activation disambiguation on synthetic AWGN data.
     Dead-seed counts and step-1 \code{head.weight} gradient (max
     across 9 = three real families $\times$ three seeds) for each
     2$\times$2 cell. Matched-shared-trial regimes are the diagonal
-    cells (\code{crelu}@high-lr, \code{zrelu}@low-lr); off-diagonal
+    cells (\code{crelu}@high learning rate, \code{zrelu}@low learning rate); off-diagonal
     cells swap learning rates between activations. Other
     hyperparameters are held at each activation's matched
     selection.}
   \label{tab:lr-vs-activation}
   \begin{tabular}{llrrr}
     \toprule
-    cell & activation & lr & dead/9 & step-1 head.weight (max) \\
+    cell & activation & learning rate & dead/9 & step-1 head.weight (max) \\
     \midrule
     matched (high)         & \code{crelu} & 0.0236 & $4/9$ & $31.4$ \\
     swap (low on crelu)    & \code{crelu} & 0.0024 & $\mathbf{0/9}$ & $2.3$ \\
@@ -958,36 +1082,133 @@ at 200 steps.
   \end{tabular}
 \end{table}
 
-\Cref{tab:lr-vs-activation} reports the disambiguation. \textbf{Lr is
-the dominant axis.} Dropping \code{crelu} from its matched lr
-(0.0236) to \code{zrelu}'s lr (0.0024) eliminates dead seeds entirely
+\Cref{tab:lr-vs-activation} reports the disambiguation.
+\textbf{Learning rate is the dominant axis.} Dropping \code{crelu}
+from its matched learning rate (0.0236) to \code{zrelu}'s learning
+rate (0.0024) eliminates dead seeds entirely
 ($4/9 \to 0/9$) and shrinks the step-1 head gradient by an order of
 magnitude ($31.4 \to 2.3$). Conversely, forcing \code{zrelu} to
-\code{crelu}'s lr produces a step-1 head gradient of $6.3$ and the
+\code{crelu}'s learning rate produces a step-1 head gradient of $6.3$ and the
 first dead seed under that activation in this study ($1/9$). Both
-activations cross from ``stable'' to ``unstable'' as lr crosses
-$\sim$0.02 --- the threshold from \Cref{tab:dead-seeds} is hp-driven,
+activations cross from ``stable'' to ``unstable'' as learning rate crosses
+$\sim$0.02 --- the threshold from \Cref{tab:dead-seeds} is hyperparameter-driven,
 not activation-driven, and replicates the
 \Cref{sec:radioml-mechanism} mechanism with the activation factor
 swapped in.
 
-\textbf{Activation is a secondary modulator.} At the same high lr,
+\textbf{Activation is a secondary modulator.} At the same high learning rate,
 \code{crelu} produces a step-1 head gradient $\sim$5$\times$ larger
 than \code{zrelu} ($31.4$ vs $6.3$) and four times the dead-seed rate
 ($4/9$ vs $1/9$); the split-ReLU structure of \code{crelu} amplifies
-the readout's response to a high-lr first step but does not by itself
+the readout's response to a high-learning-rate first step but does not by itself
 trigger the failure mode at safe learning rates. The honest reading
 of \Cref{tab:dead-seeds} is therefore not ``some activations are
 unstable and others are stable'' but ``the matched-shared-trial rule
 selected unsafe learning rates for some activations and safe ones
-for others, and that lr difference --- modulated by activation
+for others, and that learning-rate difference --- modulated by activation
 sensitivity --- is what drives the dead-seed counts.''
+
+\subsection{The matched-shared-trial selection artifact}
+\label{sec:selection-rules}
+
+The activation ablation (\Cref{sec:radioml-ablation}), the per-step
+mechanism (\Cref{sec:radioml-mechanism}), and the
+learning-rate-vs-activation factorial (\Cref{sec:lr-vs-activation})
+together support a methodological finding that is independent of any
+particular complex-vs-real comparison: \emph{the matched-shared-trial
+hyperparameter selection rule, used widely in CVNN benchmarking to
+``hold capacity fixed across families,'' can manufacture
+order-of-magnitude accuracy gaps that vanish under independent
+per-family selection.} On our RadioML 3-class subset under
+\code{crelu}, the same data and the same 16-trial search box give:
+
+\begin{table}[t]
+  \centering
+  \caption{Selection-rule contrast on the \code{crelu} configuration:
+    same data, same search space, same 16 trials. Matched-shared-trial
+    holds the trial index fixed across families; independent selection
+    lets each family pick its own best trial. The order-of-magnitude
+    gap difference is the methodological finding, not the size of the
+    complex advantage.}
+  \label{tab:selection-rule-contrast}
+  \begin{tabular}{lrrr}
+    \toprule
+    selection rule & complex & best real & gap (pp) \\
+    \midrule
+    matched-shared-trial   & 0.7293 & 0.4999 & $+22.94$ \\
+    independent per-family & 0.7293 & 0.7047 & $\phantom{+0}+2.46$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/headline_selection_rule_contrast.png}
+  \caption{Selection-rule contrast. \emph{Left:} CVNN and best-real
+    accuracies under the two rules. \emph{Right:} the resulting gap
+    collapses by 9.3$\times$ when each family is allowed to pick its
+    own best trial. Same data, same 16 trials --- the difference is
+    entirely the selection rule.}
+  \label{fig:selection-rule-contrast}
+\end{figure}
+
+A 9.3$\times$ collapse in the headline gap is not a small bookkeeping
+effect. The mechanism in \Cref{sec:radioml-mechanism} and
+\Cref{sec:lr-vs-activation} explains why the
+two rules diverge so sharply on this task: matched-shared-trial picks
+the validation-best trial \emph{for the complex family} and forces the
+real baselines to evaluate at that index. When the complex family's
+best trial happens to use a learning rate above the
+explosion-into-dead-region threshold ($\sim$0.02 here), the real
+baselines get pushed through a regime that complex tolerates --- via
+its $(\mathrm{Re},\mathrm{Im})$ parameter coupling on the readout ---
+and they do not. Independent selection lets each family avoid that
+regime, and the apparent advantage shrinks to a few percentage points.
+
+\paragraph{What we recommend.}
+The two rules answer different questions. Matched-shared-trial answers
+``under a shared hyperparameter allocation, which family is more robust
+to the chosen regime?'' Independent per-family answers ``under
+separate tuning, which family attains the higher peak performance?''
+Both are legitimate, neither subsumes the other, and reporting only
+one risks either overstating the gap (matched only) or erasing a real
+but small effect (independent only). Concretely, we recommend that
+CVNN-vs-real comparisons report:
+\begin{enumerate}
+  \item the matched-shared-trial result, framed as a robustness stress
+    test rather than a peak-performance estimate;
+  \item the independent per-family result as the
+    best-achievable point estimate; and
+  \item the dead-seed count under the matched rule, since the gap
+    between the two rules is bounded below by what the matched rule's
+    instability mechanism contributes.
+\end{enumerate}
+A complex-family victory that survives \emph{both} rules is a
+substantively different claim from one that survives only the matched
+rule. The CVNN literature, including our own earlier draft, has
+historically reported only one or the other; the asymmetry between
+them is itself a finding.
+
+\paragraph{Scope of the artifact.}
+The mechanism we measure is local to readouts that see
+seed-dependent input scales (here, stacked $(\mathrm{Re},\mathrm{Im})$
+features into a ReLU classifier head fed from a Cartesian conv stack)
+under the matched-trial rule's tendency to select aggressive learning
+rates that the complex family tolerates. We do not claim every
+matched-shared-trial CVNN result in the literature is similarly
+inflated. We do claim that, in the absence of either an independent
+per-family rerun or a per-step gradient telemetry trace, a large
+matched-trial gap is not safely interpretable as a complex-family
+advantage. \Cref{sec:lr-vs-activation}, \Cref{app:telemetry}, and
+\Cref{app:synthetic-replication}
+give the diagnostic recipe; any future CVNN benchmark that adopts
+matched-trial selection should run it.
 
 \section{Interpretation}
 \label{sec:interpretation}
 
-The findings together support a more nuanced falsifiable story than
-the original ``complex wins'' framing:
+The findings together support a more nuanced and falsifiable story
+than the original ``complex wins'' framing:
 
 \begin{quote}
   Complex-valued models should be viewed as structured inductive
@@ -1006,11 +1227,13 @@ geometry, withstands unknown carrier-phase rotations, or trains
 robustly under limited tuning. The stress tests show that those are
 separate axes. A PSK classifier, a QAM classifier, and a rotated
 carrier-offset classifier should not be expected to reward the same
-architecture. The quantum pilot makes the same point for physics:
+architecture. The application pilots make the same point outside RF:
 wavefunction momentum is invisible to $|\psi|$ but explicit
-Cartesian/polar coordinates can match native complex layers, and
-global phase has to be encoded as a symmetry assumption rather than
-assumed from the dtype.
+Cartesian/polar coordinates can match native complex layers; EEG
+analytic signals separate phase locking, amplitude bursts, and
+phase-amplitude coupling into different winning representations.
+In both cases, the relevant symmetry or coordinate view has to be
+tested directly rather than assumed from the complex dtype.
 
 \subsection{Why complex helps on IQ data --- phase equivariance}
 \label{sec:phase-equivariance}
@@ -1053,12 +1276,82 @@ guarantee that the trained network is globally phase-invariant.
 The same does not hold for \code{Conv1d} operating on a stacked
 $(\mathrm{Re}\,z, \mathrm{Im}\,z)$ real input. A global phase shift
 $e^{i\varphi}$ corresponds to multiplying each $(I, Q)$ sample by the
-$2 \times 2$ rotation matrix $R_\varphi$. To match
-\code{ComplexConv1d}'s equivariance, every real conv kernel would need
-to commute with $R_\varphi$ applied to its 2 input channels --- a
-constraint real \code{Conv1d} does not impose by construction. The
-real network \emph{can} learn the symmetry from data, but it has to
-spend capacity on it; the complex network gets it for free.
+$2 \times 2$ rotation matrix
+\[
+  R_\varphi \;=\; \begin{pmatrix}\cos\varphi & -\sin\varphi \\
+  \sin\varphi & \phantom{-}\cos\varphi\end{pmatrix}
+  \;=\; \exp(\varphi J),
+  \qquad
+  J \;=\; \begin{pmatrix}0 & -1 \\ 1 & \phantom{-}0\end{pmatrix}.
+\]
+Per-tap equivariance therefore requires every real conv kernel
+$W_k\in\mathbb{R}^{2\times 2}$ to commute with $R_\varphi$ for all
+$\varphi\in\mathbb{R}$. The set of such matrices is much smaller than
+$\mathbb{R}^{2\times 2}$ --- and turns out to be exactly $\mathbb{C}$.
+
+\begin{proposition}[Equivariant 2-channel kernels are complex scalars]
+\label{prop:equivariant-subspace}
+Let $W\in\mathbb{R}^{2\times 2}$. The following are equivalent:
+\begin{enumerate}
+  \item $W R_\varphi = R_\varphi W$ for all $\varphi\in\mathbb{R}$;
+  \item $W = aI + bJ$ for some $a, b\in\mathbb{R}$;
+  \item $W$ corresponds to multiplication by the complex scalar
+    $a+ib$ under the standard $\mathbb{R}$-algebra embedding
+    $\iota:\mathbb{C}\hookrightarrow M_2(\mathbb{R})$,
+    $\iota(a+ib)=aI+bJ$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+$(2)\Leftrightarrow(3)$ is the definition of $\iota$.
+$(2)\Rightarrow(1)$: $aI+bJ$ commutes with every polynomial in $J$,
+including $R_\varphi=\exp(\varphi J)$. $(1)\Rightarrow(2)$:
+differentiating $W R_\varphi = R_\varphi W$ at $\varphi=0$ gives
+$WJ=JW$. Writing $W=\begin{pmatrix}a&b\\c&d\end{pmatrix}$ and
+expanding both sides forces $d=a$ and $c=-b$, so $W=aI+bJ$. (Equivalently:
+$SO(2)$ acts irreducibly on $\mathbb{R}^2$, so by Schur's lemma the
+real commutant is the division algebra
+$\mathrm{End}_{SO(2)}(\mathbb{R}^2)\cong\mathbb{C}$.)\qed
+\end{proof}
+
+\Cref{prop:equivariant-subspace} sharpens the "complex layers have an
+inductive bias" intuition into a precise capacity statement.
+A two-input-channel real linear map has $4$ free parameters per kernel
+tap; a $U(1)$-equivariant one has only $2$, namely the coefficients
+$(a,b)$ of $aI+bJ$. The complex layer is exactly the
+$U(1)$-equivariant subspace of the corresponding stacked-real layer,
+not a richer object: complex multiplication \emph{is} the equivariance
+constraint, written in coordinates that make the constraint trivial
+to satisfy. The matched-parameter real baseline of
+\Cref{app:architectures} is therefore strictly more expressive than
+the complex layer per tap, but it spends half of those parameters on
+maps that violate the symmetry; if the task respects $U(1)$, those
+extra parameters are at best wasted and at worst overfit the
+asymmetry. This is the structural reason, beyond
+\Cref{lem:phase-equivariance}, that complex layers can win at matched
+parameters on phase-bearing data without offering any function the
+real network could not in principle represent.
+
+\paragraph{Relation to group-equivariant deep learning.}
+\Cref{prop:equivariant-subspace} is the 1-D specialization of a
+pattern that is now standard in geometric deep
+learning~\cite{cohen2016group,bronstein2021geometric}: a group action
+(here $U(1) = SO(2)$) on the input space induces a constraint on the
+linear map's commutant; equivariance amounts to choosing parameters
+inside that commutant. In two spatial dimensions, this is the
+construction Worrall et al.~\cite{worrall2017harmonic} use in their
+\emph{harmonic networks}, where complex-valued circular harmonics
+parameterize $SO(2)$-equivariant 2-D convolutions; their layer is
+mathematically the 2-D analogue of our \code{ComplexConv1d} viewed
+through Prop.~\ref{prop:equivariant-subspace}, and they observe the
+same generalization advantage on rotation-bearing tasks. Our paper's
+contribution is not the equivariance construction itself, which is
+classical, but the empirical mapping (\Cref{sec:representation-stress})
+of when this inductive bias helps, hurts, or is irrelevant on
+phase- and amplitude-bearing 1-D signal data, and the methodological
+finding (\Cref{sec:selection-rules}) that some of the apparent
+advantage in the literature is selection-rule-dependent rather than
+structural.
 
 This is the structural inductive bias the synthetic phase
 classification result (\Cref{sec:phase-classification}), the RF
@@ -1082,27 +1375,130 @@ Phase equivariance of the \emph{layer} is necessary for the
 architectural prior, but the activations between conv layers vary in
 their own equivariance. By direct computation: \code{modrelu} and
 \code{siglog} are phase-equivariant; \code{crelu}, \code{cardioid},
-and \code{zrelu} are not. If the \Cref{sec:radioml} robustness
-asymmetry were \emph{driven} by activation phase equivariance, the
+and \code{zrelu} are not. If the robustness asymmetry in
+\Cref{sec:radioml} were \emph{driven} by activation phase equivariance, the
 stable activations should be exactly \code{modrelu} and \code{siglog}.
 They are not: \Cref{sec:radioml-mechanism} shows \code{modrelu} and
 \code{zrelu} are stable ($0/9$ dead seeds across nine real-baseline
 runs each), while \code{crelu}, \code{cardioid}, and \code{siglog} are
 unstable ($3/9$ dead). One phase-equivariant activation is on each
-side of the divide. The \Cref{sec:lr-vs-activation} disambiguation
+side of the divide. The disambiguation in \Cref{sec:lr-vs-activation}
 sharpens this further: when we swap learning rates between
 \code{crelu} and \code{zrelu}, the dead-seed pattern follows the lr,
 not the activation. \textbf{Phase equivariance of the layer is
 necessary for the inductive bias, but the robustness asymmetry
 \Cref{sec:radioml-mechanism} measures lives one level lower --- at
 the optimization dynamics induced by $(\mathrm{Re}, \mathrm{Im})$
-parameter coupling on the classifier head under high-lr AdamW steps,
+parameter coupling on the classifier head under high-learning-rate AdamW steps,
 not at the equivariance of the activation.} The two effects are
 partially independent and partially compounding. This also explains why the
 \Cref{sec:radioml} result is most defensible at activations like
 \code{zrelu} where complex wins by a small margin rather than at
 \code{crelu} where the apparent gap is amplified by the
 optimization-side mechanism.
+
+\section{Related work}
+\label{sec:related-work}
+
+\paragraph{Complex-valued neural networks.}
+The mathematical foundations are laid out in Hirose's
+textbook~\cite{hirose2012complex} and the multi-valued neuron
+tradition of Aizenberg~\cite{aizenberg2011complex}. The modern deep
+CVNN era anchors on Trabelsi et
+al.~\cite{trabelsi2018deep} (\code{ComplexConv2d},
+\code{ComplexBatchNorm}, the \code{CReLU}/\code{ZReLU}/\code{ModReLU}
+activation triple, and a complex weight initialization),
+Guberman~\cite{guberman2016complex} (early complex-valued CNN for
+classification), and the unitary RNN line of
+Arjovsky et al.~\cite{arjovsky2016unitary}, extended by Wisdom et
+al.~\cite{wisdom2016fullcapacity} to full unitary capacity.
+Our paper takes Trabelsi et al.\ as the canonical CVNN baseline
+(activation set, default \code{CReLU}, magnitude readout) but reframes
+the comparison protocol they used: we show that the matched-shared-trial
+selection rule under their \code{CReLU} default is the regime in
+which CVNN-vs-real gaps are most fragile, and we use \code{ZReLU} and
+\code{ModReLU} as more conservative reference points.
+
+\paragraph{Wirtinger / CR-calculus and complex backpropagation.}
+Brandwood~\cite{brandwood1983complex} introduced the complex gradient
+operator in adaptive array signal processing; the formalism was
+popularized for ML practitioners by Kreutz-Delgado's
+tutorial~\cite{kreutzdelgado2009complex}. PyTorch's complex
+autograd~\cite{paszke2019pytorch} adopts the conjugate-Wirtinger
+convention, which we make explicit in \Cref{sec:wirtinger-trilemma}
+and verify empirically in our test suite (the rotation-equivariant
+control of \Cref{sec:rotation-equivariant-control}). The Liouville
+trilemma we state (\Cref{prop:trilemma}) is folklore, but to our
+knowledge no prior CVNN paper presents it alongside an empirical
+CR-residual measurement of each candidate activation as we do in
+\Cref{sec:activation-characterization}.
+
+\paragraph{Group-equivariant deep learning.}
+The general construction of $G$-equivariant convolutional networks
+was introduced by Cohen \& Welling~\cite{cohen2016group} for discrete
+groups and extended to steerable~\cite{cohen2017steerable} and
+general $E(2)$-equivariant~\cite{weiler2019general} CNNs; the broader
+geometric DL framework is surveyed in Bronstein et
+al.~\cite{bronstein2021geometric}. The closest 2-D analogue of our
+\Cref{prop:equivariant-subspace} is the harmonic network of Worrall
+et al.~\cite{worrall2017harmonic}, where complex-valued circular
+harmonics parameterize $SO(2)$-equivariant 2-D convolutions. Our
+Prop.~\ref{prop:equivariant-subspace} is the 1-D $U(1)$ specialization
+of that pattern: it identifies the 1-D \code{ComplexConv1d} as the
+$2$-parameter equivariant subspace of the unconstrained
+$4$-parameter stacked-real Conv1d, which makes the Trabelsi-style
+complex layer mathematically continuous with this lineage rather
+than an unrelated construction.
+
+\paragraph{Complex-valued networks for radio modulation classification.}
+O'Shea et al.~\cite{oshea2018radioml} introduced the RadioML
+2018.01A archive with a real-valued ResNet baseline reaching
+$\sim$90\% top-1 at high SNR on the full 24-class task. Krzyston
+et al.~\cite{krzyston2020complex} and Tu et al.~\cite{tu2020complex}
+report complex-valued AMC architectures with a few-percentage-point
+edge over real ResNets on the same setup. Our 3-class subset result
+is consistent with this small advantage \emph{when activations are
+stable and selection is independent per family}; the larger
+matched-shared-trial gap we observe under \code{CReLU} is a
+selection-protocol artifact (\Cref{sec:selection-rules}) rather than
+a contradiction of the literature, and the per-step mechanism
+analysis in \Cref{sec:radioml-mechanism} explains why such artifacts
+can appear at all.
+
+\paragraph{Complex-valued networks in physics and biomedical signals.}
+CVNNs have been applied to MRI reconstruction with reported gains
+over real architectures (Cole et al.~\cite{cole2021analysis}; Virtue
+et al.~\cite{virtue2017better}). Physics-informed neural networks for
+PDE solving (Raissi et al.~\cite{raissi2019pinns}) typically use
+real-valued architectures, but the underlying physical fields can
+be complex; our quantum-wavefunction pilot
+(\Cref{sec:quantum-pilot}) is a small probe in that direction. EEG
+deep learning has converged on real-valued architectures operating
+on raw or magnitude-pooled signals (Schirrmeister et
+al.~\cite{schirrmeister2017deep}, EEGNet~\cite{lawhern2018eegnet});
+the analytic-signal representation we use in
+\Cref{sec:eeg-pilot} is standard in the signal-processing literature
+on phase locking and phase-amplitude
+coupling~\cite{tort2010measuring}, but native complex-valued network
+architectures remain uncommon in EEG. Our pilot is positioned as a
+representation-protocol demonstration rather than a clinical claim.
+
+\paragraph{Benchmarking methodology and the variance-in-evaluation literature.}
+The selection-rule artifact we document
+(\Cref{sec:selection-rules}) belongs to a now-familiar family of
+findings in which apparent architectural advantages partly dissolve
+under tighter evaluation protocols: Henderson et
+al.~\cite{henderson2018deep} on deep RL, Lucic et
+al.~\cite{lucic2018gans} on GANs, Melis et
+al.~\cite{melis2018state} on language models. Bouthillier et
+al.~\cite{bouthillier2021accounting} formalize the seed-vs.-hyperparameter
+variance decomposition and recommend reporting both. Our
+contribution to this literature is specific: we identify the
+matched-shared-trial selection rule, used widely in CVNN papers as a
+``capacity-fairness'' device, as the operational mechanism, and we
+provide per-step gradient telemetry
+(\Cref{sec:radioml-mechanism}, \Cref{app:telemetry}) that locates the
+underlying instability at the readout's first AdamW step.
 
 \section{Limitations}
 \label{sec:limitations}
@@ -1130,23 +1526,49 @@ optimization-side mechanism.
     sensor data. These are evidence that the representation/stress-test
     protocol transfers outside RF, not evidence about production
     scientific or biomedical ML workloads.
-  \item \textbf{Six seeds.} CIs are computed from a Gaussian
-    approximation of the per-seed mean ($\sigma/\sqrt{n}$). A
-    bootstrap CI on this many seeds gives similar widths but is not
-    substantially more honest.
+  \item \textbf{Seed counts and inference.} The headline RadioML and
+    synthetic RF sweeps use $n=6$ seeds; the representation stress
+    tests, quantum and EEG pilots, and synthetic phase-classification
+    sweep use $n=3$. Per-family $95\%$ CIs in $n=6$ tables now use
+    the $t$-distribution ($t_{0.975, 5}=2.571$) rather than the
+    Gaussian $1.96\,\sigma/\sqrt{n}$ approximation; the $n=3$ pilot
+    tables report means and per-condition stress-test outcomes
+    without CIs since neither Gaussian nor bootstrap CIs are
+    informative at that sample size, and we treat those tables as
+    representation maps rather than significance tests. Where seeds
+    are matched across families (matched-shared-trial selection), we
+    use paired-$t$ tests on per-seed differences, which is both more
+    powerful and more design-appropriate than the unpaired Welch
+    approximation we used in an earlier draft. A bootstrap CI on six
+    seeds gives widths similar to the $t$-CI and we do not report it
+    separately.
   \item \textbf{One loss.} Classification runs use cross-entropy.
   \item \textbf{No \code{ComplexBatchNorm} or \code{ComplexLayerNorm}.}
-    Landing them would let us train deeper conv stacks fairly.
+    Landing them (in the form of Trabelsi et
+    al.~\cite{trabelsi2018deep}'s whitening covariance) would let us
+    train deeper conv stacks fairly.
+  \item \textbf{Equivariance characterized at the layer level only.}
+    \Cref{prop:equivariant-subspace} and the rotation-equivariant
+    control of \Cref{sec:rotation-equivariant-control} establish
+    equivariance per linear layer. Total network equivariance
+    additionally requires equivariant activations and bias-free or
+    equivariant biases (\Cref{app:phase-equivariance}); the
+    fixed-rotation stress test (\Cref{sec:representation-stress})
+    and the quantum global-phase shift result
+    (\Cref{tab:quantum-pilot}) document the resulting gap empirically.
+    A construction that is equivariant end-to-end --- e.g.\ stacks of
+    \code{ComplexConv1d} with \code{ModReLU} or \code{Siglog} and
+    bias-free linear readouts --- is a natural next step.
   \item \textbf{Modest hardware.} CPU and Apple Silicon for
     development; one A100 for the headline RF sweep. No
     multi-machine reproducibility check.
-  \item \textbf{Lr-vs-activation disambiguation is 2$\times$2.}
-    \Cref{sec:lr-vs-activation} establishes the lr-driven character
+  \item \textbf{Learning-rate-vs-activation disambiguation is 2$\times$2.}
+    \Cref{sec:lr-vs-activation} establishes the learning-rate-driven character
     of the dead-seed threshold using \code{crelu} (the largest gap)
     and \code{zrelu} (the smallest), but does not run the full
     factorial across all five activations. The cardioid and siglog
     rows in \Cref{tab:dead-seeds} are unaccounted for under this
-    framing except by interpolation; a five-activation lr sweep
+    framing except by interpolation; a five-activation learning-rate sweep
     would close that gap.
 \end{itemize}
 
@@ -1173,18 +1595,28 @@ optimization-side mechanism.
   \item \code{ComplexBatchNorm} (whitening 2$\times$2 covariance, per
     Trabelsi et al.~\cite{trabelsi2018deep}) and deeper conv stacks.
   \item \textbf{Conv2d and 2-D complex domains.} Audio STFT, SAR,
-    MRI, and spectrogram-like RF features are natural targets, but they
-    require \code{ComplexConv2d}, normalization, and representation
-    stress tests specific to 2-D phase/amplitude geometry.
+    MRI~\cite{cole2021analysis,virtue2017better}, and spectrogram-like
+    RF features are natural targets, but they require
+    \code{ComplexConv2d}, normalization, and representation stress
+    tests specific to 2-D phase/amplitude geometry. The 2-D analogue
+    of \Cref{prop:equivariant-subspace} is the harmonic-network
+    construction~\cite{worrall2017harmonic}, which gives a principled
+    starting point.
   \item \textbf{Scale the physics pilot} from 1-D wavefunctions to
     richer PDE settings: 2-D wave packets, inverse scattering,
     Fourier-domain operators, and explicit gauge/global-phase
     invariant architectures.
   \item \textbf{Run the EEG pilot on real analytic-signal data:}
     sleep staging, seizure detection, brain-computer-interface motor
-    imagery, or anesthesia depth are natural tasks where phase locking,
-    amplitude envelopes, and phase-amplitude coupling have existing
-    signal-processing meaning.
+    imagery, or anesthesia depth are natural tasks where phase
+    locking, amplitude envelopes, and phase-amplitude
+    coupling~\cite{tort2010measuring} have existing signal-processing
+    meaning. The natural baselines are
+    EEGNet~\cite{lawhern2018eegnet} and
+    Schirrmeister et al.~\cite{schirrmeister2017deep}, both of which
+    operate on real-valued representations and would let us measure
+    whether the analytic-signal CVNN view adds anything beyond
+    well-engineered real architectures.
   \item A separate study of per-activation training dynamics: does
     \code{ModReLU}'s bias-sign regime visibly affect convergence?
 \end{itemize}
@@ -1301,11 +1733,14 @@ satisfies $\sigma(e^{i\phi} z) = e^{i\phi} \sigma(z)$.
     because the gate changes under rotation:
     $\cos(\angle z + \phi) \neq \cos(\angle z)$ for generic $\phi$.
   \item \textbf{Siglog} ($\sigma(z) = z / (1 + |z|)$): equivariant.
-  \item \textbf{ComplexTanh} (split $\tanh$ on real/imag parts):
-    \emph{not} equivariant. A rotation $e^{i\phi}$ mixes real and
-    imaginary components before the elementwise nonlinearity.
-  \item \textbf{CReLU} (split ReLU on real/imag): \emph{not}
-    equivariant; same reason as ComplexTanh.
+  \item \textbf{ComplexTanh} ($\sigma(z) = \tanh z$, the meromorphic
+    extension): \emph{not} equivariant. Direct check: for $z = 1$ and
+    $\phi = \pi/2$, $\tanh(iz) = \tanh(i) = i\tan 1 \approx 1.557\,i$
+    while $e^{i\phi}\tanh(z) = i\tanh(1) \approx 0.762\,i$.
+  \item \textbf{CReLU} ($\sigma(z) = \mathrm{ReLU}(\mathrm{Re}\,z)
+    + i\,\mathrm{ReLU}(\mathrm{Im}\,z)$): \emph{not} equivariant. A
+    rotation $e^{i\phi}$ mixes real and imaginary components before
+    the split, elementwise nonlinearity.
   \item \textbf{ZReLU} (zero out unless $\angle z \in [0, \pi/2]$): not
     equivariant (the kept-quadrant condition is rotation-sensitive).
 \end{itemize}
@@ -1316,7 +1751,7 @@ explosion-into-dead-region pattern that disproportionately hurts real
 baselines) does \emph{not} track which activations preserve layer-level
 phase equivariance. CReLU does not preserve equivariance but is the
 configuration with the largest measured CVNN-vs-real gap; Siglog does
-preserve equivariance but appears in the unstable high-lr regime. We
+preserve equivariance but appears in the unstable high-learning-rate regime. We
 therefore locate the asymmetry one level lower than the activation, in the
 $(\mathrm{Re}, \mathrm{Im})$ parameter coupling that the optimizer sees
 on \code{head.weight} at step 1; \Cref{sec:radioml-mechanism}
@@ -1474,7 +1909,7 @@ average. See \Cref{app:telemetry} for the per-step mechanism.}
 \Cref{sec:selection-rules} (\Cref{tab:selection-rule-contrast})
 reports the headline matched-vs-independent contrast on \code{crelu}
 ($+22.94$~pp $\to$ $+2.46$~pp). The reduction comes from independent
-selection allowing real baselines to avoid the high-lr trial that
+selection allowing real baselines to avoid the high-learning-rate trial that
 triggers the step-1 explosion documented in
 \Cref{sec:radioml-mechanism}. We do not re-tune the
 \code{cardioid} / \code{siglog} ablation rows independently, because
@@ -1525,7 +1960,7 @@ maps into the readout when the readout sees magnitude-pooled inputs
 The complex magnitude pool produces inputs of comparable scale across
 seeds; the stacked $(\mathrm{Re}, \mathrm{Im})$ readout sees inputs
 whose scale is seed-dependent through the conv-stack random init, and
-high-lr trials interact badly with the unlucky tail of that
+high-learning-rate trials interact badly with the unlucky tail of that
 distribution.
 
 % ---------------------------------------------------------------------------
@@ -1635,7 +2070,7 @@ realistic estimate.
 two-effect decomposition holds: the architectural prior (phase
 equivariance, magnitude readout) survives at 24-class /
 1024-sample scale, and the optimization-level robustness asymmetry
-remains hp-driven and disappears under independent per-family
+remains hyperparameter-driven and disappears under independent per-family
 selection. We do not predict the specific numerical gap because the
 full-archive distribution is qualitatively different from the subset
 (more distortion-heavy modulations like AM-SSB-WC and FM are present
@@ -1678,7 +2113,7 @@ Siglog
   & $\sigma(z) = z / (1 + |z|)$
   & yes \\
 ComplexTanh
-  & $\sigma(z) = \tanh(\mathrm{Re}\,z) + i\,\tanh(\mathrm{Im}\,z)$
+  & $\sigma(z) = \tanh z$ (meromorphic extension; poles at $z = i(\pi/2 + k\pi)$)
   & no \\
 \bottomrule
 \end{tabular}

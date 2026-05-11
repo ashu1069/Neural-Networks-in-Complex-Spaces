@@ -9,9 +9,19 @@ from cvnn.baselines.real_stacked import (
     complex_to_real_reparam,
     count_real_parameters,
 )
+from cvnn.baselines.rotation_equivariant import (
+    RotationEquivariantConv1d,
+    complex_input_to_stacked,
+    materialize_from_complex,
+    stacked_to_complex_output,
+)
 
 __all__ = [
     "RealStackedLinear",
+    "RotationEquivariantConv1d",
+    "complex_input_to_stacked",
     "complex_to_real_reparam",
     "count_real_parameters",
+    "materialize_from_complex",
+    "stacked_to_complex_output",
 ]
