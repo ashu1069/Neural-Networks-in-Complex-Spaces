@@ -92,14 +92,22 @@ class RotationEquivariantConv1d(nn.Module):
         self.groups = groups
 
         self.a = Parameter(
-            torch.empty(out_channels, in_channels, kernel_size, device=device, dtype=dtype)
+            torch.empty(
+                out_channels, in_channels, kernel_size, device=device, dtype=dtype
+            )
         )
         self.b = Parameter(
-            torch.empty(out_channels, in_channels, kernel_size, device=device, dtype=dtype)
+            torch.empty(
+                out_channels, in_channels, kernel_size, device=device, dtype=dtype
+            )
         )
         if bias:
-            self.bias_re = Parameter(torch.empty(out_channels, device=device, dtype=dtype))
-            self.bias_im = Parameter(torch.empty(out_channels, device=device, dtype=dtype))
+            self.bias_re = Parameter(
+                torch.empty(out_channels, device=device, dtype=dtype)
+            )
+            self.bias_im = Parameter(
+                torch.empty(out_channels, device=device, dtype=dtype)
+            )
         else:
             self.register_parameter("bias_re", None)
             self.register_parameter("bias_im", None)

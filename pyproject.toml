@@ -56,6 +56,26 @@ warn_unused_ignores = true
 warn_return_any = true
 no_implicit_reexport = true
 
+# Figure-generation scripts use heavy matplotlib/numpy ducktyping where
+# strict type inference is more friction than help. Library code in cvnn/
+# stays fully typed.
+[[tool.mypy.overrides]]
+module = [
+  "generate_animations",
+  "generate_headline_figures",
+  "generate_thesis_figures",
+]
+disallow_untyped_defs = false
+disallow_untyped_calls = false
+disallow_incomplete_defs = false
+disallow_any_generics = false
+warn_return_any = false
+no_implicit_reexport = false
+# Matplotlib's stubs are incomplete (e.g. plt.Figure/plt.Rectangle re-exports,
+# add_axes accepting list rather than tuple). These don't catch real bugs in
+# plotting code.
+disable_error_code = ["name-defined", "attr-defined", "call-overload", "assignment", "arg-type"]
+
 [tool.pytest.ini_options]
 addopts = "-ra --strict-markers"
 testpaths = ["tests"]

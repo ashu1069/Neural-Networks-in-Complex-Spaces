@@ -104,9 +104,7 @@ def main() -> int:
                 run_summary["data_source"] = "synthetic"
                 run_summary["cell"] = cell_name
                 run_summary["lr_override"] = lr
-                write_telemetry_jsonl(
-                    output_path, records=records, summary=run_summary
-                )
+                write_telemetry_jsonl(output_path, records=records, summary=run_summary)
                 summaries.append(
                     {
                         "cell": cell_name,
@@ -116,8 +114,7 @@ def main() -> int:
                         "seed": seed,
                         "test_accuracy": run_summary["test_accuracy"],
                         "final_train_loss": run_summary["final_train_loss"],
-                        "dead": run_summary["final_train_loss"]
-                        >= DEAD_LOSS_THRESHOLD,
+                        "dead": run_summary["final_train_loss"] >= DEAD_LOSS_THRESHOLD,
                         "output_path": str(output_path),
                     }
                 )
@@ -132,9 +129,7 @@ def main() -> int:
         n_dead = sum(
             1
             for s in summaries
-            if s["cell"] == cell_name
-            and s["family"] in REAL_FAMILIES
-            and s["dead"]
+            if s["cell"] == cell_name and s["family"] in REAL_FAMILIES and s["dead"]
         )
         n_total = sum(
             1

@@ -70,9 +70,7 @@ def main() -> int:
                     max_steps=None,  # full step budget
                 )
                 run_summary["data_source"] = "synthetic"
-                write_telemetry_jsonl(
-                    output_path, records=records, summary=run_summary
-                )
+                write_telemetry_jsonl(output_path, records=records, summary=run_summary)
                 summaries.append(
                     {
                         "activation": activation,

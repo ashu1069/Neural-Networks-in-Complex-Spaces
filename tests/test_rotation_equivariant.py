@@ -69,10 +69,16 @@ def test_gradient_matches_complex_conv1d():
 
     torch.manual_seed(13)
     z = torch.randn(8, 3, 24, dtype=torch.complex64)
-    n_complex_outputs = float(z.shape[0] * complex_layer.out_channels * (z.shape[2] - complex_layer.kernel_size + 1))
+    n_complex_outputs = float(
+        z.shape[0]
+        * complex_layer.out_channels
+        * (z.shape[2] - complex_layer.kernel_size + 1)
+    )
 
     y_complex = complex_layer(z)
-    loss_complex = (y_complex.real.pow(2) + y_complex.imag.pow(2)).sum() / n_complex_outputs
+    loss_complex = (
+        y_complex.real.pow(2) + y_complex.imag.pow(2)
+    ).sum() / n_complex_outputs
     loss_complex.backward()
 
     y_rot_real = rot_layer(complex_input_to_stacked(z))

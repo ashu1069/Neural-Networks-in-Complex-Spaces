@@ -26,7 +26,6 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.patches import FancyBboxPatch
 
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "results"
@@ -70,8 +69,10 @@ def fig_selection_rule_contrast() -> Path:
     x = np.arange(len(rules))
     w = 0.36
     ax.bar(x - w / 2, cvnn_acc, w, color=COMPLEX_COLOR, label="CVNN", edgecolor="white")
-    ax.bar(x + w / 2, real_acc, w, color=REAL_COLOR, label="best real", edgecolor="white")
-    for i, (c, r) in enumerate(zip(cvnn_acc, real_acc)):
+    ax.bar(
+        x + w / 2, real_acc, w, color=REAL_COLOR, label="best real", edgecolor="white"
+    )
+    for i, (c, r) in enumerate(zip(cvnn_acc, real_acc, strict=False)):
         ax.text(i - w / 2, c + 0.012, f"{c:.3f}", ha="center", fontsize=10)
         ax.text(i + w / 2, r + 0.012, f"{r:.3f}", ha="center", fontsize=10)
     ax.set_xticks(x)
@@ -91,7 +92,7 @@ def fig_selection_rule_contrast() -> Path:
         edgecolor="white",
         width=0.55,
     )
-    for bar, value in zip(bars, [gap_matched, gap_indep]):
+    for bar, value in zip(bars, [gap_matched, gap_indep], strict=False):
         ax.text(
             bar.get_x() + bar.get_width() / 2,
             value + 0.6,
@@ -124,13 +125,15 @@ def fig_selection_rule_contrast() -> Path:
 
 # ---------------------------------------------------------------- 2. lr-vs-activation
 def _load_disambiguation():
-    idx = json.loads((RESULTS / "lr_activation_disambiguation" / "index.json").read_text())
+    idx = json.loads(
+        (RESULTS / "lr_activation_disambiguation" / "index.json").read_text()
+    )
     cells: dict[str, dict] = {}
     for r in idx:
         cells.setdefault(r["cell"], {"runs": [], "lr": r["lr"]})
         cells[r["cell"]]["runs"].append(r)
     # Step-1 head.weight gradient (max across the 9 real runs).
-    for cell_name, info in cells.items():
+    for _cell_name, info in cells.items():
         head_grads = []
         final_losses = []
         for r in info["runs"]:
@@ -184,7 +187,9 @@ def fig_lr_activation_disambiguation() -> Path:
     ax.set_xticks(range(len(lrs)))
     ax.set_xticklabels([f"lr = {lr}" for lr in lrs])
     ax.set_yticks(range(len(activations)))
-    ax.set_yticklabels([f"\\code{{{a}}}".replace("\\code{", "").replace("}", "") for a in activations])
+    ax.set_yticklabels(
+        [f"\\code{{{a}}}".replace("\\code{", "").replace("}", "") for a in activations]
+    )
     ax.set_yticklabels(activations)
     ax.set_title("Dead seeds (out of 9 real runs)")
     ax.set_xlabel("learning rate")
@@ -193,15 +198,37 @@ def fig_lr_activation_disambiguation() -> Path:
     cbar.set_label("dead seeds")
 
     # Annotate diagonals as "matched-shared-trial regimes".
-    ax.add_patch(plt.Rectangle((-0.5, -0.5), 1, 1, fill=False, edgecolor="black", lw=2.5, ls="--"))
-    ax.add_patch(plt.Rectangle((0.5, 0.5), 1, 1, fill=False, edgecolor="black", lw=2.5, ls="--"))
+    ax.add_patch(
+        plt.Rectangle(
+            (-0.5, -0.5), 1, 1, fill=False, edgecolor="black", lw=2.5, ls="--"
+        )
+    )
+    ax.add_patch(
+        plt.Rectangle((0.5, 0.5), 1, 1, fill=False, edgecolor="black", lw=2.5, ls="--")
+    )
     # Smaller in-cell tag (top-left corner) so it doesn't run into axis labels.
-    ax.text(-0.45, -0.42, "matched", ha="left", va="top", fontsize=8,
-            color="black", fontweight="bold",
-            bbox=dict(boxstyle="round,pad=0.18", fc="white", ec="black", lw=0.5))
-    ax.text(1.45, 1.42, "matched", ha="right", va="bottom", fontsize=8,
-            color="black", fontweight="bold",
-            bbox=dict(boxstyle="round,pad=0.18", fc="white", ec="black", lw=0.5))
+    ax.text(
+        -0.45,
+        -0.42,
+        "matched",
+        ha="left",
+        va="top",
+        fontsize=8,
+        color="black",
+        fontweight="bold",
+        bbox=dict(boxstyle="round,pad=0.18", fc="white", ec="black", lw=0.5),
+    )
+    ax.text(
+        1.45,
+        1.42,
+        "matched",
+        ha="right",
+        va="bottom",
+        fontsize=8,
+        color="black",
+        fontweight="bold",
+        bbox=dict(boxstyle="round,pad=0.18", fc="white", ec="black", lw=0.5),
+    )
 
     # Right: step-1 head.weight grad heatmap (log).
     ax = axes[1]
@@ -209,8 +236,8 @@ def fig_lr_activation_disambiguation() -> Path:
         [[cell_lookup[(a, lr)]["step1_head_max"] for lr in lrs] for a in activations]
     )
     im = ax.imshow(np.log10(grid_grad), cmap="magma", aspect="auto", vmin=-1, vmax=1.6)
-    for i, a in enumerate(activations):
-        for j, lr in enumerate(lrs):
+    for i, _a in enumerate(activations):
+        for j, _lr in enumerate(lrs):
             v = grid_grad[i, j]
             ax.text(
                 j,
@@ -245,7 +272,7 @@ def _load_jsonl(path: Path):
     with open(path) as f:
         lines = f.readlines()
     summary = json.loads(lines[0])["summary"]
-    steps = [json.loads(l) for l in lines[1:]]
+    steps = [json.loads(line) for line in lines[1:]]
     return summary, steps
 
 
@@ -267,7 +294,16 @@ def fig_dead_seed_mechanism() -> Path:
                 loss = [s["train_loss"] for s in steps]
                 step_idx = [s["step"] for s in steps]
                 dead = summary["final_train_loss"] >= DEAD_LOSS_THRESHOLD
-                traces.append({"step": step_idx, "head": head, "loss": loss, "dead": dead, "seed": seed, "fam": fam})
+                traces.append(
+                    {
+                        "step": step_idx,
+                        "head": head,
+                        "loss": loss,
+                        "dead": dead,
+                        "seed": seed,
+                        "fam": fam,
+                    }
+                )
         return traces
 
     crelu = collect("crelu")
@@ -275,9 +311,11 @@ def fig_dead_seed_mechanism() -> Path:
 
     fig, axes = plt.subplots(2, 2, figsize=(12, 7.0), sharex=True)
 
-    for col, (act_name, traces, lr_label) in enumerate(
-        [("crelu @ lr=0.0236 (matched)", crelu, "high lr"),
-         ("zrelu @ lr=0.0024 (matched)", zrelu, "low lr")]
+    for col, (act_name, traces, _lr_label) in enumerate(
+        [
+            ("crelu @ lr=0.0236 (matched)", crelu, "high lr"),
+            ("zrelu @ lr=0.0024 (matched)", zrelu, "low lr"),
+        ]
     ):
         ax_g, ax_l = axes[0, col], axes[1, col]
         for t in traces:
@@ -293,7 +331,13 @@ def fig_dead_seed_mechanism() -> Path:
         ax_g.grid(True, which="both", linestyle=":", alpha=0.4)
         ax_g.axhline(1.0, color="#444", lw=0.5, ls="--")
 
-        ax_l.axhline(DEAD_LOSS_THRESHOLD, color="#444", lw=0.8, ls=":", label=f"dead thr (ln 3 ≈ {math.log(3):.2f})")
+        ax_l.axhline(
+            DEAD_LOSS_THRESHOLD,
+            color="#444",
+            lw=0.8,
+            ls=":",
+            label=f"dead thr (ln 3 ≈ {math.log(3):.2f})",
+        )
         ax_l.set_ylabel("train loss")
         ax_l.set_xlabel("step")
         ax_l.grid(True, linestyle=":", alpha=0.4)
@@ -302,14 +346,22 @@ def fig_dead_seed_mechanism() -> Path:
 
     # Custom legend for line colors.
     from matplotlib.lines import Line2D
+
     legend_elements = [
         Line2D([0], [0], color=UNSAFE_COLOR, lw=2, label="dead seed"),
         Line2D([0], [0], color="#888", lw=1.5, label="alive seed"),
     ]
-    fig.legend(handles=legend_elements, loc="upper center", ncol=2, bbox_to_anchor=(0.5, 1.02), frameon=False, fontsize=11)
+    fig.legend(
+        handles=legend_elements,
+        loc="upper center",
+        ncol=2,
+        bbox_to_anchor=(0.5, 1.02),
+        frameon=False,
+        fontsize=11,
+    )
 
     fig.suptitle(
-        "Step-1 head-gradient explosion → dead-ReLU region (real baselines, synthetic AWGN)",
+        "Step-1 head-gradient explosion → dead-ReLU region (real baselines, synthetic AWGN)",  # noqa: E501
         fontsize=13,
         fontweight="bold",
         y=1.06,
@@ -327,24 +379,41 @@ def fig_paper_at_a_glance() -> Path:
     # ---- (A) representation conditionality ---------------------------
     ax = fig.add_subplot(gs[0, 0])
     conditions = [
-        "PSK", "QAM", "mixed", "low SNR\nPSK", "high SNR\nPSK",
-        "fixed-rot.\nPSK", "rot-aug.\nPSK",
+        "PSK",
+        "QAM",
+        "mixed",
+        "low SNR\nPSK",
+        "high SNR\nPSK",
+        "fixed-rot.\nPSK",
+        "rot-aug.\nPSK",
     ]
     complex_acc = [0.821, 0.509, 0.507, 0.526, 0.949, 0.252, 0.654]
-    real_best   = [0.735, 0.524, 0.487, 0.537, 0.952, 0.328, 0.580]
+    real_best = [0.735, 0.524, 0.487, 0.537, 0.952, 0.328, 0.580]
     x = np.arange(len(conditions))
     w = 0.4
     ax.bar(x - w / 2, complex_acc, w, color=COMPLEX_COLOR, label="complex")
     ax.bar(x + w / 2, real_best, w, color=REAL_COLOR, label="best real")
-    for i, (c, r) in enumerate(zip(complex_acc, real_best)):
+    for i, (c, r) in enumerate(zip(complex_acc, real_best, strict=False)):
         winner = "C" if c > r else "R"
         col = COMPLEX_COLOR if winner == "C" else REAL_COLOR
-        ax.text(i, max(c, r) + 0.025, winner, ha="center", color=col, fontweight="bold", fontsize=11)
+        ax.text(
+            i,
+            max(c, r) + 0.025,
+            winner,
+            ha="center",
+            color=col,
+            fontweight="bold",
+            fontsize=11,
+        )
     ax.set_xticks(x)
     ax.set_xticklabels(conditions, fontsize=9)
     ax.set_ylim(0, 1.08)
     ax.set_ylabel("test accuracy")
-    ax.set_title("(A) Complex helps when phase/amplitude geometry matches", fontsize=11, fontweight="bold")
+    ax.set_title(
+        "(A) Complex helps when phase/amplitude geometry matches",
+        fontsize=11,
+        fontweight="bold",
+    )
     ax.legend(frameon=False, loc="upper left", fontsize=9)
     ax.grid(axis="y", linestyle=":", alpha=0.4)
 
@@ -354,12 +423,22 @@ def fig_paper_at_a_glance() -> Path:
     gap = [22.94, 2.46]
     colors = [UNSAFE_COLOR, SAFE_COLOR]
     bars = ax.bar(rules, gap, color=colors, width=0.55)
-    for b, g in zip(bars, gap):
-        ax.text(b.get_x() + b.get_width() / 2, g + 0.5, f"+{g:.2f} pp",
-                ha="center", fontsize=12, fontweight="bold")
+    for b, g in zip(bars, gap, strict=False):
+        ax.text(
+            b.get_x() + b.get_width() / 2,
+            g + 0.5,
+            f"+{g:.2f} pp",
+            ha="center",
+            fontsize=12,
+            fontweight="bold",
+        )
     ax.set_ylabel("CVNN − best-real gap (pp)")
     ax.set_ylim(0, max(gap) * 1.2)
-    ax.set_title("(B) Same trials, two rules — gap collapses 9.3×", fontsize=11, fontweight="bold")
+    ax.set_title(
+        "(B) Same trials, two rules — gap collapses 9.3×",
+        fontsize=11,
+        fontweight="bold",
+    )
     ax.grid(axis="y", linestyle=":", alpha=0.4)
 
     # ---- (C) lr-vs-activation 2x2 dead seeds -------------------------
@@ -373,23 +452,40 @@ def fig_paper_at_a_glance() -> Path:
         ("zrelu", 0.0024): cells["zrelu_lowlr"],
         ("zrelu", 0.0236): cells["zrelu_highlr"],
     }
-    grid = np.array([[lookup[(a, lr)]["dead"] for lr in lrs] for a in activations], dtype=float)
-    im = ax.imshow(grid, cmap=CMAP_GAP, vmin=0, vmax=9, aspect="auto")
+    grid = np.array(
+        [[lookup[(a, lr)]["dead"] for lr in lrs] for a in activations], dtype=float
+    )
+    ax.imshow(grid, cmap=CMAP_GAP, vmin=0, vmax=9, aspect="auto")
     for i, a in enumerate(activations):
         for j, lr in enumerate(lrs):
             d = lookup[(a, lr)]["dead"]
             g = lookup[(a, lr)]["step1_head_max"]
-            ax.text(j, i - 0.12, f"{d}/9 dead", ha="center", va="center",
-                    fontsize=12, fontweight="bold",
-                    color="white" if d >= 4 else "black")
-            ax.text(j, i + 0.22, f"step-1 grad {g:.1f}", ha="center", va="center",
-                    fontsize=9,
-                    color="white" if d >= 4 else "#333")
+            ax.text(
+                j,
+                i - 0.12,
+                f"{d}/9 dead",
+                ha="center",
+                va="center",
+                fontsize=12,
+                fontweight="bold",
+                color="white" if d >= 4 else "black",
+            )
+            ax.text(
+                j,
+                i + 0.22,
+                f"step-1 grad {g:.1f}",
+                ha="center",
+                va="center",
+                fontsize=9,
+                color="white" if d >= 4 else "#333",
+            )
     ax.set_xticks(range(len(lrs)))
     ax.set_xticklabels([f"lr={lr}" for lr in lrs])
     ax.set_yticks(range(len(activations)))
     ax.set_yticklabels(activations)
-    ax.set_title("(C) Dead seeds track lr, not activation", fontsize=11, fontweight="bold")
+    ax.set_title(
+        "(C) Dead seeds track lr, not activation", fontsize=11, fontweight="bold"
+    )
 
     # ---- (D) phase-equivariance / activation map (qualitative) -------
     ax = fig.add_subplot(gs[1, 1])
@@ -412,33 +508,48 @@ def fig_paper_at_a_glance() -> Path:
         "crelu": (-50, -6),
         "cardioid": (12, 6),
     }
-    for a, pe, st in zip(acts, phase_eq, stable_at_matched):
+    for a, _pe, st in zip(acts, phase_eq, stable_at_matched, strict=False):
         x_base, y_base = offsets[a]
         x = x_base
         y = y_base
         col = SAFE_COLOR if st else UNSAFE_COLOR
         ax.scatter(x, y, s=320, color=col, edgecolor="black", zorder=3, lw=1.5)
         dx, dy = label_off[a]
-        ax.annotate(a, (x, y), xytext=(dx, dy), textcoords="offset points",
-                    fontsize=10, fontweight="bold")
+        ax.annotate(
+            a,
+            (x, y),
+            xytext=(dx, dy),
+            textcoords="offset points",
+            fontsize=10,
+            fontweight="bold",
+        )
     ax.set_xticks([0, 1])
     ax.set_xticklabels(["not phase-\nequivariant", "phase-\nequivariant"])
     ax.set_yticks([0, 1])
     ax.set_yticklabels(["unstable\n(dead seeds)", "stable\n(0 dead)"])
     ax.set_xlim(-0.4, 1.4)
     ax.set_ylim(-0.4, 1.4)
-    ax.set_title("(D) Phase-equivariance ≠ optimization stability", fontsize=11, fontweight="bold")
+    ax.set_title(
+        "(D) Phase-equivariance ≠ optimization stability",
+        fontsize=11,
+        fontweight="bold",
+    )
     ax.grid(True, linestyle=":", alpha=0.4)
     ax.text(
-        0.5, -0.3,
-        "stability splits orthogonally to equivariance →\noptimization-level mechanism, not symmetry-level",
-        ha="center", fontsize=9, style="italic", color="#444",
+        0.5,
+        -0.3,
+        "stability splits orthogonally to equivariance →\noptimization-level mechanism, not symmetry-level",  # noqa: E501
+        ha="center",
+        fontsize=9,
+        style="italic",
+        color="#444",
         transform=ax.transAxes,
     )
 
     fig.suptitle(
-        "Complex-valued networks for IQ data — when, why, and the methodology that magnifies the gap",
-        fontsize=14, fontweight="bold",
+        "Complex-valued networks for IQ data — when, why, and the methodology that magnifies the gap",  # noqa: E501
+        fontsize=14,
+        fontweight="bold",
     )
     return _save(fig, "headline_paper_at_a_glance")
 
