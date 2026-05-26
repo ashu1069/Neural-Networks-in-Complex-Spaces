@@ -27,5 +27,5 @@ uv run python scripts/check_torch_complex_support.py --device cuda --fail-on-gap
 - Use the same Hydra configs for local and CUDA runs.
 - Record CUDA device name, CUDA version, PyTorch version, dtype, seed, and git
   commit in the result manifest.
-- Treat CUDA results as the paper-track throughput path, but keep CPU checks as
+- Treat CUDA as the throughput path for larger sweeps, but keep CPU checks as
   the numerical reference for small fixtures.

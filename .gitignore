@@ -226,12 +226,11 @@ __marimo__/
 # macOS
 .DS_Store
 
-# Research outputs should be tracked intentionally through manifests.
+# Local data and generated research outputs
 data/
 outputs/
 wandb/
-results/*.json
-!results/manifest.example.json
-
-# Generated animations (large binaries — host externally)
+results/
+notebooks/activation_characterization/
+paper/
 **/animations/

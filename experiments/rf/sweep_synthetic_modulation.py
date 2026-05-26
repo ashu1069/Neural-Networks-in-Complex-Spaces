@@ -234,7 +234,7 @@ def _summary_markdown(
         "## Matched shared-trial comparison",
         "",
         (
-            "Primary paper table. The trial index is selected by the complex "
+            "Primary comparison. The trial index is selected by the complex "
             "family's mean validation accuracy, then every real baseline is "
             "reported at that same trial index so parameter/FLOP matching is "
             "with respect to the selected complex model."

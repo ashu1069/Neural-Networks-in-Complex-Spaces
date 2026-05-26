@@ -15,5 +15,5 @@
 
 This repo is PyTorch-first and evidence-first. Older reference implementations
 are useful for architecture, initialization, and benchmark design, but the
-paper-track experiments here should use the local `uv` environment, result
-manifests, and baseline rules documented in this repository.
+experiments here should use the local `uv` environment, result manifests, and
+baseline rules documented in this repository.

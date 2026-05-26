@@ -93,8 +93,8 @@ For swept experiments, distinguish two tables:
 
 - **Matched shared-trial comparison:** choose the reference complex trial by
   validation accuracy, then report every real baseline at that same trial
-  index. This is the primary paper comparison because the matched baselines are
-  tied to the selected complex model.
+  index. This is the primary comparison because the matched baselines are tied
+  to the selected complex model.
 - **Independent family winners:** choose each family's best validation trial
   independently. This is useful as a diagnostic, but those rows are not
   necessarily matched to the selected complex model.

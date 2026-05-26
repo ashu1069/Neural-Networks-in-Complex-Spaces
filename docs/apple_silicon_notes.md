@@ -1,7 +1,7 @@
 # Apple Silicon Notes
 
 This project uses Apple Silicon for local development, but CPU remains the
-correctness reference for paper-track results.
+correctness reference for benchmark results.
 
 CUDA servers are available for scale-up and final confirmation runs. Keep local
 Mac runs small and use the same configs on CUDA once the CPU smoke test passes.
@@ -88,5 +88,5 @@ passes CPU/MPS agreement tests and avoids the native MPS complex-linear gap.
 ## Reproducibility
 
 Each experiment should write a manifest using the schema in
-`docs/result_manifest.schema.json`. The example in `results/manifest.example.json`
-shows the intended shape.
+`docs/result_manifest.schema.json`. Generated manifests belong in an ignored
+output directory such as `results/`.
