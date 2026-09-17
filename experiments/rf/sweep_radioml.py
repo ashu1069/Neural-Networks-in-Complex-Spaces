@@ -124,6 +124,7 @@ def _train_one(
     eval_batch_size: int,
     device: torch.device,
     dtype: torch.dtype,
+    grad_clip_norm: float | None = None,
 ) -> TrialSeedOutcome:
     torch.manual_seed(seed)
     if torch.cuda.is_available():
@@ -192,6 +193,12 @@ def _train_one(
         logits = model(train_inputs[indices])
         loss = F.cross_entropy(logits, train_actual_labels[indices])
         loss.backward()  # type: ignore[no-untyped-call]
+        if grad_clip_norm is not None:
+            # Intervention control for the first-step explosion mechanism: the
+            # dead-ReLU collapse is driven by an outsized step-1 update to the
+            # classifier head, so bounding the global gradient norm should
+            # remove the dead seeds if that mechanism is the cause.
+            torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip_norm)
         optimizer.step()
         last_loss = float(loss.detach().cpu().item())
         loss_curve.append(last_loss)
@@ -652,6 +659,18 @@ def main() -> int:
             "are too large to evaluate in one pass on an 80GB GPU."
         ),
     )
+    parser.add_argument(
+        "--grad-clip-norm",
+        type=float,
+        default=None,
+        help=(
+            "clip the global gradient norm to this value before every optimizer "
+            "step. Off by default. Used as an intervention control for the "
+            "first-step explosion mechanism: if the inflated matched-shared-trial "
+            "gap is caused by an outsized step-1 head update, clipping should "
+            "remove the dead seeds and collapse the gap."
+        ),
+    )
     parser.add_argument("--architecture", choices=["mlp", "conv"], default="conv")
     parser.add_argument("--kernel-size", type=int, default=7)
     parser.add_argument("--activation", default="crelu")
@@ -778,6 +797,7 @@ def main() -> int:
             eval_batch_size=args.eval_batch_size,
             device=device,
             dtype=dtype,
+            grad_clip_norm=args.grad_clip_norm,
         )
 
     environment = collect_environment(device=args.device, dtype=args.dtype)
@@ -796,6 +816,7 @@ def main() -> int:
 
     sweep_config: JsonObject = {
         "experiment": "radioml_modulation_sweep",
+        "grad_clip_norm": args.grad_clip_norm,
         "data_path": str(args.data_path),
         "classes_path": str(args.classes_path) if args.classes_path else None,
         "paths_config": str(paths.config_path) if paths.config_path else None,

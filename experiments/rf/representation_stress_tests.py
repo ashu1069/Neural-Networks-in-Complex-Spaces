@@ -19,7 +19,7 @@ import json
 import math
 import time
 from collections.abc import Sequence
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any, Literal, cast
 
@@ -1042,6 +1042,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--steps", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=None)
     parser.add_argument("--learning-rate", type=float, default=0.01)
+    parser.add_argument(
+        "--activation",
+        choices=["crelu", "zrelu", "modrelu", "cardioid", "siglog"],
+        default=None,
+        help=(
+            "override the complex activation for every condition except the "
+            "`activation_*` sweep conditions, which set their own. Use this to "
+            "test whether magnitude-aware activations outperform "
+            "magnitude-blind ones on amplitude-bearing conditions."
+        ),
+    )
     parser.add_argument("--architecture", choices=["mlp", "conv"], default="conv")
     parser.add_argument("--kernel-size", type=int, default=5)
     parser.add_argument("--device", default="cpu")
@@ -1074,6 +1085,19 @@ def main() -> int:
     args = parse_args()
     config = _config_from_args(args)
     conditions = _select_conditions(args.tests, build_stress_conditions())
+    if args.activation is not None:
+        # Global complex-activation override. The `activation_*` conditions
+        # already sweep this axis on their own data, so overriding them would
+        # collapse that sweep to a single point; every other condition takes
+        # the override. This exists to test whether magnitude-aware
+        # activations (modrelu, siglog, cardioid) beat magnitude-blind ones
+        # (crelu, zrelu) on the amplitude-bearing conditions.
+        conditions = tuple(
+            condition
+            if condition.condition_id.startswith("activation_")
+            else replace(condition, activation=args.activation)
+            for condition in conditions
+        )
     environment = collect_environment(device=config.device, dtype=config.dtype)
     condition_results: list[tuple[StressCondition, Sequence[RFSummary]]] = []
     progress_bar = _progress_bar(

@@ -29,6 +29,7 @@ from torch import Tensor, nn
 
 from cvnn.activations import ComplexCardioid, CReLU, ModReLU, Siglog, ZReLU
 from cvnn.baselines import count_real_parameters
+from cvnn.baselines.rotation_equivariant import RotationEquivariantConv1d
 from cvnn.layers import ComplexConv1d, ComplexLinear
 from cvnn.nn import ComplexMLP
 from cvnn.repro import Environment, JsonObject, collect_environment, new_manifest
@@ -44,6 +45,7 @@ ModelFamily = Literal[
     "real_polar",
     "real_phase",
     "real_magnitude",
+    "real_equivariant",
 ]
 ModulationName = Literal["bpsk", "qpsk", "8psk", "qam16", "qam64"]
 ArchitectureName = Literal["mlp", "conv"]
@@ -62,6 +64,7 @@ ALL_MODEL_FAMILIES: tuple[ModelFamily, ...] = (
     "real_polar",
     "real_phase",
     "real_magnitude",
+    "real_equivariant",
 )
 DEFAULT_MODULATIONS: tuple[ModulationName, ...] = (
     "bpsk",
@@ -345,6 +348,71 @@ class RealRFConvClassifier(nn.Module):
     def forward(self, input: Tensor) -> Tensor:
         x = input
         x = self.act1(self.conv1(x))
+        x = self.act2(self.conv2(x))
+        x = x.mean(dim=-1)
+        output: Tensor = self.head(x)
+        return output
+
+
+class RotationEquivariantRFConvClassifier(nn.Module):
+    r"""Real 1D conv classifier whose kernels are constrained to $aI + bJ$.
+
+    This is the empirical arm for Proposition 1. It is identical to
+    `RealRFConvClassifier` in dtype, depth, channel layout, activation and
+    readout, and differs in exactly one respect: each conv kernel is
+    restricted to the $U(1)$-equivariant subspace rather than spanning all of
+    $\mathbb{R}^{2\times2}$ per tap. Comparing it against `RealRFConvClassifier`
+    therefore isolates the value of the symmetry constraint with the datatype
+    held fixed.
+
+    Note that `RotationEquivariantConv1d` + `ReLU` is pointwise identical to
+    `ComplexConv1d` + `CReLU`, since a real ReLU on stacked `[Re, Im]` channels
+    is CReLU by definition. The complex-vs-constrained comparison is therefore
+    a conformance check (asserted to 1e-6 in `tests/test_rotation_equivariant.py`,
+    forward and gradient), not an experiment; the informative contrast is
+    constrained-vs-unconstrained.
+
+    `hidden_channels` counts *complex* channels, matching
+    `ComplexRFConvClassifier`, so a given width yields `2 * hidden_channels`
+    real feature channels in both.
+    """
+
+    def __init__(
+        self,
+        *,
+        hidden_channels: int,
+        n_classes: int,
+        kernel_size: int,
+        activation: RealActivationName,
+        device: torch.device | str,
+        dtype: torch.dtype,
+    ) -> None:
+        super().__init__()
+        padding = kernel_size // 2
+        self.conv1 = RotationEquivariantConv1d(
+            1,
+            hidden_channels,
+            kernel_size=kernel_size,
+            padding=padding,
+            device=device,
+            dtype=dtype,
+        )
+        self.act1 = _real_activation_module(activation)
+        self.conv2 = RotationEquivariantConv1d(
+            hidden_channels,
+            hidden_channels,
+            kernel_size=kernel_size,
+            padding=padding,
+            device=device,
+            dtype=dtype,
+        )
+        self.act2 = _real_activation_module(activation)
+        self.head = nn.Linear(
+            2 * hidden_channels, n_classes, device=device, dtype=dtype
+        )
+
+    def forward(self, input: Tensor) -> Tensor:
+        x = self.act1(self.conv1(input))
         x = self.act2(self.conv2(x))
         x = x.mean(dim=-1)
         output: Tensor = self.head(x)
@@ -884,6 +952,22 @@ def _make_model(
                 activation=activation,
                 device=device,
                 dtype=dtype,
+            )
+            return model, complex_hidden_features, complex_madds_budget
+
+        if model_family == "real_equivariant":
+            # Empirical arm for Proposition 1: same dtype, depth, width and
+            # readout as `real_stacked`, differing only in that each conv
+            # kernel is constrained to the U(1)-equivariant aI+bJ subspace.
+            # Width counts complex channels to match ComplexRFConvClassifier,
+            # so both expose 2 * hidden real feature channels.
+            model = RotationEquivariantRFConvClassifier(
+                hidden_channels=complex_hidden_features,
+                n_classes=n_classes,
+                kernel_size=kernel_size,
+                activation=real_activation,
+                device=device,
+                dtype=real_dtype,
             )
             return model, complex_hidden_features, complex_madds_budget
 
