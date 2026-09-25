@@ -1,183 +1,19 @@
 # Experiments
 
-Experiment entry points live here.
+The drivers that produced `results/`. The exact command for each paper result
+is in the top-level [`README.md`](../README.md#reproducing-the-paper).
 
-Every completed run should write a result manifest to `results/` or to a
-configured output directory with the same schema.
+| Driver | What it runs |
+|---|---|
+| `rf/representation_stress_tests.py` | Synthetic RF stress tests (PSK, QAM, mixed, SNR, normalisation, rotation) across all baseline families; `--activation` overrides the complex activation. |
+| `rf/sweep_radioml.py` | RadioML 2018.01A random-search sweep, reported under both selection rules; `--grad-clip-norm` for the clipping intervention. |
+| `rf/radioml.py`, `rf/path_config.py` | RadioML loader and path resolution; see [`docs/radioml.md`](../docs/radioml.md). |
+| `rf/synthetic_modulation.py` | Model families, including the $U(1)$-constrained `real_equivariant` arm, and the synthetic IQ generator shared by the RF drivers. |
+| `rf/gradient_telemetry.py` | Per-step gradient telemetry harness. |
+| `physics/quantum_wavefunction.py` | Quantum wavefunction pilot. |
+| `neuro/eeg_analytic_signal.py` | EEG analytic-signal pilot. |
+| `synthetic/phase_classification.py` | Shared classifier heads and bootstrap statistics used by the drivers above. |
+| `_sweep.py` | Random search and the two selection rules, following [`docs/tuning_budget.md`](../docs/tuning_budget.md). |
 
-## Synthetic
-
-Phase 3 includes a tiny complex linear regression convergence check:
-
-```bash
-uv run python experiments/synthetic/complex_linear_regression.py
-```
-
-To write a result manifest:
-
-```bash
-uv run python experiments/synthetic/complex_linear_regression.py \
-  --output results/synthetic_complex_linear_regression.local.json
-```
-
-Phase 4 adds a phase-classification benchmark with these model families:
-
-- `complex`: complex MLP over native complex inputs.
-- `real_stacked`: real MLP over stacked `(real, imag)` inputs with the same
-  hidden width as the complex model.
-- `real_matched_params`: real MLP sized to match the complex model's scalar
-  parameter count.
-- `real_matched_flops`: real MLP sized to match the complex model's estimated
-  forward multiply-add count.
-- `real_polar`: real MLP over `(|z|, cos phase, sin phase)`.
-- `real_phase`: real MLP over `(cos phase, sin phase)`.
-- `real_magnitude`: real MLP over `|z|` only.
-
-Run the default CPU benchmark:
-
-```bash
-uv run python experiments/synthetic/phase_classification.py
-```
-
-For a quick smoke run:
-
-```bash
-uv run python experiments/synthetic/phase_classification.py \
-  --seeds 0 \
-  --n-train 128 \
-  --n-test 128 \
-  --steps 80 \
-  --output-dir results/synthetic_phase_classification_smoke
-```
-
-To test whether phase performance comes from native complex arithmetic or from
-the representation itself:
-
-```bash
-uv run python experiments/synthetic/phase_classification.py \
-  --model-families complex real_stacked real_polar real_phase real_magnitude \
-  --output-dir results/synthetic_phase_representation_ablation
-```
-
-Each run writes:
-
-- `raw_runs.json`: one row per seed and model family.
-- `summary.json`: aggregate mean/std/bootstrap confidence intervals.
-- `summary.md`: markdown summary table.
-- `manifest.json`: environment, config, seed, metric, and artifact metadata.
-
-## Sweeps
-
-Budgeted sweeps use shared hyperparameter samples across families. The primary
-comparison uses the matched shared-trial comparison; independent family winners
-are diagnostic.
-
-```bash
-uv run python experiments/synthetic/sweep_phase_classification.py
-uv run python experiments/rf/sweep_synthetic_modulation.py --device cuda
-```
-
-## RF
-
-The RF experiments include a synthetic IQ + AWGN benchmark:
-
-```bash
-uv run python experiments/rf/synthetic_modulation.py
-```
-
-To test the same phase/magnitude representation question on RF synthetic:
-
-```bash
-uv run python experiments/rf/synthetic_modulation.py \
-  --architecture conv \
-  --activation zrelu \
-  --model-families complex real_stacked real_polar real_phase real_magnitude \
-  --output-dir results/rf_synthetic_representation_ablation
-```
-
-To run the full sequence of contradiction/stress tests for the representation
-claim:
-
-```bash
-uv run python experiments/rf/representation_stress_tests.py \
-  --preset standard \
-  --device cuda \
-  --resume
-```
-
-The stress suite writes an `index.md` and per-condition summaries under
-`results/rf_synthetic_representation_stress_tests/`. Conditions include
-PSK-only, QAM-only, mixed PSK+QAM, low/high SNR, unit-magnitude and unit-power
-normalization, fixed carrier-phase rotation, random-rotation augmentation, and
-a complex-activation sweep.
-
-The real RadioML 2018.01A loader expects the local archive at
-`data/GOLD_XYZ_OSC.0001_1024.hdf5` and the fixed class-order sidecar next to it:
-
-```bash
-uv run python experiments/rf/sweep_radioml.py --device cuda
-```
-
-For Colab or mounted-drive runs, copy `config/radioml_paths.example.json` to
-`config/radioml_paths.json`, set the absolute mounted-drive path there, and run
-the same command without a long `--data-path` flag. CLI flags and the
-`RADIOML_DATA_PATH` / `RADIOML_CLASSES_PATH` environment variables still
-override the config.
-
-All sweep scripts support `--resume`. They write `checkpoint.json` after each
-completed seed run, plus `training_params.json`, `loss_curves_all.png`, and
-`loss_curves_selected.png` after a completed sweep.
-
-For H100/A100 runs with enough GPU memory, add `--cache-data-device device` to
-RadioML sweeps so capped dataset tensors stay on GPU between trials. Add
-`--dataset-cache-dir /scratch/$USER/radioml-filter-cache` to persist filtered
-RadioML tensors across separate activation sweeps.
-
-The full RF sweep is GPU-oriented. CPU smoke runs should reduce
-`--sample-length`, `--n-per-class-per-snr`, and/or `--n-trials`.
-
-## Physics
-
-The quantum wavefunction pilot tests the same representation question on
-1-D complex fields. It includes a momentum-from-phase task, a potential-inverse
-task after split-step Schrodinger evolution, and global-phase stress tests:
-
-```bash
-uv run python experiments/physics/quantum_wavefunction.py \
-  --preset standard \
-  --resume
-```
-
-For a fast CPU smoke run:
-
-```bash
-uv run python experiments/physics/quantum_wavefunction.py \
-  --preset smoke \
-  --output-dir results/physics_quantum_wavefunction_pilot_smoke
-```
-
-The pilot writes `index.md`, `index.json`, plots, manifests, and per-condition
-summaries under `results/physics_quantum_wavefunction_pilot/`.
-
-## Neuroscience
-
-The EEG analytic-signal pilot tests the same representation question on
-synthetic complex Hilbert/wavelet-style features. It separates phase locking,
-amplitude bursts, phase-amplitude coupling, and reference-phase stress tests:
-
-```bash
-uv run python experiments/neuro/eeg_analytic_signal.py \
-  --preset standard \
-  --resume
-```
-
-For a fast CPU smoke run:
-
-```bash
-uv run python experiments/neuro/eeg_analytic_signal.py \
-  --preset smoke \
-  --output-dir results/neuro_eeg_analytic_signal_pilot_smoke
-```
-
-The pilot writes `index.md`, `index.json`, plots, manifests, and per-condition
-summaries under `results/neuro_eeg_analytic_signal_pilot/`.
+Every run writes `manifest.json`, `raw_runs.json`, `summary.json` and
+`summary.md`, and supports `--resume`.

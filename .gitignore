@@ -234,6 +234,5 @@ wandb/
 # this repository. Only resume state is excluded: checkpoint.json is
 # sweep-restart bookkeeping, not a result, and accounts for ~51 MB.
 results/**/checkpoint.json
-notebooks/activation_characterization/
 paper/
 **/animations/

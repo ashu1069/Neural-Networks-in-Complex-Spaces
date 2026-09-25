@@ -177,9 +177,9 @@ def _git_commit() -> str | None:
 def _git_dirty() -> bool | None:
     """Return True if the tree has uncommitted *code* changes.
 
-    Output directories (`results/`, `notebooks/activation_characterization/`)
-    are excluded: changes there reflect the *output* of running an experiment,
-    not changes to the code that produced them. Including them would make
+    The output directory (`results/`) is excluded: changes there reflect the
+    *output* of running an experiment, not changes to the code that produced
+    them. Including them would make
     `git_dirty` always true the moment a benchmark wrote its first artifact.
     """
 
@@ -192,7 +192,7 @@ def _git_dirty() -> bool | None:
         )
     except (FileNotFoundError, subprocess.CalledProcessError):
         return None
-    output_prefixes = ("results/", "notebooks/activation_characterization/")
+    output_prefixes = ("results/",)
     for raw_line in completed.stdout.splitlines():
         path = raw_line[3:].strip()
         if path.startswith(output_prefixes):

@@ -170,7 +170,7 @@ def main() -> int:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("notebooks/activation_characterization"),
+        default=Path("results/activation_characterization"),
     )
     parser.add_argument("--grid-size", type=int, default=121)
     parser.add_argument("--extent", type=float, default=3.0)

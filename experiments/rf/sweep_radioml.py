@@ -1,9 +1,8 @@
 """16-trial random search over RadioML 2018.01A hyperparameters.
 
-Mirror of `experiments/rf/sweep_synthetic_modulation.py`, but loads the
-real DeepSig dataset via `experiments.rf.radioml.load_radioml_2018_01a`
-instead of generating synthetic IQ symbols. The four-family scaffolding
-and the matched-shared-trial selection rule are unchanged.
+Loads the DeepSig dataset via `experiments.rf.radioml.load_radioml_2018_01a`
+and reports every model family under both selection rules:
+matched-shared-trial and independent per-family.
 
 ## Cost note
 

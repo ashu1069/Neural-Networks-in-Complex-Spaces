@@ -17,9 +17,8 @@ per-step instrumentation:
 - `max_param_abs` — max absolute parameter value (drift / explosion)
 - `per_layer_grad_norm` — dict keyed by parameter name (e.g. conv1.weight)
 
-One JSONL file per `(family, seed)` pair. The driver script
-`scripts/run_gradient_telemetry.py` loops over (activation, family, seed)
-combinations and is the intended entry point.
+One JSONL file per `(family, seed)` pair. The learning-rate x activation
+factorial in `scripts/run_lr_activation_disambiguation.py` drives it.
 """
 
 from __future__ import annotations

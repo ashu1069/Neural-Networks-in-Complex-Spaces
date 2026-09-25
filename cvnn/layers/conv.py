@@ -14,9 +14,8 @@ class ComplexConv1d(nn.Module):
     """A 1D convolution for complex-valued tensors.
 
     PyTorch's `F.conv1d` natively supports `torch.complex64` / `torch.complex128`
-    on CPU, MPS, and CUDA (verified by `scripts/check_torch_complex_support.py`),
-    so this layer is a thin wrapper over the functional form rather than a
-    matmul-based fallback like `ComplexLinear` needed.
+    on CPU, MPS, and CUDA, so this layer is a thin wrapper over the functional
+    form rather than a matmul-based fallback like `ComplexLinear` needed.
 
     Inputs:  `(B, in_channels, L)` complex.
     Outputs: `(B, out_channels, L_out)` complex.

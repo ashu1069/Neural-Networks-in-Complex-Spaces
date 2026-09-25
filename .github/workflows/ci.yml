@@ -45,7 +45,7 @@ jobs:
           # gated here; review the diff in PRs if it looks suspicious.
           for activation in crelu zrelu modrelu complex_cardioid siglog complex_tanh; do
             if ! grep -q "^| \`$activation\`" \
-              notebooks/activation_characterization/comparison.md; then
+              results/activation_characterization/comparison.md; then
               echo "Missing activation row: $activation"
               exit 1
             fi
