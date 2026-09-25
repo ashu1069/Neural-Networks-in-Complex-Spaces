@@ -69,6 +69,7 @@ Every table and figure in the paper is regenerated from those manifests:
 ```bash
 uv run python scripts/build_appendix_tables.py
 uv run python scripts/plot_crossover_figure.py
+uv run python scripts/plot_paper_figures.py
 ```
 
 Note on provenance: the runs were executed from a working tree that was still
