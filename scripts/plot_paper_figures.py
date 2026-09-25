@@ -1074,7 +1074,7 @@ def fig_workflow(results: Path, out: Path) -> None:
     vermillion are reserved for the complex and polar-real families.
     """
     import numpy as np
-    from matplotlib.patches import Arc, Circle, FancyBboxPatch, Polygon, Rectangle
+    from matplotlib.patches import Circle, FancyBboxPatch, Polygon, Rectangle
     from matplotlib.transforms import Bbox
     from scipy.interpolate import PchipInterpolator  # type: ignore[import-untyped]
 
@@ -1188,14 +1188,14 @@ def fig_workflow(results: Path, out: Path) -> None:
     # ---- 1. data tiles and the one sample they share --------------------
     t = np.linspace(-1, 1, 200)
     tiles = [
-        (0.11, 1.12, "RF IQ"),
-        (0.59, 1.12, "quantum $\\psi$"),
-        (0.11, 0.68, "EEG"),
-        (0.59, 0.68, "Fourier"),
+        (0.11, 1.21, "RF IQ"),
+        (0.59, 1.21, "quantum $\\psi$"),
+        (0.11, 0.76, "EEG"),
+        (0.59, 0.76, "Fourier"),
     ]
     for i, (x, y, label) in enumerate(tiles):
-        rbox(x, y, 0.42, 0.33, fill="white", edge=PANEL_EDGE, r=0.04, z=3)
-        ax = fig.add_axes(((x + 0.05) / W, (y + 0.05) / H, 0.32 / W, 0.23 / H))
+        rbox(x, y, 0.42, 0.3, fill="white", edge=PANEL_EDGE, r=0.04, z=3)
+        ax = fig.add_axes(((x + 0.05) / W, (y + 0.045) / H, 0.32 / W, 0.21 / H))
         ax.axis("off")
         if i == 0:
             a = np.arange(8) * np.pi / 4 + np.pi / 8
@@ -1218,7 +1218,7 @@ def fig_workflow(results: Path, out: Path) -> None:
             )
             ax.set_ylim(0, 1)
         text(x + 0.21, y - 0.06, label, size=4.9, color=MUTED, ha="center")
-    zc = (0.26, 0.36)
+    zc = (0.21, 0.4)
     cv.add_patch(Circle(zc, 0.1, facecolor="white", edgecolor=INK, lw=0.7, zorder=4))
     th = np.deg2rad(38)
     cv.plot(
@@ -1237,8 +1237,8 @@ def fig_workflow(results: Path, out: Path) -> None:
         color=INK,
         zorder=5,
     )
-    text(0.41, 0.41, "one sample", size=5.0, color=MUTED)
-    text(0.41, 0.3, "$z = re^{i\\theta}$", size=5.9)
+    text(0.36, 0.45, "one sample", size=5.0, color=MUTED)
+    text(0.36, 0.34, "$z = re^{i\\theta}$", size=5.9)
 
     # ---- 2. the two families --------------------------------------------
     x2 = P2[0] + 0.07
@@ -1272,7 +1272,7 @@ def fig_workflow(results: Path, out: Path) -> None:
             cx + 0.245,
             cy + 0.065,
             label,
-            size=4.8,
+            size=4.5,
             color=POLAR if edge == POLAR else INK,
             ha="center",
         )
@@ -1303,25 +1303,18 @@ def fig_workflow(results: Path, out: Path) -> None:
 
     def icon_polar(cx: float, cy: float) -> None:
         cv.add_patch(
-            Arc(
-                (cx - 0.035, cy - 0.035),
-                0.11,
-                0.11,
-                theta1=0,
-                theta2=90,
-                color=POLAR,
-                lw=0.8,
-                zorder=9,
-            )
+            Circle((cx, cy), 0.045, facecolor="none", edgecolor=POLAR, lw=0.7, zorder=9)
         )
+        tip = (cx + 0.045 * np.cos(np.pi / 4.5), cy + 0.045 * np.sin(np.pi / 4.5))
         cv.plot(
-            [cx - 0.035, cx + 0.03],
-            [cy - 0.035, cy + 0.02],
+            [cx, tip[0]],
+            [cy, tip[1]],
             color=POLAR,
             lw=0.8,
             zorder=9,
             solid_capstyle="round",
         )
+        cv.plot(*tip, "o", ms=1.6, color=POLAR, zorder=9)
 
     def icon_tune(cx: float, cy: float) -> None:
         for dx, knob in ((-0.025, 0.02), (0.025, -0.022)):
@@ -1419,18 +1412,26 @@ def fig_workflow(results: Path, out: Path) -> None:
     )
 
     # before/after gauge of the RadioML gap
-    gx, zero, scale = x3 + 1.2, 0.62, 0.075
-    text(gx + 0.2, 1.37, "$\\Delta$, RadioML", size=4.7, color=MUTED, ha="center")
-    cv.plot([gx - 0.02, gx + 0.42], [zero, zero], color=INK, lw=0.6, zorder=8)
+    gx, zero, scale = x3 + 1.19, 0.62, 0.075
+    text(
+        gx + 0.18,
+        zero - 0.33,
+        "$\\Delta$ on RadioML",
+        size=4.6,
+        color=INK,
+        ha="center",
+        va="top",
+    )
+    cv.plot([gx - 0.02, gx + 0.38], [zero, zero], color=INK, lw=0.6, zorder=8)
     for j, (val, lab, color) in enumerate(
         ((g_cart, "before", COMPLEX), (g_ind, "after", CONTEXT[1]))
     ):
-        bx = gx + 0.01 + j * 0.23
+        bx = gx + 0.01 + j * 0.21
         lo, hi = sorted((zero, zero + val * scale))
         cv.add_patch(
             Rectangle(
                 (bx, lo),
-                0.15,
+                0.14,
                 max(hi - lo, 0.012),
                 facecolor=color,
                 edgecolor="none",
@@ -1438,7 +1439,7 @@ def fig_workflow(results: Path, out: Path) -> None:
             )
         )
         text(
-            bx + 0.075,
+            bx + 0.07,
             (hi if val > 0 else lo) + (0.04 if val > 0 else -0.04),
             f"{val:+.1f}".replace("-", "−"),
             size=5.2,
@@ -1447,7 +1448,7 @@ def fig_workflow(results: Path, out: Path) -> None:
             ha="center",
             va="bottom" if val > 0 else "top",
         )
-        text(bx + 0.075, zero - 0.16, lab, size=4.6, color=MUTED, ha="center", va="top")
+        text(bx + 0.07, zero - 0.2, lab, size=4.6, color=MUTED, ha="center", va="top")
 
     # ---- 4. what survives: two accuracy curves that cross ----------------
     sel = head["matched"]
@@ -1463,7 +1464,7 @@ def fig_workflow(results: Path, out: Path) -> None:
     _, acc_p = per_snr("real_polar")
     xx = np.linspace(snr[0], snr[-1], 300)
     yc_, yp_ = PchipInterpolator(snr, acc_c)(xx), PchipInterpolator(snr, acc_p)(xx)
-    ax = fig.add_axes(((P4[0] + 0.14) / W, 0.52 / H, (P4[1] - 0.22) / W, 0.95 / H))
+    ax = fig.add_axes(((P4[0] + 0.1) / W, 0.6 / H, (P4[1] - 0.18) / W, 0.9 / H))
     ax.fill_between(
         xx, yc_, yp_, where=yc_ >= yp_, color=COMPLEX, alpha=0.2, lw=0, interpolate=True
     )
@@ -1515,10 +1516,10 @@ def fig_workflow(results: Path, out: Path) -> None:
         axis="x", labelsize=4.6, colors=MUTED, length=1.8, width=0.5, pad=1.5
     )
     ax.set_facecolor("none")
-    text(P4[0] + P4[1] / 2 + 0.03, 0.36, "SNR (dB)", size=4.7, color=MUTED, ha="center")
+    text(P4[0] + P4[1] / 2 + 0.01, 0.44, "SNR (dB)", size=4.7, color=MUTED, ha="center")
     text(
         P4[0] + 0.1,
-        0.29,
+        0.33,
         "complex: low SNR",
         size=4.7,
         color=COMPLEX,
@@ -1526,7 +1527,7 @@ def fig_workflow(results: Path, out: Path) -> None:
     )
     text(
         P4[0] + 0.1,
-        0.21,
+        0.245,
         "polar real: high SNR",
         size=4.7,
         color=POLAR,
