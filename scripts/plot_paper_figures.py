@@ -672,11 +672,397 @@ def fig_lr(results: Path, out: Path) -> None:
     _save(fig, out, "lr_robustness")
 
 
+# Short-budget PSK-only accuracies as published in the preprint's stress-test
+# table (complex, stacked real). They are the one input to this figure not
+# re-derived from results/: the short-budget runs predate the manifest harness.
+PREPRINT_SHORT_BUDGET_PSK = {"complex": 0.821, "real_stacked": 0.728}
+
+
+def fig_overview(results: Path, out: Path) -> None:
+    """One-figure summary of the paper, drawn at printed width (5.5 in)."""
+    from matplotlib.patches import Rectangle
+
+    fig = plt.figure(figsize=(5.5, 2.05))
+    gs = fig.add_gridspec(1, 3, width_ratios=[1.0, 1.05, 0.95], wspace=0.42)
+    ax_a, ax_b, ax_c = (fig.add_subplot(gs[0, i]) for i in range(3))
+
+    # (a) Waterfall on the seven-class headline configuration.
+    head = _sweep(results, "radioml_geom7_crelu")
+    reals = tuple(f for f in head["matched"] if f.startswith("real_"))
+    zrelu = _sweep(results, "radioml_geom7_zrelu")
+    values = [
+        _gap(head["matched"], CARTESIAN),
+        _gap(head["matched"], reals),
+        _gap(head["independent"], reals),
+        _gap(zrelu["independent"], reals),
+    ]
+    ax_a.axhline(0, color=INK, linewidth=0.7, zorder=1)
+    for i, v in enumerate(values):
+        lo, hi = (0.0, v) if i == 0 else sorted((values[i - 1], v))
+        ax_a.add_patch(
+            Rectangle(
+                (i - 0.32, lo),
+                0.64,
+                hi - lo,
+                facecolor=INK if i == 0 else CONTEXT[2],
+                edgecolor="white",
+                linewidth=0.8,
+                zorder=2,
+            )
+        )
+        if i:
+            ax_a.plot(
+                [i - 1 + 0.32, i - 0.32],
+                [values[i - 1]] * 2,
+                color=MUTED,
+                linewidth=0.5,
+                linestyle=(0, (1, 1.5)),
+                zorder=1,
+            )
+        # First bar: value above its top. A tall drop: value just inside the bar,
+        # above its new end. A short drop: value below its new end.
+        if i == 0 or v > values[i - 1]:
+            y, va = v + 0.35, "bottom"
+        elif values[i - 1] - v > 2.0:
+            y, va = v + 0.3, "bottom"
+        else:
+            y, va = v - 0.35, "top"
+        ax_a.text(i, y, f"{v:+.1f}", ha="center", va=va, fontsize=6.3, color=INK)
+    ax_a.set_xlim(-0.6, 3.6)
+    ax_a.set_ylim(min(values) - 1.6, values[0] + 1.6)
+    ax_a.set_xticks(range(4), ["as reported", "+ polar", "own tuning", "ZReLU"])
+    _style(ax_a, title="(a) Remove the confounds", ylabel="complex $-$ best real (pp)")
+    ax_a.tick_params(axis="x", labelsize=6.0, length=0)
+    plt.setp(ax_a.get_xticklabels(), rotation=35, ha="right", rotation_mode="anchor")
+
+    # (b) What survives: complex minus polar real, per SNR.
+    sel = head["matched"]
+
+    def per_snr(fam: str) -> dict[int, float]:
+        rows = sel[fam]["selected_extra"]["test_accuracy_by_snr_db_per_seed"]
+        return {int(k): statistics.fmean(r[k] for r in rows) for k in rows[0]}
+
+    cx, po = per_snr("complex"), per_snr("real_polar")
+    snrs = sorted(cx)
+    gaps = [100 * (cx[k] - po[k]) for k in snrs]
+    top, bot = max(gaps), min(gaps)
+    ax_b.axvspan(2, 6, color="#EEF3F7", linewidth=0, zorder=0)
+    ax_b.axhline(0, color=INK, linewidth=0.7, zorder=1)
+    ax_b.bar(
+        snrs,
+        gaps,
+        width=2.9,
+        color=[COMPLEX if g > 0 else POLAR for g in gaps],
+        edgecolor="white",
+        linewidth=0.6,
+        zorder=2,
+    )
+    ax_b.text(
+        -15.5,
+        top + 1.2,
+        "complex ahead:\nphase is noisy",
+        fontsize=5.7,
+        color=INK,
+        ha="left",
+        va="bottom",
+    )
+    ax_b.text(
+        12,
+        bot - 1.2,
+        "polar ahead:\nsignal is clean",
+        fontsize=5.7,
+        color=INK,
+        ha="center",
+        va="top",
+    )
+    ax_b.text(
+        4,
+        top + 1.2,
+        "cross-\nover",
+        fontsize=5.4,
+        color=MUTED,
+        ha="center",
+        va="bottom",
+    )
+    ax_b.set_ylim(bot - 7.0, top + 7.0)
+    ax_b.set_xticks([-10, 0, 10])
+    _style(
+        ax_b,
+        title="(b) What survives",
+        xlabel="SNR (dB)",
+        ylabel="complex $-$ polar (pp)",
+    )
+
+    # (c) Effect sizes: every non-architectural knob is larger.
+    budget = _pilot(
+        results, "rf_representation_stress_tests_full", "psk_representation"
+    )
+    short = PREPRINT_SHORT_BUDGET_PSK
+    budget_effect = 100 * (
+        (short["complex"] - short["real_stacked"])
+        - (budget["complex"]["mean"] - budget["real_stacked"]["mean"])
+    )
+    swing = 0.0
+    for cond in ("amplitude_event", "phase_amplitude_coupling"):
+        accs = [
+            _pilot(results, f"neuro_eeg_activation_{a}", cond)["complex"]["mean"]
+            for a in ACTIVATIONS
+        ]
+        swing = max(swing, 100 * (max(accs) - min(accs)))
+    rows = [
+        ("activation choice (EEG)", swing, CONTEXT[0]),
+        ("training budget (synthetic PSK)", budget_effect, CONTEXT[0]),
+        ("protocol (RadioML, panel a)", values[0] - values[2], CONTEXT[0]),
+        ("architecture, fairly tuned", abs(values[2]), COMPLEX),
+    ]
+    for i, (name, v, color) in enumerate(rows):
+        y = len(rows) - 1 - i
+        ax_c.barh(y, v, height=0.34, color=color, edgecolor="none", zorder=2)
+        ax_c.plot([v], [y], marker="|", markersize=7, color=color, zorder=3)
+        ax_c.text(
+            v + 1.2,
+            y,
+            f"{v:.1f}",
+            va="center",
+            fontsize=6.3,
+            color=COMPLEX if color == COMPLEX else INK,
+        )
+        ax_c.text(0, y + 0.27, name, va="bottom", ha="left", fontsize=5.9, color=INK)
+    ax_c.set_yticks([])
+    ax_c.set_ylim(-0.5, len(rows) - 0.2)
+    ax_c.set_xlim(0, 75)
+    _style(ax_c, title="(c) Effect sizes", xlabel="percentage points")
+    ax_c.grid(True, axis="x", color=GRID, linewidth=0.5, linestyle=":")
+    ax_c.grid(False, axis="y")
+    for ax in (ax_a, ax_b, ax_c):
+        ax.title.set_fontsize(7.2)
+    _save(fig, out, "overview")
+
+
+def fig_concept(out: Path) -> None:
+    """Concept diagram for the introduction and background (no data).
+
+    Drawn at printed width (5.5 in) on an inch-coordinate canvas so that every
+    element is placed, not nudged. Panels: (a) one complex sample and the four
+    real coordinate views of it; (b) the complex layer as the aI+bJ subspace of
+    real two-channel mixings; (c) the Liouville trilemma as a 2x2 grid, with
+    each activation labelled by the quantity it gates on.
+    """
+    import numpy as np
+    from matplotlib.patches import Arc, FancyBboxPatch, Rectangle
+
+    W, H = 5.5, 2.0
+    fig = plt.figure(figsize=(W, H))
+    canvas = fig.add_axes((0, 0, 1, 1))
+    canvas.set_xlim(0, W)
+    canvas.set_ylim(0, H)
+    canvas.axis("off")
+
+    def box(
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        *,
+        edge: str,
+        fill: str,
+        lw: float = 0.7,
+        r: float = 0.05,
+    ) -> None:
+        canvas.add_patch(
+            FancyBboxPatch(
+                (x, y),
+                w,
+                h,
+                boxstyle=f"round,pad=0,rounding_size={r}",
+                facecolor=fill,
+                edgecolor=edge,
+                linewidth=lw,
+            )
+        )
+
+    def text(
+        x: float,
+        y: float,
+        s: str,
+        *,
+        size: float = 5.8,
+        color: str = INK,
+        ha: str = "left",
+        va: str = "center",
+    ) -> None:
+        canvas.text(x, y, s, fontsize=size, color=color, ha=ha, va=va, linespacing=1.28)
+
+    def matrix(
+        x: float,
+        y: float,
+        rows: list[list[str]],
+        *,
+        dx: float = 0.2,
+        dy: float = 0.13,
+        color: str = INK,
+    ) -> None:
+        for i, row in enumerate(rows):
+            for j, cell in enumerate(row):
+                text(x + j * dx, y - i * dy, cell, size=6.3, color=color, ha="center")
+        top, bot = y + dy * 0.55, y - (len(rows) - 1) * dy - dy * 0.55
+        left, right = x - dx * 0.55, x + (len(rows[0]) - 1) * dx + dx * 0.55
+        for xb, sgn in ((left, 1), (right, -1)):
+            canvas.plot(
+                [xb + sgn * 0.035, xb, xb, xb + sgn * 0.035],
+                [top, top, bot, bot],
+                color=color,
+                lw=0.6,
+            )
+
+    for xs in (1.86, 3.70):
+        canvas.plot([xs, xs], [0.1, 1.86], color=GRID, lw=0.6)
+
+    # (a) Where does the label live? ----------------------------------------
+    text(0.05, 1.93, "(a) Where does the label live?", size=7.2, va="top")
+    text(
+        0.05,
+        1.71,
+        "RF IQ · Fourier · quantum $\\psi$ · EEG analytic",
+        size=5.2,
+        color=MUTED,
+    )
+    plane = fig.add_axes((0.04 / W, 0.84 / H, 0.9 / W, 0.76 / H))
+    plane.set_xlim(-0.22, 1.25)
+    plane.set_ylim(-0.2, 1.05)
+    plane.axis("off")
+    arrow = dict(arrowstyle="-|>", color=MUTED, lw=0.6, mutation_scale=5)
+    plane.annotate("", xy=(1.2, 0), xytext=(-0.18, 0), arrowprops=arrow)
+    plane.annotate("", xy=(0, 1.02), xytext=(0, -0.18), arrowprops=arrow)
+    plane.text(1.2, -0.05, "Re", fontsize=5.4, color=MUTED, ha="right", va="top")
+    plane.text(0.05, 1.02, "Im", fontsize=5.4, color=MUTED, ha="left", va="top")
+    th = np.deg2rad(36)
+    zx, zy = 0.95 * np.cos(th), 0.95 * np.sin(th)
+    dots: dict[str, Any] = dict(color=MUTED, lw=0.5, ls=(0, (1.5, 1.5)))
+    plane.plot([zx, zx], [0, zy], **dots)
+    plane.plot([0, zx], [zy, zy], **dots)
+    plane.plot([0, zx], [0, zy], color=COMPLEX, lw=1.3)
+    plane.plot(zx, zy, "o", ms=3.4, color=COMPLEX)
+    plane.add_patch(Arc((0, 0), 0.52, 0.52, theta1=0, theta2=36, color=POLAR, lw=1.0))
+    plane.text(0.31, 0.06, r"$\theta$", fontsize=6.4, color=POLAR)
+    plane.text(zx * 0.42 - 0.1, zy * 0.42 + 0.07, "$r$", fontsize=6.4, color=COMPLEX)
+    plane.text(
+        zx,
+        zy + 0.09,
+        r"$z = x+iy = re^{i\theta}$",
+        fontsize=5.8,
+        color=INK,
+        ha="center",
+        va="bottom",
+    )
+    plane.text(zx, -0.05, "$x$", fontsize=5.6, color=MUTED, ha="center", va="top")
+    plane.text(-0.04, zy, "$y$", fontsize=5.6, color=MUTED, ha="right", va="center")
+    text(1.02, 1.12, "a real model is\ngiven one view:", size=5.3, color=MUTED)
+    views = [
+        ("Cartesian  $(x, y)$", CONTEXT[0]),
+        (r"polar  $(r, \cos\theta, \sin\theta)$", POLAR),
+        (r"phase only  $(\cos\theta, \sin\theta)$", CONTEXT[0]),
+        ("magnitude only  $r$", CONTEXT[0]),
+    ]
+    for i, (label, edge) in enumerate(views):
+        y = 0.64 - i * 0.165
+        box(0.08, y, 1.64, 0.135, edge=edge, fill="white")
+        text(0.9, y + 0.0675, label, ha="center")
+
+    # (b) A complex layer is a constrained real layer ------------------------
+    x0 = 1.93
+    text(x0, 1.93, "(b) A constrained real layer", size=7.2, va="top")
+    box(x0 + 0.02, 0.36, 1.66, 1.36, edge=CONTEXT[1], fill="#F4F4F4", r=0.08)
+    text(x0 + 0.1, 1.61, r"$\mathbb{R}^{2\times2}$: every two-channel mixing")
+    matrix(x0 + 0.27, 1.41, [["$p$", "$q$"], ["$r$", "$s$"]])
+    text(x0 + 0.66, 1.345, "4 parameters per tap", size=5.4, color=MUTED)
+    box(x0 + 0.34, 0.44, 1.26, 0.74, edge=COMPLEX, fill="#E3EEF6", lw=0.9, r=0.06)
+    text(x0 + 0.78, 1.0, "$aI+bJ\\,=$", size=6.3, ha="right")
+    matrix(x0 + 0.95, 1.065, [["$a$", "$-b$"], ["$b$", "$a$"]], dx=0.24, color=COMPLEX)
+    text(
+        x0 + 0.97,
+        0.66,
+        "multiplication by $a+ib$\ncommutes with every $R_\\phi$\n2 parameters per tap",
+        size=5.4,
+        ha="center",
+    )
+    text(
+        x0 + 0.85,
+        0.2,
+        "fewer degrees of freedom: pays when phase is\n"
+        "noisy, costs once the signal is clean",
+        size=5.2,
+        color=MUTED,
+        ha="center",
+    )
+
+    # (c) What an activation can be: the Liouville trilemma ------------------
+    x0 = 3.77
+    text(x0, 1.93, "(c) What an activation can be", size=7.2, va="top")
+    gx, gy, cw, ch = x0 + 0.5, 0.36, 0.6, 0.52
+    text(gx + 0.5 * cw, gy + 2 * ch + 0.06, "holomorphic", ha="center", va="bottom")
+    text(
+        gx + 1.5 * cw, gy + 2 * ch + 0.06, "not\nholomorphic", ha="center", va="bottom"
+    )
+    text(gx - 0.05, gy + 1.5 * ch, "bounded", ha="right")
+    text(gx - 0.05, gy + 0.5 * ch, "unbounded", ha="right")
+    cells = {
+        (0, 1): ("none\n(Liouville)", True),
+        (1, 1): ("Siglog  $|z|$", False),
+        (0, 0): ("tanh\n(poles)", False),
+        (1, 0): (
+            "CReLU  Re, Im\nZReLU  quadrant\nModReLU  $|z|$\nCardioid  $\\theta$",
+            False,
+        ),
+    }
+    for (cx, cy), (label, forbidden) in cells.items():
+        canvas.add_patch(
+            Rectangle(
+                (gx + cx * cw, gy + cy * ch),
+                cw,
+                ch,
+                facecolor="#EFEFEF" if forbidden else "white",
+                edgecolor=CONTEXT[1],
+                linewidth=0.7,
+                hatch="////" if forbidden else None,
+            )
+        )
+        if forbidden:
+            canvas.add_patch(
+                Rectangle(
+                    (gx + cx * cw + 0.07, gy + cy * ch + 0.13),
+                    cw - 0.14,
+                    ch - 0.26,
+                    facecolor="#EFEFEF",
+                    edgecolor="none",
+                )
+            )
+        text(
+            gx + (cx + 0.5) * cw,
+            gy + (cy + 0.5) * ch,
+            label,
+            size=5.0 if (cx, cy) == (1, 0) else 5.6,
+            color=MUTED if forbidden else INK,
+            ha="center",
+        )
+    text(
+        gx + cw,
+        0.2,
+        "each labelled by what it gates on",
+        size=5.2,
+        color=MUTED,
+        ha="center",
+    )
+    _save(fig, out, "concept")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--results", type=Path, default=Path("results"))
     parser.add_argument("--out", type=Path, default=Path("paper/figures"))
     args = parser.parse_args()
+    fig_concept(args.out)
+    fig_overview(args.results, args.out)
     fig_confounds(args.results, args.out)
     fig_activation(args.results, args.out)
     fig_dead_seeds(args.results, args.out)
