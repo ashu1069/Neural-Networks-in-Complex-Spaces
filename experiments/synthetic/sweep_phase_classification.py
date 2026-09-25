@@ -24,7 +24,6 @@ from experiments._sweep import (
     FamilySelection,
     JsonObject,
     SearchSpace,
-    TrialResult,
     TrialSeedOutcome,
     random_search,
     select_best_per_family,
@@ -410,7 +409,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
-
-def _ensure_unused() -> tuple[type[TrialResult], type[FamilySelection]]:
-    return TrialResult, FamilySelection
