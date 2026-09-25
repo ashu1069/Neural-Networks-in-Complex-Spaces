@@ -72,10 +72,16 @@ def _style(ax: Any, *, title: str, xlabel: str = "", ylabel: str = "") -> None:
         ax.spines[side].set_color(GRID)
 
 
-def _save(fig: Any, out: Path, name: str) -> None:
+def _save(fig: Any, out: Path, name: str, *, crop: Any = None) -> None:
+    """Save PDF and PNG. `crop` is an explicit bbox in inches for canvas-style
+    figures, whose full-figure axes defeat matplotlib's tight bounding box."""
     out.mkdir(parents=True, exist_ok=True)
     for ext in ("pdf", "png"):
-        fig.savefig(out / f"{name}.{ext}", dpi=400, bbox_inches="tight")
+        fig.savefig(
+            out / f"{name}.{ext}",
+            dpi=400,
+            bbox_inches="tight" if crop is None else crop,
+        )
     plt.close(fig)
     print(f"  wrote {name}")
 
@@ -1056,11 +1062,378 @@ def fig_concept(out: Path) -> None:
     _save(fig, out, "concept")
 
 
+def fig_workflow(results: Path, out: Path) -> None:
+    """Workflow diagram of the paper, for the introduction.
+
+    Reads left to right as four stages: complex-valued data converge to one
+    sample z; two model families (complex, and real given one coordinate view)
+    produce a measured gap; the gap passes through the controls the paper
+    applies, narrowing at each confound; what survives is the SNR crossover,
+    drawn from committed results. The ribbon is schematic -- its width is not
+    to scale -- and each gate is annotated with that control's measured effect.
+    Activation is drawn as a dashed gate that does not narrow the ribbon, since
+    the paper treats it as a design axis rather than a confound.
+    """
+    import numpy as np
+    from matplotlib.colors import LinearSegmentedColormap
+    from matplotlib.patches import Circle, FancyBboxPatch, PathPatch
+    from matplotlib.path import Path as MPath
+
+    W, H = 5.5, 2.0
+    fig = plt.figure(figsize=(W, H))
+    cv = fig.add_axes((0, 0, 1, 1))
+    cv.set_xlim(0, W)
+    cv.set_ylim(0, H)
+    cv.axis("off")
+    CARD, HAIR, BLUE_SOFT = "#F7F9FB", "#D3DAE1", "#DCEAF4"
+
+    def text(
+        x: float,
+        y: float,
+        s: str,
+        *,
+        size: float = 5.4,
+        color: str = INK,
+        ha: str = "left",
+        va: str = "center",
+        weight: str = "normal",
+        zorder: float = 6,
+    ) -> None:
+        cv.text(
+            x,
+            y,
+            s,
+            fontsize=size,
+            color=color,
+            ha=ha,
+            va=va,
+            fontweight=weight,
+            linespacing=1.18,
+            zorder=zorder,
+        )
+
+    def card(
+        x: float,
+        y: float,
+        w: float,
+        h: float,
+        *,
+        fill: str = CARD,
+        edge: str = HAIR,
+        lw: float = 0.6,
+        r: float = 0.05,
+        ls: Any = "solid",
+        z: float = 3,
+    ) -> None:
+        cv.add_patch(
+            FancyBboxPatch(
+                (x, y),
+                w,
+                h,
+                boxstyle=f"round,pad=0,rounding_size={r}",
+                facecolor=fill,
+                edgecolor=edge,
+                linewidth=lw,
+                linestyle=ls,
+                zorder=z,
+            )
+        )
+
+    def flow(
+        p0: tuple[float, float],
+        p1: tuple[float, float],
+        *,
+        color: str = HAIR,
+        lw: float = 0.9,
+    ) -> None:
+        (x0, y0), (x1, y1) = p0, p1
+        xm = (x0 + x1) / 2
+        path = MPath(
+            [(x0, y0), (xm, y0), (xm, y1), (x1, y1)],
+            [MPath.MOVETO, MPath.CURVE4, MPath.CURVE4, MPath.CURVE4],
+        )
+        cv.add_patch(
+            PathPatch(
+                path,
+                facecolor="none",
+                edgecolor=color,
+                lw=lw,
+                capstyle="round",
+                zorder=2,
+            )
+        )
+
+    def header(x: float, s: str) -> None:
+        text(x, 1.9, s, size=5.2, color=MUTED, weight="bold")
+
+    yc = 1.0
+    header(0.06, "1  DATA")
+    header(1.12, "2  TWO MODEL FAMILIES")
+    header(2.66, "3  CONTROLS ON THE GAP")
+    header(4.6, "4  WHAT SURVIVES")
+
+    # ---- 1. data glyphs converging on one complex sample ----------------
+    rows = [(1.5, "RF IQ"), (1.17, "quantum $\\psi$"), (0.84, "EEG"), (0.51, "Fourier")]
+    gx, gw, gh = 0.07, 0.27, 0.17
+    t = np.linspace(-1, 1, 200)
+    for i, (y, label) in enumerate(rows):
+        card(gx, y - gh / 2, gw, gh, fill="white")
+        ax = fig.add_axes(
+            (
+                (gx + 0.025) / W,
+                (y - gh / 2 + 0.02) / H,
+                (gw - 0.05) / W,
+                (gh - 0.04) / H,
+            )
+        )
+        ax.axis("off")
+        if i == 0:
+            a = np.arange(8) * np.pi / 4 + np.pi / 8
+            ax.plot(np.cos(a), np.sin(a), "o", ms=1.5, color=COMPLEX)
+            ax.set_xlim(-2.0, 2.0)
+            ax.set_ylim(-1.3, 1.3)
+        elif i == 1:
+            ax.plot(t, np.exp(-6 * t**2) * np.cos(18 * t), color=COMPLEX, lw=0.7)
+            ax.plot(t, np.exp(-6 * t**2), color=POLAR, lw=0.6)
+            ax.set_ylim(-1.2, 1.2)
+        elif i == 2:
+            env = 0.35 + 0.65 * np.exp(-12 * (t - 0.15) ** 2)
+            ax.plot(t, env * np.sin(30 * t), color=COMPLEX, lw=0.6)
+            ax.plot(t, env, color=POLAR, lw=0.6)
+            ax.set_ylim(-1.2, 1.2)
+        else:
+            ax.bar(
+                np.arange(7),
+                [0.3, 0.9, 0.55, 0.75, 0.25, 0.4, 0.15],
+                width=0.6,
+                color=COMPLEX,
+            )
+            ax.set_ylim(0, 1)
+        text(gx + gw + 0.04, y, label, size=5.1)
+        flow((0.79, y), (0.86, yc), color=HAIR, lw=0.7)
+    zc, zr = (0.95, yc), 0.09
+    cv.add_patch(Circle(zc, zr, facecolor="white", edgecolor=COMPLEX, lw=0.9, zorder=5))
+    th = np.deg2rad(40)
+    cv.annotate(
+        "",
+        xy=(zc[0] + zr * 0.8 * np.cos(th), zc[1] + zr * 0.8 * np.sin(th)),
+        xytext=zc,
+        zorder=6,
+        arrowprops=dict(arrowstyle="-|>", color=COMPLEX, lw=0.8, mutation_scale=4),
+    )
+    text(zc[0], zc[1] - 0.14, "$z=re^{i\\theta}$", size=5.6, ha="center", va="top")
+
+    # ---- 2. two model families ------------------------------------------
+    cx0, cw = 1.12, 1.3
+    card(cx0, 1.1, cw, 0.55, fill=BLUE_SOFT, edge=COMPLEX, lw=0.8)
+    text(cx0 + 0.08, 1.53, "complex network", size=6.0, weight="bold")
+    text(cx0 + 0.08, 1.35, "every layer is $aI+bJ$", size=5.3)
+    text(cx0 + 0.08, 1.21, "$U(1)$-equivariant, 2 params/tap", size=5.0, color=MUTED)
+    card(cx0, 0.2, cw, 0.8)
+    text(cx0 + 0.08, 0.88, "real network, one view", size=6.0, weight="bold")
+    chips = [
+        ("$(x,y)$", CONTEXT[1]),
+        ("$(r,\\cos\\theta,\\sin\\theta)$", POLAR),
+        ("$(\\cos\\theta,\\sin\\theta)$", CONTEXT[1]),
+        ("$r$", CONTEXT[1]),
+    ]
+    chw = (cw - 0.2) / 2
+    for i, (label, edge) in enumerate(chips):
+        cx, cy = cx0 + 0.08 + (i % 2) * (chw + 0.04), 0.63 - (i // 2) * 0.18
+        card(
+            cx,
+            cy,
+            chw,
+            0.14,
+            fill="white",
+            edge=edge,
+            lw=0.9 if edge == POLAR else 0.6,
+            r=0.035,
+            z=4,
+        )
+        text(cx + chw / 2, cy + 0.07, label, size=5.0, ha="center")
+    text(cx0 + 0.08, 0.31, "also parameter- and FLOP-matched", size=4.8, color=MUTED)
+    flow((zc[0] + zr, zc[1]), (cx0, 1.37), color=COMPLEX, lw=0.9)
+    flow((zc[0] + zr, zc[1]), (cx0, 0.6), color=CONTEXT[1], lw=0.9)
+
+    # ---- 3. the gap as a ribbon through the controls --------------------
+    dc, dr = (2.6, yc), 0.095
+    flow((cx0 + cw, 1.37), (dc[0] - dr, yc), color=COMPLEX, lw=0.9)
+    flow((cx0 + cw, 0.6), (dc[0] - dr, yc), color=CONTEXT[1], lw=0.9)
+    x_start, x_end = dc[0], 4.62
+    gates = [(3.0, 0.1), (3.43, 0.064), (3.86, 0.04)]
+    act_x = 4.3
+    xs = np.linspace(x_start, x_end, 800)
+    half = np.full_like(xs, 0.2)
+    level = 0.2
+    for gxp, after in gates:
+        half += (after - level) / (1 + np.exp(-(xs - gxp) / 0.016))
+        level = after
+    verts = list(zip(xs, yc + half, strict=True)) + list(
+        zip(xs[::-1], (yc - half)[::-1], strict=True)
+    )
+    ribbon = PathPatch(MPath(verts, closed=True), facecolor="none", edgecolor="none")
+    cv.add_patch(ribbon)
+    cmap = LinearSegmentedColormap.from_list("gap", [COMPLEX, "#9CC3E0"])
+    im = cv.imshow(
+        np.linspace(0, 1, 256)[None, :],
+        cmap=cmap,
+        aspect="auto",
+        extent=(x_start, x_end, yc - 0.21, yc + 0.21),
+        zorder=2,
+        interpolation="bicubic",
+    )
+    im.set_clip_path(ribbon)
+    cv.add_patch(Circle(dc, dr, facecolor=INK, edgecolor="white", lw=0.9, zorder=5))
+    text(dc[0], yc, "$\\Delta$", size=6.6, color="white", ha="center")
+    # Every annotated effect is computed from committed runs, except the
+    # preprint's short-budget PSK accuracies (see PREPRINT_SHORT_BUDGET_PSK).
+    head = _sweep(results, "radioml_geom7_crelu")
+    reals = tuple(fam for fam in head["matched"] if fam.startswith("real_"))
+    g_cart = _gap(head["matched"], CARTESIAN)
+    g_all = _gap(head["matched"], reals)
+    g_ind = _gap(head["independent"], reals)
+    conv = _pilot(results, "rf_representation_stress_tests_full", "psk_representation")
+    short = PREPRINT_SHORT_BUDGET_PSK
+    d_budget = 100 * (
+        (conv["complex"]["mean"] - conv["real_stacked"]["mean"])
+        - (short["complex"] - short["real_stacked"])
+    )
+    swing = max(
+        100 * (max(acc) - min(acc))
+        for acc in (
+            [
+                _pilot(results, f"neuro_eeg_activation_{act}", cond)["complex"]["mean"]
+                for act in ACTIVATIONS
+            ]
+            for cond in ("amplitude_event", "phase_amplitude_coupling")
+        )
+    )
+    notes = [
+        ("polar\nbaseline", f"${g_all - g_cart:+.1f}$ pp", "RadioML"),
+        ("own\ntuning", f"${g_ind - g_all:+.1f}$ pp", "RadioML"),
+        ("converged\ntraining", f"${d_budget:+.1f}$ pp", "synth. PSK"),
+    ]
+    gate_h = 0.56
+    for (gxp, _after), (label, eff, where) in zip(gates, notes, strict=True):
+        card(
+            gxp - 0.016,
+            yc - gate_h / 2,
+            0.032,
+            gate_h,
+            fill=INK,
+            edge="white",
+            r=0.016,
+            z=4,
+        )
+        text(gxp, yc + gate_h / 2 + 0.05, label, size=5.1, ha="center", va="bottom")
+        text(gxp, yc - gate_h / 2 - 0.05, eff, size=5.4, ha="center", va="top")
+        text(
+            gxp,
+            yc - gate_h / 2 - 0.19,
+            where,
+            size=4.7,
+            color=MUTED,
+            ha="center",
+            va="top",
+        )
+    card(
+        act_x - 0.016,
+        yc - gate_h / 2,
+        0.032,
+        gate_h,
+        fill="white",
+        edge=INK,
+        lw=0.7,
+        r=0.016,
+        ls=(0, (2, 1.2)),
+        z=4,
+    )
+    text(
+        act_x,
+        yc + gate_h / 2 + 0.05,
+        "activation\nchoice",
+        size=5.1,
+        ha="center",
+        va="bottom",
+    )
+    text(
+        act_x,
+        yc - gate_h / 2 - 0.05,
+        f"up to {swing:.0f} pp",
+        size=5.4,
+        ha="center",
+        va="top",
+    )
+    text(
+        act_x,
+        yc - gate_h / 2 - 0.19,
+        "EEG",
+        size=4.7,
+        color=MUTED,
+        ha="center",
+        va="top",
+    )
+    # key
+    ky = 0.24
+    text(2.52, ky, "$\\Delta$ = complex $-$ best real", size=4.7, color=MUTED)
+    card(3.46, ky - 0.04, 0.02, 0.08, fill=INK, edge=INK, r=0.008)
+    text(3.51, ky, "confound", size=4.7, color=MUTED)
+    card(
+        3.86,
+        ky - 0.04,
+        0.02,
+        0.08,
+        fill="white",
+        edge=INK,
+        lw=0.6,
+        r=0.008,
+        ls=(0, (1.5, 1)),
+    )
+    text(3.91, ky, "design axis", size=4.7, color=MUTED)
+
+    # ---- 4. what survives: the crossover ---------------------------------
+    sx, sw = 4.6, 0.86
+    card(sx, 0.2, sw, 1.45)
+    sel = head["matched"]
+
+    def per_snr(fam: str) -> dict[int, float]:
+        rs = sel[fam]["selected_extra"]["test_accuracy_by_snr_db_per_seed"]
+        return {int(k): statistics.fmean(r[k] for r in rs) for k in rs[0]}
+
+    cxs, pos = per_snr("complex"), per_snr("real_polar")
+    snrs = sorted(cxs)
+    gaps = [100 * (cxs[k] - pos[k]) for k in snrs]
+    ax = fig.add_axes(((sx + 0.07) / W, 0.84 / H, (sw - 0.14) / W, 0.6 / H))
+    ax.axvspan(2, 6, color="#E6EEF5", lw=0, zorder=0)
+    ax.axhline(0, color=INK, lw=0.5, zorder=1)
+    ax.bar(
+        snrs,
+        gaps,
+        width=2.8,
+        color=[COMPLEX if g > 0 else POLAR for g in gaps],
+        zorder=2,
+    )
+    ax.set_xlim(-16, 20)
+    ax.axis("off")
+    text(sx + sw / 2, 1.54, "complex $-$ polar", size=5.0, color=MUTED, ha="center")
+    text(sx + 0.08, 0.79, "$-14$", size=4.6, color=MUTED)
+    text(sx + sw - 0.08, 0.79, "$+18$ dB", size=4.6, color=MUTED, ha="right")
+    text(sx + 0.08, 0.6, "complex helps", size=5.2, color=COMPLEX, weight="bold")
+    text(sx + 0.08, 0.49, "at marginal SNR", size=5.0)
+    text(sx + 0.08, 0.36, "polar real wins", size=5.2, color=POLAR, weight="bold")
+    text(sx + 0.08, 0.25, "once signal is clean", size=5.0)
+    from matplotlib.transforms import Bbox
+
+    _save(fig, out, "workflow", crop=Bbox([[0.02, 0.14], [W - 0.02, 1.97]]))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--results", type=Path, default=Path("results"))
     parser.add_argument("--out", type=Path, default=Path("paper/figures"))
     args = parser.parse_args()
+    fig_workflow(args.results, args.out)
     fig_concept(args.out)
     fig_overview(args.results, args.out)
     fig_confounds(args.results, args.out)
