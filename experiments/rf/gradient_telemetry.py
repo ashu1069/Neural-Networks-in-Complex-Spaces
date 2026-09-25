@@ -2,7 +2,7 @@
 
 Goal: explain *why* real baselines collapse on `crelu` / `cardioid` / `siglog`
 under the matched-shared-trial selection rule but stay stable on `modrelu`
-and `zrelu`. The hypothesis (see `docs/report.md` §3.4) is that complex's
+and `zrelu`. The hypothesis is that complex's
 selected config lives in a high-LR regime under the unstable activations
 and a low-LR regime under the stable ones; under high LR, real baselines
 see exploding gradients and a fraction of seeds never recover.

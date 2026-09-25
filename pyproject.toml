@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.12,<3.13"
 license = "Apache-2.0"
 authors = [
-  { name = "Ashu" },
+  { name = "Anonymous Authors" },
 ]
 dependencies = [
   "einops>=0.8.0",
