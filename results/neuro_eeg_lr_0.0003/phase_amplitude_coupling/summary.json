@@ -1,0 +1,463 @@
+{
+  "condition": {
+    "condition_id": "phase_amplitude_coupling",
+    "expected_signal": "full complex/Cartesian/polar views should outperform pure phase or pure magnitude because the label is relational.",
+    "model_families": [
+      "complex",
+      "real_stacked",
+      "real_polar",
+      "real_phase",
+      "real_magnitude"
+    ],
+    "question": "Can models detect phase-amplitude coupling when the high-band amplitude is locked to a low-band phase offset?",
+    "task": "phase_amplitude_coupling",
+    "test_transform": {
+      "name": "none",
+      "rotation_radians": 0.0
+    },
+    "train_transform": {
+      "name": "none",
+      "rotation_radians": 0.0
+    }
+  },
+  "config": {
+    "activation": "crelu",
+    "architecture": "mlp",
+    "batch_size": 128,
+    "bootstrap_samples": 1000,
+    "confidence": 0.95,
+    "device": "cuda",
+    "dtype": "complex64",
+    "examples_per_class": 128,
+    "hidden_features": 24,
+    "kernel_size": 5,
+    "learning_rate": 0.0003,
+    "n_channels": 4,
+    "observation_noise_std": 0.03,
+    "preset": "standard",
+    "progress": true,
+    "real_activation": "relu",
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "time_steps": 64,
+    "train_fraction": 0.8,
+    "train_steps": 120
+  },
+  "raw_runs": [
+    {
+      "accuracy_by_class": {
+        "pac0": 0.1538461595773697,
+        "pac180": 0.26923078298568726,
+        "pac270": 0.3076923191547394,
+        "pac90": 0.11538462340831757
+      },
+      "condition_id": "phase_amplitude_coupling",
+      "estimated_forward_madds": 27264,
+      "hidden_features": 24,
+      "learning_rate": 0.0003,
+      "model_family": "complex",
+      "parameter_count": 13736,
+      "seed": 0,
+      "steps": 120,
+      "task": "phase_amplitude_coupling",
+      "test_accuracy": 0.21153846383094788,
+      "test_loss": 1.5178767442703247,
+      "train_loss": 1.0946067571640015,
+      "train_seconds": 0.2813116665929556
+    },
+    {
+      "accuracy_by_class": {
+        "pac0": 0.3461538553237915,
+        "pac180": 0.23076924681663513,
+        "pac270": 0.3076923191547394,
+        "pac90": 0.23076924681663513
+      },
+      "condition_id": "phase_amplitude_coupling",
+      "estimated_forward_madds": 27264,
+      "hidden_features": 24,
+      "learning_rate": 0.0003,
+      "model_family": "complex",
+      "parameter_count": 13736,
+      "seed": 1,
+      "steps": 120,
+      "task": "phase_amplitude_coupling",
+      "test_accuracy": 0.2788461744785309,
+      "test_loss": 1.506988763809204,
+      "train_loss": 0.9509150981903076,
+      "train_seconds": 0.2834457829594612
+    },
+    {
+      "accuracy_by_class": {
+        "pac0": 0.19230769574642181,
+        "pac180": 0.3076923191547394,
+        "pac270": 0.23076924681663513,
+        "pac90": 0.1538461595773697
+      },
+      "condition_id": "phase_amplitude_coupling",
+      "estimated_forward_madds": 27264,
+      "hidden_features": 24,
+      "learning_rate": 0.0003,
+      "model_family": "complex",
+      "parameter_count": 13736,
+      "seed": 2,
+      "steps": 120,
+      "task": "phase_amplitude_coupling",
+      "test_accuracy": 0.2211538553237915,
+      "test_loss": 1.474066972732544,
+      "train_loss": 0.9929851293563843,
+      "train_seconds": 0.20916635170578957
+    },
+    {
+      "accuracy_by_class": {
+        "pac0": 0.07692307978868484,
+        "pac180": 0.03846153989434242,
+        "pac270": 0.42307692766189575,
+        "pac90": 0.23076924681663513
+      },
+      "condition_id": "phase_amplitude_coupling",
+      "estimated_forward_madds": 12960,
+      "hidden_features": 24,
+      "learning_rate": 0.0003,
+      "model_family": "real_stacked",
+      "parameter_count": 13012,
+      "seed": 0,
+      "steps": 120,
+      "task": "phase_amplitude_coupling",
+      "test_accuracy": 0.19230769574642181,
+      "test_loss": 1.4954451322555542,
+      "train_loss": 1.2026968002319336,
+      "train_seconds": 0.11345243081450462
+    },
+    {
+      "accuracy_by_class": {
+        "pac0": 0.3076923191547394,
+        "pac180": 0.1538461595773697,
+        "pac270": 0.26923078298568726,
+        "pac90": 0.19230769574642181
+      },
+      "condition_id": "phase_amplitude_coupling",
+      "estimated_forward_madds": 12960,
+      "hidden_features": 24,
+      "learning_rate": 0.0003,
+      "model_family": "real_stacked",
+      "parameter_count": 13012,
+      "seed": 1,
+      "steps": 120,
+      "task": "phase_amplitude_coupling",
+      "test_accuracy": 0.23076924681663513,
+      "test_loss": 1.4295172691345215,
+      "train_loss": 1.2253289222717285,
+      "train_seconds": 0.2500514052808285
+    },
+    {
+      "accuracy_by_class": {
+        "pac0": 0.46153849363327026,
+        "pac180": 0.23076924681663513,
+        "pac270": 0.19230769574642181,
+        "pac90": 0.19230769574642181
+      },
+      "condition_id": "phase_amplitude_coupling",
+      "estimated_forward_madds": 12960,
+      "hidden_features": 24,
+      "learning_rate": 0.0003,
+      "model_family": "real_stacked",
+      "parameter_count": 13012,
+      "seed": 2,
+      "steps": 120,
+      "task": "phase_amplitude_coupling",
+      "test_accuracy": 0.26923078298568726,
+      "test_loss": 1.4101886749267578,
+      "train_loss": 1.2310506105422974,
+      "train_seconds": 0.25266008451581
+    },
+    {
+      "accuracy_by_class": {
+        "pac0": 0.38461539149284363,
+        "pac180": 0.26923078298568726,
+        "pac270": 0.5384615659713745,
+        "pac90": 0.19230769574642181
+      },
+      "condition_id": "phase_amplitude_coupling",
+      "estimated_forward_madds": 19104,
+      "hidden_features": 24,
+      "learning_rate": 0.0003,
+      "model_family": "real_polar",
+      "parameter_count": 19156,
+      "seed": 0,
+      "steps": 120,
+      "task": "phase_amplitude_coupling",
+      "test_accuracy": 0.3461538553237915,
+      "test_loss": 1.3578472137451172,
+      "train_loss": 1.0354605913162231,
+      "train_seconds": 0.2572592906653881
+    },
+    {
+      "accuracy_by_class": {
+        "pac0": 0.46153849363327026,
+        "pac180": 0.5,
+        "pac270": 0.3461538553237915,
+        "pac90": 0.42307692766189575
+      },
+      "condition_id": "phase_amplitude_coupling",
+      "estimated_forward_madds": 19104,
+      "hidden_features": 24,
+      "learning_rate": 0.0003,
+      "model_family": "real_polar",
+      "parameter_count": 19156,
+      "seed": 1,
+      "steps": 120,
+      "task": "phase_amplitude_coupling",
+      "test_accuracy": 0.4326923191547394,
+      "test_loss": 1.2660962343215942,
+      "train_loss": 1.002882480621338,
+      "train_seconds": 0.11540471576154232
+    },
+    {
+      "accuracy_by_class": {
+        "pac0": 0.7307692766189575,
+        "pac180": 0.5,
+        "pac270": 0.3461538553237915,
+        "pac90": 0.5
+      },
+      "condition_id": "phase_amplitude_coupling",
+      "estimated_forward_madds": 19104,
+      "hidden_features": 24,
+      "learning_rate": 0.0003,
+      "model_family": "real_polar",
+      "parameter_count": 19156,
+      "seed": 2,
+      "steps": 120,
+      "task": "phase_amplitude_coupling",
+      "test_accuracy": 0.5192307829856873,
+      "test_loss": 1.247064471244812,
+      "train_loss": 1.0276850461959839,
+      "train_seconds": 0.09287930838763714
+    },
+    {
+      "accuracy_by_class": {
+        "pac0": 0.07692307978868484,
+        "pac180": 0.03846153989434242,
+        "pac270": 0.38461539149284363,
+        "pac90": 0.3461538553237915
+      },
+      "condition_id": "phase_amplitude_coupling",
+      "estimated_forward_madds": 12960,
+      "hidden_features": 24,
+      "learning_rate": 0.0003,
+      "model_family": "real_phase",
+      "parameter_count": 13012,
+      "seed": 0,
+      "steps": 120,
+      "task": "phase_amplitude_coupling",
+      "test_accuracy": 0.21153846383094788,
+      "test_loss": 1.5093650817871094,
+      "train_loss": 1.2244608402252197,
+      "train_seconds": 0.2449150700122118
+    },
+    {
+      "accuracy_by_class": {
+        "pac0": 0.07692307978868484,
+        "pac180": 0.19230769574642181,
+        "pac270": 0.26923078298568726,
+        "pac90": 0.19230769574642181
+      },
+      "condition_id": "phase_amplitude_coupling",
+      "estimated_forward_madds": 12960,
+      "hidden_features": 24,
+      "learning_rate": 0.0003,
+      "model_family": "real_phase",
+      "parameter_count": 13012,
+      "seed": 1,
+      "steps": 120,
+      "task": "phase_amplitude_coupling",
+      "test_accuracy": 0.18269231915473938,
+      "test_loss": 1.4323303699493408,
+      "train_loss": 1.2356386184692383,
+      "train_seconds": 0.24447091668844223
+    },
+    {
+      "accuracy_by_class": {
+        "pac0": 0.6153846383094788,
+        "pac180": 0.19230769574642181,
+        "pac270": 0.11538462340831757,
+        "pac90": 0.07692307978868484
+      },
+      "condition_id": "phase_amplitude_coupling",
+      "estimated_forward_madds": 12960,
+      "hidden_features": 24,
+      "learning_rate": 0.0003,
+      "model_family": "real_phase",
+      "parameter_count": 13012,
+      "seed": 2,
+      "steps": 120,
+      "task": "phase_amplitude_coupling",
+      "test_accuracy": 0.25,
+      "test_loss": 1.4082140922546387,
+      "train_loss": 1.2499748468399048,
+      "train_seconds": 0.25437100790441036
+    },
+    {
+      "accuracy_by_class": {
+        "pac0": 0.42307692766189575,
+        "pac180": 0.26923078298568726,
+        "pac270": 0.07692307978868484,
+        "pac90": 0.07692307978868484
+      },
+      "condition_id": "phase_amplitude_coupling",
+      "estimated_forward_madds": 6816,
+      "hidden_features": 24,
+      "learning_rate": 0.0003,
+      "model_family": "real_magnitude",
+      "parameter_count": 6868,
+      "seed": 0,
+      "steps": 120,
+      "task": "phase_amplitude_coupling",
+      "test_accuracy": 0.21153846383094788,
+      "test_loss": 1.3918362855911255,
+      "train_loss": 1.3795068264007568,
+      "train_seconds": 0.1325101274996996
+    },
+    {
+      "accuracy_by_class": {
+        "pac0": 0.11538462340831757,
+        "pac180": 0.3076923191547394,
+        "pac270": 0.5,
+        "pac90": 0.03846153989434242
+      },
+      "condition_id": "phase_amplitude_coupling",
+      "estimated_forward_madds": 6816,
+      "hidden_features": 24,
+      "learning_rate": 0.0003,
+      "model_family": "real_magnitude",
+      "parameter_count": 6868,
+      "seed": 1,
+      "steps": 120,
+      "task": "phase_amplitude_coupling",
+      "test_accuracy": 0.24038462340831757,
+      "test_loss": 1.4107906818389893,
+      "train_loss": 1.3495293855667114,
+      "train_seconds": 0.08504285290837288
+    },
+    {
+      "accuracy_by_class": {
+        "pac0": 0.38461539149284363,
+        "pac180": 0.7307692766189575,
+        "pac270": 0.0,
+        "pac90": 0.0
+      },
+      "condition_id": "phase_amplitude_coupling",
+      "estimated_forward_madds": 6816,
+      "hidden_features": 24,
+      "learning_rate": 0.0003,
+      "model_family": "real_magnitude",
+      "parameter_count": 6868,
+      "seed": 2,
+      "steps": 120,
+      "task": "phase_amplitude_coupling",
+      "test_accuracy": 0.2788461744785309,
+      "test_loss": 1.3866418600082397,
+      "train_loss": 1.3824894428253174,
+      "train_seconds": 0.24933268502354622
+    }
+  ],
+  "summaries": [
+    {
+      "accuracy_by_class_mean": {
+        "pac0": 0.23076923688252768,
+        "pac180": 0.26923078298568726,
+        "pac270": 0.28205129504203796,
+        "pac90": 0.16666667660077414
+      },
+      "estimated_forward_madds": 27264,
+      "hidden_features": 24,
+      "model_family": "complex",
+      "n_runs": 3,
+      "parameter_count": 13736,
+      "test_accuracy_ci_high": 0.2788461744785309,
+      "test_accuracy_ci_low": 0.21153846383094788,
+      "test_accuracy_mean": 0.23717949787775675,
+      "test_accuracy_std": 0.03640326760890135,
+      "test_loss_mean": 1.499644160270691,
+      "train_seconds_mean": 0.2579746004194021
+    },
+    {
+      "accuracy_by_class_mean": {
+        "pac0": 0.28205129752556485,
+        "pac180": 0.14102564876278242,
+        "pac270": 0.29487180213133496,
+        "pac90": 0.20512821276982626
+      },
+      "estimated_forward_madds": 12960,
+      "hidden_features": 24,
+      "model_family": "real_stacked",
+      "n_runs": 3,
+      "parameter_count": 13012,
+      "test_accuracy_ci_high": 0.26923078298568726,
+      "test_accuracy_ci_low": 0.19230769574642181,
+      "test_accuracy_mean": 0.2307692418495814,
+      "test_accuracy_std": 0.038461543619632964,
+      "test_loss_mean": 1.4450503587722778,
+      "train_seconds_mean": 0.2053879735370477
+    },
+    {
+      "accuracy_by_class_mean": {
+        "pac0": 0.5256410539150238,
+        "pac180": 0.42307692766189575,
+        "pac270": 0.4102564255396525,
+        "pac90": 0.3717948744694392
+      },
+      "estimated_forward_madds": 19104,
+      "hidden_features": 24,
+      "model_family": "real_polar",
+      "n_runs": 3,
+      "parameter_count": 19156,
+      "test_accuracy_ci_high": 0.5192307829856873,
+      "test_accuracy_ci_low": 0.3461538553237915,
+      "test_accuracy_mean": 0.4326923191547394,
+      "test_accuracy_std": 0.08653846383094788,
+      "test_loss_mean": 1.290335973103841,
+      "train_seconds_mean": 0.15518110493818918
+    },
+    {
+      "accuracy_by_class_mean": {
+        "pac0": 0.25641026596228284,
+        "pac180": 0.14102564379572868,
+        "pac270": 0.25641026596228284,
+        "pac90": 0.20512821028629938
+      },
+      "estimated_forward_madds": 12960,
+      "hidden_features": 24,
+      "model_family": "real_phase",
+      "n_runs": 3,
+      "parameter_count": 13012,
+      "test_accuracy_ci_high": 0.25,
+      "test_accuracy_ci_low": 0.18269231915473938,
+      "test_accuracy_mean": 0.2147435943285624,
+      "test_accuracy_std": 0.033768115454107295,
+      "test_loss_mean": 1.4499698479970295,
+      "train_seconds_mean": 0.24791899820168814
+    },
+    {
+      "accuracy_by_class_mean": {
+        "pac0": 0.30769231418768567,
+        "pac180": 0.43589745958646137,
+        "pac270": 0.19230769326289496,
+        "pac90": 0.03846153989434242
+      },
+      "estimated_forward_madds": 6816,
+      "hidden_features": 24,
+      "model_family": "real_magnitude",
+      "n_runs": 3,
+      "parameter_count": 6868,
+      "test_accuracy_ci_high": 0.2788461744785309,
+      "test_accuracy_ci_low": 0.21153846383094788,
+      "test_accuracy_mean": 0.2435897539059321,
+      "test_accuracy_std": 0.03376813030484134,
+      "test_loss_mean": 1.3964229424794514,
+      "train_seconds_mean": 0.1556285551438729
+    }
+  ]
+}

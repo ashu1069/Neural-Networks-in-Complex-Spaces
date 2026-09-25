@@ -230,7 +230,10 @@ __marimo__/
 data/
 outputs/
 wandb/
-results/
+# Results are committed so the reproducibility statement holds against
+# this repository. Only resume state is excluded: checkpoint.json is
+# sweep-restart bookkeeping, not a result, and accounts for ~51 MB.
+results/**/checkpoint.json
 notebooks/activation_characterization/
 paper/
 **/animations/

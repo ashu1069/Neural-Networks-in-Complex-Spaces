@@ -1,0 +1,369 @@
+{
+  "artifacts": {
+    "accuracy_bar": "results/rf_representation_stress_tests_full/activation_crelu/accuracy_bar.png",
+    "accuracy_by_snr": "results/rf_representation_stress_tests_full/activation_crelu/accuracy_by_snr.png",
+    "raw_runs": "results/rf_representation_stress_tests_full/activation_crelu/raw_runs.json",
+    "summary_json": "results/rf_representation_stress_tests_full/activation_crelu/summary.json",
+    "summary_markdown": "results/rf_representation_stress_tests_full/activation_crelu/summary.md"
+  },
+  "config": {
+    "condition": {
+      "activation": "crelu",
+      "condition_id": "activation_crelu",
+      "contradiction_signal": "the complex result changes enough across activations that the broad 'complex NN' claim is underspecified.",
+      "model_families": [
+        "complex",
+        "real_stacked"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk"
+      ],
+      "question": "How much does complex activation `crelu` matter?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    "run_config": {
+      "architecture": "conv",
+      "batch_size": 256,
+      "bootstrap_samples": 2000,
+      "confidence": 0.95,
+      "device": "cuda",
+      "dtype": "complex64",
+      "hidden_features": 32,
+      "kernel_size": 5,
+      "learning_rate": 0.01,
+      "n_per_class_per_snr": 512,
+      "preset": "full",
+      "progress": true,
+      "sample_length": 128,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "steps": 600,
+      "train_fraction": 0.8
+    }
+  },
+  "created_at": "2026-09-16T23:02:38.984522+00:00",
+  "dataset": {
+    "description": "synthetic IQ PSK/QAM symbols + AWGN with optional input transforms",
+    "name": "rf_synthetic_modulation",
+    "version": "0.1.0"
+  },
+  "environment": {
+    "cuda_available": true,
+    "cuda_device": "NVIDIA GeForce RTX 3060",
+    "cuda_version": "12.6",
+    "device": "cuda",
+    "dtype": "complex64",
+    "git_commit": "86def29793fdb159737867f67d565508a6bfcd4e",
+    "git_dirty": false,
+    "macos": null,
+    "mps_available": false,
+    "platform": "Linux-6.8.0-124-generic-x86_64-with-glibc2.35",
+    "python": "3.12.12",
+    "torch": "2.9.1+cu126"
+  },
+  "metrics": {
+    "condition": {
+      "activation": "crelu",
+      "condition_id": "activation_crelu",
+      "contradiction_signal": "the complex result changes enough across activations that the broad 'complex NN' claim is underspecified.",
+      "model_families": [
+        "complex",
+        "real_stacked"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk"
+      ],
+      "question": "How much does complex activation `crelu` matter?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    "config": {
+      "architecture": "conv",
+      "batch_size": 256,
+      "bootstrap_samples": 2000,
+      "confidence": 0.95,
+      "device": "cuda",
+      "dtype": "complex64",
+      "hidden_features": 32,
+      "kernel_size": 5,
+      "learning_rate": 0.01,
+      "n_per_class_per_snr": 512,
+      "preset": "full",
+      "progress": true,
+      "sample_length": 128,
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "steps": 600,
+      "train_fraction": 0.8
+    },
+    "raw_runs": [
+      {
+        "accuracy_by_snr_db": {
+          "0": 0.8058252930641174,
+          "10": 1.0,
+          "20": 1.0
+        },
+        "estimated_forward_madds": 2703744,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 10886,
+        "seed": 0,
+        "steps": 600,
+        "test_accuracy": 0.9352750182151794,
+        "test_loss": 0.1471806764602661,
+        "train_loss": 0.16963902115821838,
+        "train_seconds": 5.370619950816035
+      },
+      {
+        "accuracy_by_snr_db": {
+          "0": 0.7443366050720215,
+          "10": 1.0,
+          "20": 1.0
+        },
+        "estimated_forward_madds": 2703744,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 10886,
+        "seed": 1,
+        "steps": 600,
+        "test_accuracy": 0.9147788286209106,
+        "test_loss": 0.1748698353767395,
+        "train_loss": 0.1369711458683014,
+        "train_seconds": 5.314885778352618
+      },
+      {
+        "accuracy_by_snr_db": {
+          "0": 0.7475728392601013,
+          "10": 0.9967637658119202,
+          "20": 1.0
+        },
+        "estimated_forward_madds": 2703744,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 10886,
+        "seed": 2,
+        "steps": 600,
+        "test_accuracy": 0.9147788286209106,
+        "test_loss": 0.17283552885055542,
+        "train_loss": 0.17725670337677002,
+        "train_seconds": 5.351425627246499
+      },
+      {
+        "accuracy_by_snr_db": {
+          "0": 0.8090615272521973,
+          "10": 1.0,
+          "20": 1.0
+        },
+        "estimated_forward_madds": 2703744,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 10886,
+        "seed": 3,
+        "steps": 600,
+        "test_accuracy": 0.9363538026809692,
+        "test_loss": 0.14825578033924103,
+        "train_loss": 0.1684209257364273,
+        "train_seconds": 5.372281488031149
+      },
+      {
+        "accuracy_by_snr_db": {
+          "0": 0.7475728392601013,
+          "10": 0.9902912974357605,
+          "20": 1.0
+        },
+        "estimated_forward_madds": 2703744,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 10886,
+        "seed": 4,
+        "steps": 600,
+        "test_accuracy": 0.9126213192939758,
+        "test_loss": 0.20983698964118958,
+        "train_loss": 0.1812228262424469,
+        "train_seconds": 3.703583801165223
+      },
+      {
+        "accuracy_by_snr_db": {
+          "0": 0.7799353003501892,
+          "10": 0.9967637658119202,
+          "20": 1.0
+        },
+        "estimated_forward_madds": 696416,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 5603,
+        "seed": 0,
+        "steps": 600,
+        "test_accuracy": 0.9255663156509399,
+        "test_loss": 0.15771982073783875,
+        "train_loss": 0.15356171131134033,
+        "train_seconds": 1.0665001422166824
+      },
+      {
+        "accuracy_by_snr_db": {
+          "0": 0.7119741439819336,
+          "10": 1.0,
+          "20": 1.0
+        },
+        "estimated_forward_madds": 696416,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 5603,
+        "seed": 1,
+        "steps": 600,
+        "test_accuracy": 0.9039913415908813,
+        "test_loss": 0.21761402487754822,
+        "train_loss": 0.1660449206829071,
+        "train_seconds": 1.08145896717906
+      },
+      {
+        "accuracy_by_snr_db": {
+          "0": 0.7184466123580933,
+          "10": 0.9967637658119202,
+          "20": 1.0
+        },
+        "estimated_forward_madds": 696416,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 5603,
+        "seed": 2,
+        "steps": 600,
+        "test_accuracy": 0.9050700664520264,
+        "test_loss": 0.21253900229930878,
+        "train_loss": 0.20070305466651917,
+        "train_seconds": 1.0574754197150469
+      },
+      {
+        "accuracy_by_snr_db": {
+          "0": 0.7572816014289856,
+          "10": 0.9967637658119202,
+          "20": 1.0
+        },
+        "estimated_forward_madds": 696416,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 5603,
+        "seed": 3,
+        "steps": 600,
+        "test_accuracy": 0.9180150628089905,
+        "test_loss": 0.18066836893558502,
+        "train_loss": 0.2033841907978058,
+        "train_seconds": 1.068407129496336
+      },
+      {
+        "accuracy_by_snr_db": {
+          "0": 0.7346278429031372,
+          "10": 0.9935275316238403,
+          "20": 0.9935275316238403
+        },
+        "estimated_forward_madds": 696416,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 5603,
+        "seed": 4,
+        "steps": 600,
+        "test_accuracy": 0.9072275757789612,
+        "test_loss": 0.222842276096344,
+        "train_loss": 0.22271564602851868,
+        "train_seconds": 1.1312714200466871
+      }
+    ],
+    "summaries": [
+      {
+        "accuracy_by_snr_db_mean": {
+          "0": 0.7708738207817077,
+          "10": 0.9974110126495361,
+          "20": 1.0
+        },
+        "estimated_forward_madds": 2703744,
+        "hidden_features": 32,
+        "model_family": "complex",
+        "n_runs": 5,
+        "parameter_count": 10886,
+        "test_accuracy_ci_high": 0.9316073060035706,
+        "test_accuracy_ci_low": 0.9139158248901367,
+        "test_accuracy_mean": 0.9227615594863892,
+        "test_accuracy_std": 0.011954164334227923,
+        "test_loss_mean": 0.17059576213359834,
+        "train_seconds_mean": 5.022559329122305
+      },
+      {
+        "accuracy_by_snr_db_mean": {
+          "0": 0.7404531002044678,
+          "10": 0.9967637658119202,
+          "20": 0.9987055063247681
+        },
+        "estimated_forward_madds": 696416,
+        "hidden_features": 32,
+        "model_family": "real_stacked",
+        "n_runs": 5,
+        "parameter_count": 5603,
+        "test_accuracy_ci_high": 0.9199568152427673,
+        "test_accuracy_ci_low": 0.9050700783729553,
+        "test_accuracy_mean": 0.9119740724563599,
+        "test_accuracy_std": 0.009422859985008237,
+        "test_loss_mean": 0.19827669858932495,
+        "train_seconds_mean": 1.0810226157307625
+      }
+    ]
+  },
+  "notes": null,
+  "run_id": "rf-representation-stress-activation_crelu",
+  "schema_version": "0.1.0",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ]
+}

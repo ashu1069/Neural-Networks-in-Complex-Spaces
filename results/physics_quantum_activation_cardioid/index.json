@@ -1,0 +1,107 @@
+{
+  "conditions": [
+    {
+      "condition_id": "potential_inverse",
+      "expected_signal": "full complex/Cartesian/polar inputs should outperform phase-only or density-only views when both amplitude and phase carry scattering information.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "question": "Can models infer which potential generated the observed final wavefunction after 1D Schrodinger evolution?",
+      "task": "potential_inverse",
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    {
+      "condition_id": "global_phase_shift",
+      "expected_signal": "coordinate-dependent models may degrade under an unseen global phase; magnitude-only is invariant but information-poor.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "question": "Do models trained in one global-phase convention respect the physical invariance psi -> exp(i theta) psi?",
+      "task": "potential_inverse",
+      "test_transform": {
+        "name": "fixed_global_phase",
+        "rotation_radians": 1.5707963267948966
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    }
+  ],
+  "config": {
+    "activation": "cardioid",
+    "architecture": "conv",
+    "batch_size": 256,
+    "bootstrap_samples": 2000,
+    "confidence": 0.95,
+    "device": "cuda",
+    "dtype": "complex64",
+    "evolution_dt": 0.03,
+    "evolution_steps": 80,
+    "examples_per_class": 512,
+    "grid_size": 128,
+    "hidden_features": 32,
+    "kernel_size": 5,
+    "learning_rate": 0.01,
+    "observation_noise_std": 0.0,
+    "preset": "full",
+    "progress": true,
+    "real_activation": "relu",
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "train_fraction": 0.8,
+    "train_steps": 400,
+    "x_max": 8.0,
+    "x_min": -8.0
+  },
+  "results": [
+    {
+      "best_accuracy": 0.9247059345245361,
+      "best_model": "complex",
+      "complex_accuracy": 0.9247059345245361,
+      "condition_id": "potential_inverse",
+      "expected_signal": "full complex/Cartesian/polar inputs should outperform phase-only or density-only views when both amplitude and phase carry scattering information.",
+      "question": "Can models infer which potential generated the observed final wavefunction after 1D Schrodinger evolution?",
+      "real_magnitude_accuracy": 0.6768627762794495,
+      "real_phase_accuracy": 0.8788235902786254,
+      "real_polar_accuracy": 0.922745156288147,
+      "real_stacked_accuracy": 0.8984314203262329,
+      "summary_markdown": "results/physics_quantum_activation_cardioid/potential_inverse/summary.md",
+      "task": "potential_inverse"
+    },
+    {
+      "best_accuracy": 0.8803922057151794,
+      "best_model": "real_polar",
+      "complex_accuracy": 0.8305882811546326,
+      "condition_id": "global_phase_shift",
+      "expected_signal": "coordinate-dependent models may degrade under an unseen global phase; magnitude-only is invariant but information-poor.",
+      "question": "Do models trained in one global-phase convention respect the physical invariance psi -> exp(i theta) psi?",
+      "real_magnitude_accuracy": 0.6729412078857422,
+      "real_phase_accuracy": 0.8321569085121154,
+      "real_polar_accuracy": 0.8803922057151794,
+      "real_stacked_accuracy": 0.8450980901718139,
+      "summary_markdown": "results/physics_quantum_activation_cardioid/global_phase_shift/summary.md",
+      "task": "potential_inverse"
+    }
+  ]
+}

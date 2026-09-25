@@ -1,0 +1,675 @@
+{
+  "condition": {
+    "condition_id": "phase_locking",
+    "expected_signal": "phase-aware and Cartesian views should learn; magnitude-only should remain near chance.",
+    "model_families": [
+      "complex",
+      "real_stacked",
+      "real_polar",
+      "real_phase",
+      "real_magnitude"
+    ],
+    "question": "Can models classify inter-channel phase locking when amplitude envelopes are randomized independently of the label?",
+    "task": "phase_locking",
+    "test_transform": {
+      "name": "none",
+      "rotation_radians": 0.0
+    },
+    "train_transform": {
+      "name": "none",
+      "rotation_radians": 0.0
+    }
+  },
+  "config": {
+    "activation": "crelu",
+    "architecture": "mlp",
+    "batch_size": 256,
+    "bootstrap_samples": 2000,
+    "confidence": 0.95,
+    "device": "cuda",
+    "dtype": "complex64",
+    "examples_per_class": 512,
+    "hidden_features": 48,
+    "kernel_size": 5,
+    "learning_rate": 0.01,
+    "n_channels": 4,
+    "observation_noise_std": 0.03,
+    "preset": "full",
+    "progress": true,
+    "real_activation": "relu",
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "time_steps": 128,
+    "train_fraction": 0.8,
+    "train_steps": 350
+  },
+  "raw_runs": [
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 108288,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "complex",
+      "parameter_count": 54344,
+      "seed": 0,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 1.0,
+      "test_loss": 4.402356717037037e-05,
+      "train_loss": 1.433566831110511e-05,
+      "train_seconds": 0.7831138297915459
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 108288,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "complex",
+      "parameter_count": 54344,
+      "seed": 1,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 1.0,
+      "test_loss": 8.954821532825008e-05,
+      "train_loss": 1.1494336831674445e-05,
+      "train_seconds": 0.6220165807753801
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 108288,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "complex",
+      "parameter_count": 54344,
+      "seed": 2,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 1.0,
+      "test_loss": 0.00016705456073395908,
+      "train_loss": 1.7843896785052493e-05,
+      "train_seconds": 0.5921713281422853
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 0.9901961088180542,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 108288,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "complex",
+      "parameter_count": 54344,
+      "seed": 3,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 0.9975490570068359,
+      "test_loss": 0.01343591045588255,
+      "train_loss": 1.2983735359739512e-05,
+      "train_seconds": 1.038322949782014
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 0.9803922176361084,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 108288,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "complex",
+      "parameter_count": 54344,
+      "seed": 4,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 0.9950980544090271,
+      "test_loss": 0.016331326216459274,
+      "train_loss": 2.857711660908535e-05,
+      "train_seconds": 1.1200327351689339
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 51648,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_stacked",
+      "parameter_count": 51748,
+      "seed": 0,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 1.0,
+      "test_loss": 7.082457614160376e-06,
+      "train_loss": 1.7764710946721607e-06,
+      "train_seconds": 0.9570885989814997
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 51648,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_stacked",
+      "parameter_count": 51748,
+      "seed": 1,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 1.0,
+      "test_loss": 1.7833575839176774e-05,
+      "train_loss": 1.5878761132626096e-06,
+      "train_seconds": 0.9048263914883137
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 51648,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_stacked",
+      "parameter_count": 51748,
+      "seed": 2,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 1.0,
+      "test_loss": 0.0005591013468801975,
+      "train_loss": 2.1470384581334656e-06,
+      "train_seconds": 0.9554983824491501
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 0.9901961088180542,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 51648,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_stacked",
+      "parameter_count": 51748,
+      "seed": 3,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 0.9975490570068359,
+      "test_loss": 0.009935388341546059,
+      "train_loss": 5.078403319203062e-06,
+      "train_seconds": 0.722362220287323
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 51648,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_stacked",
+      "parameter_count": 51748,
+      "seed": 4,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 1.0,
+      "test_loss": 0.00021797645604237914,
+      "train_loss": 3.5719845072890166e-06,
+      "train_seconds": 0.6711815930902958
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 76224,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_polar",
+      "parameter_count": 76324,
+      "seed": 0,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 1.0,
+      "test_loss": 0.00016996129124891013,
+      "train_loss": 3.3204210922122e-05,
+      "train_seconds": 0.8453086484223604
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 76224,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_polar",
+      "parameter_count": 76324,
+      "seed": 1,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 1.0,
+      "test_loss": 0.0005796615150757134,
+      "train_loss": 3.324148565297946e-05,
+      "train_seconds": 0.640397697687149
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 76224,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_polar",
+      "parameter_count": 76324,
+      "seed": 2,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 1.0,
+      "test_loss": 0.00029943010304123163,
+      "train_loss": 0.00011043686390621588,
+      "train_seconds": 0.6438708491623402
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 76224,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_polar",
+      "parameter_count": 76324,
+      "seed": 3,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 1.0,
+      "test_loss": 0.0003934217675123364,
+      "train_loss": 3.3182153856614605e-05,
+      "train_seconds": 0.838300408795476
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 76224,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_polar",
+      "parameter_count": 76324,
+      "seed": 4,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 1.0,
+      "test_loss": 0.00029480751254595816,
+      "train_loss": 6.42929007881321e-05,
+      "train_seconds": 0.6274263989180326
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 51648,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_phase",
+      "parameter_count": 51748,
+      "seed": 0,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 1.0,
+      "test_loss": 8.242096555477474e-06,
+      "train_loss": 1.4784508266529883e-06,
+      "train_seconds": 0.6281932704150677
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 51648,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_phase",
+      "parameter_count": 51748,
+      "seed": 1,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 1.0,
+      "test_loss": 3.333839231345337e-06,
+      "train_loss": 1.400691871822346e-06,
+      "train_seconds": 0.8152259886264801
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 0.9901961088180542
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 51648,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_phase",
+      "parameter_count": 51748,
+      "seed": 2,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 0.9975490570068359,
+      "test_loss": 0.007903195917606354,
+      "train_loss": 9.736861557030352e-07,
+      "train_seconds": 0.8795246090739965
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 51648,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_phase",
+      "parameter_count": 51748,
+      "seed": 3,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 1.0,
+      "test_loss": 4.182157863397151e-05,
+      "train_loss": 9.564620313540217e-07,
+      "train_seconds": 1.1313302889466286
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 51648,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_phase",
+      "parameter_count": 51748,
+      "seed": 4,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 1.0,
+      "test_loss": 3.156463208142668e-05,
+      "train_loss": 1.1543625078047626e-06,
+      "train_seconds": 0.8406110480427742
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 0.0,
+        "lag180": 0.0,
+        "lag270": 0.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 27072,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_magnitude",
+      "parameter_count": 27172,
+      "seed": 0,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 0.25,
+      "test_loss": 1.3864192962646484,
+      "train_loss": 1.3842072486877441,
+      "train_seconds": 1.1103399135172367
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 0.0,
+        "lag270": 0.0,
+        "lag90": 0.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 27072,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_magnitude",
+      "parameter_count": 27172,
+      "seed": 1,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 0.25,
+      "test_loss": 1.3864117860794067,
+      "train_loss": 1.386354923248291,
+      "train_seconds": 1.095812164247036
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 0.0,
+        "lag180": 0.0,
+        "lag270": 1.0,
+        "lag90": 0.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 27072,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_magnitude",
+      "parameter_count": 27172,
+      "seed": 2,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 0.25,
+      "test_loss": 1.3874640464782715,
+      "train_loss": 1.388543963432312,
+      "train_seconds": 0.8170655537396669
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 1.0,
+        "lag180": 0.0,
+        "lag270": 0.0,
+        "lag90": 0.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 27072,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_magnitude",
+      "parameter_count": 27172,
+      "seed": 3,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 0.25,
+      "test_loss": 1.3869973421096802,
+      "train_loss": 1.3892099857330322,
+      "train_seconds": 1.100973604246974
+    },
+    {
+      "accuracy_by_class": {
+        "lag0": 0.0,
+        "lag180": 0.0,
+        "lag270": 0.0,
+        "lag90": 1.0
+      },
+      "condition_id": "phase_locking",
+      "estimated_forward_madds": 27072,
+      "hidden_features": 48,
+      "learning_rate": 0.01,
+      "model_family": "real_magnitude",
+      "parameter_count": 27172,
+      "seed": 4,
+      "steps": 350,
+      "task": "phase_locking",
+      "test_accuracy": 0.25,
+      "test_loss": 1.3864394426345825,
+      "train_loss": 1.387184739112854,
+      "train_seconds": 0.8545614834874868
+    }
+  ],
+  "summaries": [
+    {
+      "accuracy_by_class_mean": {
+        "lag0": 0.9980392217636108,
+        "lag180": 1.0,
+        "lag270": 0.9960784435272216,
+        "lag90": 1.0
+      },
+      "estimated_forward_madds": 108288,
+      "hidden_features": 48,
+      "model_family": "complex",
+      "n_runs": 5,
+      "parameter_count": 54344,
+      "test_accuracy_ci_high": 1.0,
+      "test_accuracy_ci_low": 0.9965686440467835,
+      "test_accuracy_mean": 0.9985294222831727,
+      "test_accuracy_std": 0.0021922133807212025,
+      "test_loss_mean": 0.006013572603114881,
+      "train_seconds_mean": 0.8311314847320318
+    },
+    {
+      "accuracy_by_class_mean": {
+        "lag0": 1.0,
+        "lag180": 0.9980392217636108,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "estimated_forward_madds": 51648,
+      "hidden_features": 48,
+      "model_family": "real_stacked",
+      "n_runs": 5,
+      "parameter_count": 51748,
+      "test_accuracy_ci_high": 1.0,
+      "test_accuracy_ci_low": 0.9985294342041016,
+      "test_accuracy_mean": 0.9995098114013672,
+      "test_accuracy_std": 0.0010960950283383291,
+      "test_loss_mean": 0.0021474764355843947,
+      "train_seconds_mean": 0.8421914372593164
+    },
+    {
+      "accuracy_by_class_mean": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 1.0
+      },
+      "estimated_forward_madds": 76224,
+      "hidden_features": 48,
+      "model_family": "real_polar",
+      "n_runs": 5,
+      "parameter_count": 76324,
+      "test_accuracy_ci_high": 1.0,
+      "test_accuracy_ci_low": 1.0,
+      "test_accuracy_mean": 1.0,
+      "test_accuracy_std": 0.0,
+      "test_loss_mean": 0.00034745643788482996,
+      "train_seconds_mean": 0.7190608005970717
+    },
+    {
+      "accuracy_by_class_mean": {
+        "lag0": 1.0,
+        "lag180": 1.0,
+        "lag270": 1.0,
+        "lag90": 0.9980392217636108
+      },
+      "estimated_forward_madds": 51648,
+      "hidden_features": 48,
+      "model_family": "real_phase",
+      "n_runs": 5,
+      "parameter_count": 51748,
+      "test_accuracy_ci_high": 1.0,
+      "test_accuracy_ci_low": 0.9985294342041016,
+      "test_accuracy_mean": 0.9995098114013672,
+      "test_accuracy_std": 0.0010960950283383291,
+      "test_loss_mean": 0.001597631612821715,
+      "train_seconds_mean": 0.8589770410209894
+    },
+    {
+      "accuracy_by_class_mean": {
+        "lag0": 0.4,
+        "lag180": 0.0,
+        "lag270": 0.2,
+        "lag90": 0.4
+      },
+      "estimated_forward_madds": 27072,
+      "hidden_features": 48,
+      "model_family": "real_magnitude",
+      "n_runs": 5,
+      "parameter_count": 27172,
+      "test_accuracy_ci_high": 0.25,
+      "test_accuracy_ci_low": 0.25,
+      "test_accuracy_mean": 0.25,
+      "test_accuracy_std": 0.0,
+      "test_loss_mean": 1.386746382713318,
+      "train_seconds_mean": 0.9957505438476801
+    }
+  ]
+}

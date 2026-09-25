@@ -1,0 +1,660 @@
+{
+  "conditions": [
+    {
+      "activation": "zrelu",
+      "condition_id": "psk_representation",
+      "contradiction_signal": "magnitude-only approaches phase/Cartesian accuracy, or real encodings consistently beat complex.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_matched_params",
+        "real_matched_flops",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk"
+      ],
+      "question": "Do phase-aware encodings explain PSK-family performance?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    {
+      "activation": "zrelu",
+      "condition_id": "qam_representation",
+      "contradiction_signal": "magnitude-only becomes competitive, or phase-only collapses relative to Cartesian/polar.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_matched_params",
+        "real_matched_flops",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "modulations": [
+        "qam16",
+        "qam64"
+      ],
+      "question": "Does amplitude structure change the story on QAM-only data?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    {
+      "activation": "zrelu",
+      "condition_id": "mixed_representation",
+      "contradiction_signal": "a hand-chosen real coordinate system matches or beats the complex model over mixed modulation families.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_matched_params",
+        "real_matched_flops",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk",
+        "qam16",
+        "qam64"
+      ],
+      "question": "Does the representation conclusion survive PSK+QAM together?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    {
+      "activation": "zrelu",
+      "condition_id": "low_snr_psk",
+      "contradiction_signal": "Cartesian or magnitude-heavy encodings beat phase/polar at low SNR, suggesting phase singularity/noise sensitivity.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_matched_params",
+        "real_matched_flops",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk"
+      ],
+      "question": "Does phase become too noisy in the low-SNR regime?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        -10,
+        -5,
+        0
+      ],
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    {
+      "activation": "zrelu",
+      "condition_id": "high_snr_psk",
+      "contradiction_signal": "complex only separates from real baselines when the phase estimate is clean.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_matched_params",
+        "real_matched_flops",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk"
+      ],
+      "question": "Is the complex advantage only a high-SNR effect?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        10,
+        15,
+        20
+      ],
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    {
+      "activation": "zrelu",
+      "condition_id": "unit_magnitude_mixed",
+      "contradiction_signal": "complex or phase-only still performs on QAM after amplitude is removed, implying hidden leakage or a too-easy task.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk",
+        "qam16",
+        "qam64"
+      ],
+      "question": "What happens if per-symbol amplitude is removed?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "unit_magnitude",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "unit_magnitude",
+        "rotation_radians": 0.0
+      }
+    },
+    {
+      "activation": "zrelu",
+      "condition_id": "unit_power_mixed",
+      "contradiction_signal": "rankings change substantially, suggesting models were using energy/SNR scale rather than modulation geometry.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk",
+        "qam16",
+        "qam64"
+      ],
+      "question": "Does per-example energy normalization change the ranking?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "unit_power",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "unit_power",
+        "rotation_radians": 0.0
+      }
+    },
+    {
+      "activation": "zrelu",
+      "condition_id": "fixed_rotation_psk",
+      "contradiction_signal": "all coordinate-dependent models fail under a fixed test rotation, weakening claims about native phase handling.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk"
+      ],
+      "question": "Are models robust to an unseen global carrier phase offset?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "fixed_rotation",
+        "rotation_radians": 0.7853981633974483
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    {
+      "activation": "zrelu",
+      "condition_id": "rotation_augmented_psk",
+      "contradiction_signal": "random train rotations close the gap to complex under fixed rotated test data, making augmentation the key ingredient.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk"
+      ],
+      "question": "Can real baselines recover rotation robustness with augmentation?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "fixed_rotation",
+        "rotation_radians": 0.7853981633974483
+      },
+      "train_transform": {
+        "name": "random_rotation",
+        "rotation_radians": 0.0
+      }
+    },
+    {
+      "activation": "crelu",
+      "condition_id": "activation_crelu",
+      "contradiction_signal": "the complex result changes enough across activations that the broad 'complex NN' claim is underspecified.",
+      "model_families": [
+        "complex",
+        "real_stacked"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk"
+      ],
+      "question": "How much does complex activation `crelu` matter?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    {
+      "activation": "zrelu",
+      "condition_id": "activation_zrelu",
+      "contradiction_signal": "the complex result changes enough across activations that the broad 'complex NN' claim is underspecified.",
+      "model_families": [
+        "complex",
+        "real_stacked"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk"
+      ],
+      "question": "How much does complex activation `zrelu` matter?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    {
+      "activation": "modrelu",
+      "condition_id": "activation_modrelu",
+      "contradiction_signal": "the complex result changes enough across activations that the broad 'complex NN' claim is underspecified.",
+      "model_families": [
+        "complex",
+        "real_stacked"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk"
+      ],
+      "question": "How much does complex activation `modrelu` matter?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    {
+      "activation": "cardioid",
+      "condition_id": "activation_cardioid",
+      "contradiction_signal": "the complex result changes enough across activations that the broad 'complex NN' claim is underspecified.",
+      "model_families": [
+        "complex",
+        "real_stacked"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk"
+      ],
+      "question": "How much does complex activation `cardioid` matter?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    {
+      "activation": "siglog",
+      "condition_id": "activation_siglog",
+      "contradiction_signal": "the complex result changes enough across activations that the broad 'complex NN' claim is underspecified.",
+      "model_families": [
+        "complex",
+        "real_stacked"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk"
+      ],
+      "question": "How much does complex activation `siglog` matter?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    }
+  ],
+  "config": {
+    "architecture": "conv",
+    "batch_size": 256,
+    "bootstrap_samples": 2000,
+    "confidence": 0.95,
+    "device": "cuda",
+    "dtype": "complex64",
+    "hidden_features": 32,
+    "kernel_size": 5,
+    "learning_rate": 0.01,
+    "n_per_class_per_snr": 512,
+    "preset": "full",
+    "progress": true,
+    "sample_length": 128,
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "steps": 600,
+    "train_fraction": 0.8
+  },
+  "results": [
+    {
+      "best_accuracy": 0.9165048003196716,
+      "best_model": "real_matched_flops",
+      "complex_accuracy": 0.9152103185653686,
+      "condition_id": "psk_representation",
+      "contradiction_signal": "magnitude-only approaches phase/Cartesian accuracy, or real encodings consistently beat complex.",
+      "question": "Do phase-aware encodings explain PSK-family performance?",
+      "real_magnitude_accuracy": 0.33441206216812136,
+      "real_phase_accuracy": 0.8722761154174805,
+      "real_polar_accuracy": 0.893851101398468,
+      "real_stacked_accuracy": 0.9115425705909729,
+      "summary_markdown": "results/rf_representation_stress_tests_full/psk_representation/summary.md"
+    },
+    {
+      "best_accuracy": 0.6090615034103394,
+      "best_model": "real_magnitude",
+      "complex_accuracy": 0.5035598814487457,
+      "condition_id": "qam_representation",
+      "contradiction_signal": "magnitude-only becomes competitive, or phase-only collapses relative to Cartesian/polar.",
+      "question": "Does amplitude structure change the story on QAM-only data?",
+      "real_magnitude_accuracy": 0.6090615034103394,
+      "real_phase_accuracy": 0.5045307397842407,
+      "real_polar_accuracy": 0.5207119822502136,
+      "real_stacked_accuracy": 0.5045307457447052,
+      "summary_markdown": "results/rf_representation_stress_tests_full/qam_representation/summary.md"
+    },
+    {
+      "best_accuracy": 0.7062783002853393,
+      "best_model": "real_matched_flops",
+      "complex_accuracy": 0.6899676084518432,
+      "condition_id": "mixed_representation",
+      "contradiction_signal": "a hand-chosen real coordinate system matches or beats the complex model over mixed modulation families.",
+      "question": "Does the representation conclusion survive PSK+QAM together?",
+      "real_magnitude_accuracy": 0.3777346134185791,
+      "real_phase_accuracy": 0.5620711803436279,
+      "real_polar_accuracy": 0.6963106513023376,
+      "real_stacked_accuracy": 0.6590291023254394,
+      "summary_markdown": "results/rf_representation_stress_tests_full/mixed_representation/summary.md"
+    },
+    {
+      "best_accuracy": 0.5700107693672181,
+      "best_model": "real_stacked",
+      "complex_accuracy": 0.5639697670936584,
+      "condition_id": "low_snr_psk",
+      "contradiction_signal": "Cartesian or magnitude-heavy encodings beat phase/polar at low SNR, suggesting phase singularity/noise sensitivity.",
+      "question": "Does phase become too noisy in the low-SNR regime?",
+      "real_magnitude_accuracy": 0.3378640592098236,
+      "real_phase_accuracy": 0.5279395699501037,
+      "real_polar_accuracy": 0.5574972987174988,
+      "real_stacked_accuracy": 0.5700107693672181,
+      "summary_markdown": "results/rf_representation_stress_tests_full/low_snr_psk/summary.md"
+    },
+    {
+      "best_accuracy": 0.9974109649658203,
+      "best_model": "real_matched_flops",
+      "complex_accuracy": 0.9928802251815796,
+      "condition_id": "high_snr_psk",
+      "contradiction_signal": "complex only separates from real baselines when the phase estimate is clean.",
+      "question": "Is the complex advantage only a high-SNR effect?",
+      "real_magnitude_accuracy": 0.3333333134651184,
+      "real_phase_accuracy": 0.9954692244529724,
+      "real_polar_accuracy": 0.9926644682884216,
+      "real_stacked_accuracy": 0.9971952199935913,
+      "summary_markdown": "results/rf_representation_stress_tests_full/high_snr_psk/summary.md"
+    },
+    {
+      "best_accuracy": 0.5838187456130981,
+      "best_model": "complex",
+      "complex_accuracy": 0.5838187456130981,
+      "condition_id": "unit_magnitude_mixed",
+      "contradiction_signal": "complex or phase-only still performs on QAM after amplitude is removed, implying hidden leakage or a too-easy task.",
+      "question": "What happens if per-symbol amplitude is removed?",
+      "real_magnitude_accuracy": 0.19999998807907104,
+      "real_phase_accuracy": 0.5610355734825134,
+      "real_polar_accuracy": 0.5497734427452088,
+      "real_stacked_accuracy": 0.5606472253799438,
+      "summary_markdown": "results/rf_representation_stress_tests_full/unit_magnitude_mixed/summary.md"
+    },
+    {
+      "best_accuracy": 0.6530743956565856,
+      "best_model": "complex",
+      "complex_accuracy": 0.6530743956565856,
+      "condition_id": "unit_power_mixed",
+      "contradiction_signal": "rankings change substantially, suggesting models were using energy/SNR scale rather than modulation geometry.",
+      "question": "Does per-example energy normalization change the ranking?",
+      "real_magnitude_accuracy": 0.3445954561233521,
+      "real_phase_accuracy": 0.5605177760124207,
+      "real_polar_accuracy": 0.6027184247970581,
+      "real_stacked_accuracy": 0.6141100049018859,
+      "summary_markdown": "results/rf_representation_stress_tests_full/unit_power_mixed/summary.md"
+    },
+    {
+      "best_accuracy": 0.3367853105068207,
+      "best_model": "real_magnitude",
+      "complex_accuracy": 0.3085220992565155,
+      "condition_id": "fixed_rotation_psk",
+      "contradiction_signal": "all coordinate-dependent models fail under a fixed test rotation, weakening claims about native phase handling.",
+      "question": "Are models robust to an unseen global carrier phase offset?",
+      "real_magnitude_accuracy": 0.3367853105068207,
+      "real_phase_accuracy": 0.3020496129989624,
+      "real_polar_accuracy": 0.31952533721923826,
+      "real_stacked_accuracy": 0.3149945974349976,
+      "summary_markdown": "results/rf_representation_stress_tests_full/fixed_rotation_psk/summary.md"
+    },
+    {
+      "best_accuracy": 0.724487566947937,
+      "best_model": "complex",
+      "complex_accuracy": 0.724487566947937,
+      "condition_id": "rotation_augmented_psk",
+      "contradiction_signal": "random train rotations close the gap to complex under fixed rotated test data, making augmentation the key ingredient.",
+      "question": "Can real baselines recover rotation robustness with augmentation?",
+      "real_magnitude_accuracy": 0.3303128182888031,
+      "real_phase_accuracy": 0.6565263986587524,
+      "real_polar_accuracy": 0.7039913535118103,
+      "real_stacked_accuracy": 0.6580366492271423,
+      "summary_markdown": "results/rf_representation_stress_tests_full/rotation_augmented_psk/summary.md"
+    },
+    {
+      "best_accuracy": 0.9227615594863892,
+      "best_model": "complex",
+      "complex_accuracy": 0.9227615594863892,
+      "condition_id": "activation_crelu",
+      "contradiction_signal": "the complex result changes enough across activations that the broad 'complex NN' claim is underspecified.",
+      "question": "How much does complex activation `crelu` matter?",
+      "real_magnitude_accuracy": null,
+      "real_phase_accuracy": null,
+      "real_polar_accuracy": null,
+      "real_stacked_accuracy": 0.9119740724563599,
+      "summary_markdown": "results/rf_representation_stress_tests_full/activation_crelu/summary.md"
+    },
+    {
+      "best_accuracy": 0.9137000679969788,
+      "best_model": "complex",
+      "complex_accuracy": 0.9137000679969788,
+      "condition_id": "activation_zrelu",
+      "contradiction_signal": "the complex result changes enough across activations that the broad 'complex NN' claim is underspecified.",
+      "question": "How much does complex activation `zrelu` matter?",
+      "real_magnitude_accuracy": null,
+      "real_phase_accuracy": null,
+      "real_polar_accuracy": null,
+      "real_stacked_accuracy": 0.911326813697815,
+      "summary_markdown": "results/rf_representation_stress_tests_full/activation_zrelu/summary.md"
+    },
+    {
+      "best_accuracy": 0.910248076915741,
+      "best_model": "real_stacked",
+      "complex_accuracy": 0.8914778351783752,
+      "condition_id": "activation_modrelu",
+      "contradiction_signal": "the complex result changes enough across activations that the broad 'complex NN' claim is underspecified.",
+      "question": "How much does complex activation `modrelu` matter?",
+      "real_magnitude_accuracy": null,
+      "real_phase_accuracy": null,
+      "real_polar_accuracy": null,
+      "real_stacked_accuracy": 0.910248076915741,
+      "summary_markdown": "results/rf_representation_stress_tests_full/activation_modrelu/summary.md"
+    },
+    {
+      "best_accuracy": 0.9294497966766357,
+      "best_model": "complex",
+      "complex_accuracy": 0.9294497966766357,
+      "condition_id": "activation_cardioid",
+      "contradiction_signal": "the complex result changes enough across activations that the broad 'complex NN' claim is underspecified.",
+      "question": "How much does complex activation `cardioid` matter?",
+      "real_magnitude_accuracy": null,
+      "real_phase_accuracy": null,
+      "real_polar_accuracy": null,
+      "real_stacked_accuracy": 0.9111110806465149,
+      "summary_markdown": "results/rf_representation_stress_tests_full/activation_cardioid/summary.md"
+    },
+    {
+      "best_accuracy": 0.9111110687255859,
+      "best_model": "real_stacked",
+      "complex_accuracy": 0.9011865854263306,
+      "condition_id": "activation_siglog",
+      "contradiction_signal": "the complex result changes enough across activations that the broad 'complex NN' claim is underspecified.",
+      "question": "How much does complex activation `siglog` matter?",
+      "real_magnitude_accuracy": null,
+      "real_phase_accuracy": null,
+      "real_polar_accuracy": null,
+      "real_stacked_accuracy": 0.9111110687255859,
+      "summary_markdown": "results/rf_representation_stress_tests_full/activation_siglog/summary.md"
+    }
+  ]
+}

@@ -1,0 +1,771 @@
+{
+  "artifacts": {
+    "accuracy_bar": "results/physics_quantum_wavefunction_full/momentum_phase/accuracy_bar.png",
+    "accuracy_by_class": "results/physics_quantum_wavefunction_full/momentum_phase/accuracy_by_class.png",
+    "raw_runs": "results/physics_quantum_wavefunction_full/momentum_phase/raw_runs.json",
+    "summary_json": "results/physics_quantum_wavefunction_full/momentum_phase/summary.json",
+    "summary_markdown": "results/physics_quantum_wavefunction_full/momentum_phase/summary.md"
+  },
+  "config": {
+    "condition": {
+      "condition_id": "momentum_phase",
+      "expected_signal": "magnitude-only should sit near chance; phase-aware and Cartesian encodings should recover the momentum classes.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "question": "Can models infer wavepacket momentum when the label is stored in the phase gradient rather than in |psi|?",
+      "task": "momentum_phase",
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    "run_config": {
+      "activation": "zrelu",
+      "architecture": "conv",
+      "batch_size": 256,
+      "bootstrap_samples": 2000,
+      "confidence": 0.95,
+      "device": "cuda",
+      "dtype": "complex64",
+      "evolution_dt": 0.03,
+      "evolution_steps": 80,
+      "examples_per_class": 512,
+      "grid_size": 128,
+      "hidden_features": 32,
+      "kernel_size": 5,
+      "learning_rate": 0.01,
+      "observation_noise_std": 0.0,
+      "preset": "full",
+      "progress": true,
+      "real_activation": "relu",
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "train_fraction": 0.8,
+      "train_steps": 400,
+      "x_max": 8.0,
+      "x_min": -8.0
+    }
+  },
+  "created_at": "2026-09-16T23:04:57.215297+00:00",
+  "dataset": {
+    "description": "1D complex wavefunctions for phase-gradient and Schrodinger potential-inverse pilot tasks",
+    "name": "quantum_wavefunction_pilot",
+    "version": "0.1.0"
+  },
+  "environment": {
+    "cuda_available": true,
+    "cuda_device": "NVIDIA GeForce RTX 3060",
+    "cuda_version": "12.6",
+    "device": "cuda",
+    "dtype": "complex64",
+    "git_commit": "86def29793fdb159737867f67d565508a6bfcd4e",
+    "git_dirty": true,
+    "macos": null,
+    "mps_available": false,
+    "platform": "Linux-6.8.0-124-generic-x86_64-with-glibc2.35",
+    "python": "3.12.12",
+    "torch": "2.9.1+cu126"
+  },
+  "metrics": {
+    "condition": {
+      "condition_id": "momentum_phase",
+      "expected_signal": "magnitude-only should sit near chance; phase-aware and Cartesian encodings should recover the momentum classes.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "question": "Can models infer wavepacket momentum when the label is stored in the phase gradient rather than in |psi|?",
+      "task": "momentum_phase",
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    "config": {
+      "activation": "zrelu",
+      "architecture": "conv",
+      "batch_size": 256,
+      "bootstrap_samples": 2000,
+      "confidence": 0.95,
+      "device": "cuda",
+      "dtype": "complex64",
+      "evolution_dt": 0.03,
+      "evolution_steps": 80,
+      "examples_per_class": 512,
+      "grid_size": 128,
+      "hidden_features": 32,
+      "kernel_size": 5,
+      "learning_rate": 0.01,
+      "observation_noise_std": 0.0,
+      "preset": "full",
+      "progress": true,
+      "real_activation": "relu",
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "train_fraction": 0.8,
+      "train_steps": 400,
+      "x_max": 8.0,
+      "x_min": -8.0
+    },
+    "raw_runs": [
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 2703872,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 10952,
+        "seed": 0,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 0.00013888382818549871,
+        "train_loss": 0.00015814430662430823,
+        "train_seconds": 2.3095577508211136
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 2703872,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 10952,
+        "seed": 1,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 0.00033930139034055173,
+        "train_loss": 0.0002947759348899126,
+        "train_seconds": 2.0176582541316748
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 2703872,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 10952,
+        "seed": 2,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 0.0016672388883307576,
+        "train_loss": 0.0019619346130639315,
+        "train_seconds": 2.031382404267788
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 2703872,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 10952,
+        "seed": 3,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 0.000614356598816812,
+        "train_loss": 0.0008044991409406066,
+        "train_seconds": 2.059789879247546
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 2703872,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 10952,
+        "seed": 4,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 0.0006185343954712152,
+        "train_loss": 0.0004616540390998125,
+        "train_seconds": 2.157637907192111
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 696448,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 5636,
+        "seed": 0,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 0.0005014430498704314,
+        "train_loss": 0.0005316100432537496,
+        "train_seconds": 1.0747321099042892
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 696448,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 5636,
+        "seed": 1,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 0.0004170783795416355,
+        "train_loss": 0.0003939339076168835,
+        "train_seconds": 0.9284299034625292
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 696448,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 5636,
+        "seed": 2,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 0.0005849429871886969,
+        "train_loss": 0.0005359655478969216,
+        "train_seconds": 1.0502741616219282
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 696448,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 5636,
+        "seed": 3,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 0.0005362143856473267,
+        "train_loss": 0.0005488675087690353,
+        "train_seconds": 0.9129794090986252
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 696448,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 5636,
+        "seed": 4,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 0.0003351304621901363,
+        "train_loss": 0.0002863514528144151,
+        "train_seconds": 1.0305323917418718
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 716928,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_polar",
+        "parameter_count": 5796,
+        "seed": 0,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 8.133303344948217e-05,
+        "train_loss": 9.168538963422179e-05,
+        "train_seconds": 0.9806480295956135
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 716928,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_polar",
+        "parameter_count": 5796,
+        "seed": 1,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 0.00010229725012322888,
+        "train_loss": 9.968607628252357e-05,
+        "train_seconds": 0.9553174916654825
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 716928,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_polar",
+        "parameter_count": 5796,
+        "seed": 2,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 0.00013058845070190728,
+        "train_loss": 0.00011256578000029549,
+        "train_seconds": 1.0194871108978987
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 716928,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_polar",
+        "parameter_count": 5796,
+        "seed": 3,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 9.317054355051368e-05,
+        "train_loss": 0.00011162825103383511,
+        "train_seconds": 0.8924946952611208
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 716928,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_polar",
+        "parameter_count": 5796,
+        "seed": 4,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 0.00014461184036917984,
+        "train_loss": 0.00012069162039551884,
+        "train_seconds": 1.013135513290763
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 696448,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_phase",
+        "parameter_count": 5636,
+        "seed": 0,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 9.378440154250711e-05,
+        "train_loss": 0.00010594435298116878,
+        "train_seconds": 0.8884507697075605
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 696448,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_phase",
+        "parameter_count": 5636,
+        "seed": 1,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 8.805729157757014e-05,
+        "train_loss": 9.111408871831372e-05,
+        "train_seconds": 1.0093112643808126
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 696448,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_phase",
+        "parameter_count": 5636,
+        "seed": 2,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 0.0001231111236847937,
+        "train_loss": 9.910108201438561e-05,
+        "train_seconds": 0.9038094412535429
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 696448,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_phase",
+        "parameter_count": 5636,
+        "seed": 3,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 8.6474850832019e-05,
+        "train_loss": 9.302524267695844e-05,
+        "train_seconds": 0.7634615655988455
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 696448,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_phase",
+        "parameter_count": 5636,
+        "seed": 4,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 1.0,
+        "test_loss": 7.093675230862573e-05,
+        "train_loss": 5.697444794350304e-05,
+        "train_seconds": 0.7046293020248413
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 0.0,
+          "k=-3": 0.0,
+          "k=1.5": 1.0,
+          "k=3": 0.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 675968,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_magnitude",
+        "parameter_count": 5476,
+        "seed": 0,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 0.25,
+        "test_loss": 1.3865721225738525,
+        "train_loss": 1.3868151903152466,
+        "train_seconds": 0.7037262357771397
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 0.0,
+          "k=-3": 0.0,
+          "k=1.5": 0.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 675968,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_magnitude",
+        "parameter_count": 5476,
+        "seed": 1,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 0.25,
+        "test_loss": 1.386378526687622,
+        "train_loss": 1.3863545656204224,
+        "train_seconds": 0.6715268921107054
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 0.0,
+          "k=-3": 1.0,
+          "k=1.5": 0.0,
+          "k=3": 0.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 675968,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_magnitude",
+        "parameter_count": 5476,
+        "seed": 2,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 0.25,
+        "test_loss": 1.3864024877548218,
+        "train_loss": 1.3864209651947021,
+        "train_seconds": 0.7013413067907095
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 0.0,
+          "k=-3": 0.0,
+          "k=1.5": 1.0,
+          "k=3": 0.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 675968,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_magnitude",
+        "parameter_count": 5476,
+        "seed": 3,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 0.25,
+        "test_loss": 1.386399269104004,
+        "train_loss": 1.3866534233093262,
+        "train_seconds": 0.7045953366905451
+      },
+      {
+        "accuracy_by_class": {
+          "k=-1.5": 0.0,
+          "k=-3": 0.0,
+          "k=1.5": 0.0,
+          "k=3": 1.0
+        },
+        "condition_id": "momentum_phase",
+        "estimated_forward_madds": 675968,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_magnitude",
+        "parameter_count": 5476,
+        "seed": 4,
+        "steps": 400,
+        "task": "momentum_phase",
+        "test_accuracy": 0.25,
+        "test_loss": 1.3864736557006836,
+        "train_loss": 1.3865246772766113,
+        "train_seconds": 0.752215689048171
+      }
+    ],
+    "summaries": [
+      {
+        "accuracy_by_class_mean": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "estimated_forward_madds": 2703872,
+        "hidden_features": 32,
+        "model_family": "complex",
+        "n_runs": 5,
+        "parameter_count": 10952,
+        "test_accuracy_ci_high": 1.0,
+        "test_accuracy_ci_low": 1.0,
+        "test_accuracy_mean": 1.0,
+        "test_accuracy_std": 0.0,
+        "test_loss_mean": 0.0006756630202289671,
+        "train_seconds_mean": 2.1152052391320466
+      },
+      {
+        "accuracy_by_class_mean": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "estimated_forward_madds": 696448,
+        "hidden_features": 32,
+        "model_family": "real_stacked",
+        "n_runs": 5,
+        "parameter_count": 5636,
+        "test_accuracy_ci_high": 1.0,
+        "test_accuracy_ci_low": 1.0,
+        "test_accuracy_mean": 1.0,
+        "test_accuracy_std": 0.0,
+        "test_loss_mean": 0.00047496185288764536,
+        "train_seconds_mean": 0.9993895951658487
+      },
+      {
+        "accuracy_by_class_mean": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "estimated_forward_madds": 716928,
+        "hidden_features": 32,
+        "model_family": "real_polar",
+        "n_runs": 5,
+        "parameter_count": 5796,
+        "test_accuracy_ci_high": 1.0,
+        "test_accuracy_ci_low": 1.0,
+        "test_accuracy_mean": 1.0,
+        "test_accuracy_std": 0.0,
+        "test_loss_mean": 0.00011040022363886237,
+        "train_seconds_mean": 0.9722165681421757
+      },
+      {
+        "accuracy_by_class_mean": {
+          "k=-1.5": 1.0,
+          "k=-3": 1.0,
+          "k=1.5": 1.0,
+          "k=3": 1.0
+        },
+        "estimated_forward_madds": 696448,
+        "hidden_features": 32,
+        "model_family": "real_phase",
+        "n_runs": 5,
+        "parameter_count": 5636,
+        "test_accuracy_ci_high": 1.0,
+        "test_accuracy_ci_low": 1.0,
+        "test_accuracy_mean": 1.0,
+        "test_accuracy_std": 0.0,
+        "test_loss_mean": 9.247288398910314e-05,
+        "train_seconds_mean": 0.8539324685931206
+      },
+      {
+        "accuracy_by_class_mean": {
+          "k=-1.5": 0.0,
+          "k=-3": 0.2,
+          "k=1.5": 0.4,
+          "k=3": 0.4
+        },
+        "estimated_forward_madds": 675968,
+        "hidden_features": 32,
+        "model_family": "real_magnitude",
+        "n_runs": 5,
+        "parameter_count": 5476,
+        "test_accuracy_ci_high": 0.25,
+        "test_accuracy_ci_low": 0.25,
+        "test_accuracy_mean": 0.25,
+        "test_accuracy_std": 0.0,
+        "test_loss_mean": 1.3864452123641968,
+        "train_seconds_mean": 0.7066810920834541
+      }
+    ]
+  },
+  "notes": null,
+  "run_id": "quantum-wavefunction-momentum_phase",
+  "schema_version": "0.1.0",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ]
+}

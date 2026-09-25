@@ -1,0 +1,182 @@
+[
+  {
+    "accuracy_by_snr_db": {
+      "0": 0.6925566792488098,
+      "10": 0.9805825352668762,
+      "20": 1.0
+    },
+    "estimated_forward_madds": 2703744,
+    "hidden_features": 32,
+    "learning_rate": 0.01,
+    "model_family": "complex",
+    "parameter_count": 10886,
+    "seed": 0,
+    "steps": 600,
+    "test_accuracy": 0.8910463452339172,
+    "test_loss": 0.20622970163822174,
+    "train_loss": 0.18187576532363892,
+    "train_seconds": 3.4722883086651564
+  },
+  {
+    "accuracy_by_snr_db": {
+      "0": 0.754045307636261,
+      "10": 1.0,
+      "20": 1.0
+    },
+    "estimated_forward_madds": 2703744,
+    "hidden_features": 32,
+    "learning_rate": 0.01,
+    "model_family": "complex",
+    "parameter_count": 10886,
+    "seed": 1,
+    "steps": 600,
+    "test_accuracy": 0.9180150628089905,
+    "test_loss": 0.17894501984119415,
+    "train_loss": 0.18286076188087463,
+    "train_seconds": 3.611550832167268
+  },
+  {
+    "accuracy_by_snr_db": {
+      "0": 0.7087379097938538,
+      "10": 1.0,
+      "20": 1.0
+    },
+    "estimated_forward_madds": 2703744,
+    "hidden_features": 32,
+    "learning_rate": 0.01,
+    "model_family": "complex",
+    "parameter_count": 10886,
+    "seed": 2,
+    "steps": 600,
+    "test_accuracy": 0.9029125571250916,
+    "test_loss": 0.19206051528453827,
+    "train_loss": 0.18846304714679718,
+    "train_seconds": 3.430381389334798
+  },
+  {
+    "accuracy_by_snr_db": {
+      "0": 0.7152103781700134,
+      "10": 0.9935275316238403,
+      "20": 0.9967637658119202
+    },
+    "estimated_forward_madds": 2703744,
+    "hidden_features": 32,
+    "learning_rate": 0.01,
+    "model_family": "complex",
+    "parameter_count": 10886,
+    "seed": 3,
+    "steps": 600,
+    "test_accuracy": 0.9018338322639465,
+    "test_loss": 0.20718708634376526,
+    "train_loss": 0.202861949801445,
+    "train_seconds": 3.386744825169444
+  },
+  {
+    "accuracy_by_snr_db": {
+      "0": 0.6860841512680054,
+      "10": 0.9935275316238403,
+      "20": 0.9967637658119202
+    },
+    "estimated_forward_madds": 2703744,
+    "hidden_features": 32,
+    "learning_rate": 0.01,
+    "model_family": "complex",
+    "parameter_count": 10886,
+    "seed": 4,
+    "steps": 600,
+    "test_accuracy": 0.892125129699707,
+    "test_loss": 0.21598248183727264,
+    "train_loss": 0.2327190339565277,
+    "train_seconds": 3.444768860936165
+  },
+  {
+    "accuracy_by_snr_db": {
+      "0": 0.7799353003501892,
+      "10": 0.9967637658119202,
+      "20": 1.0
+    },
+    "estimated_forward_madds": 696416,
+    "hidden_features": 32,
+    "learning_rate": 0.01,
+    "model_family": "real_stacked",
+    "parameter_count": 5603,
+    "seed": 0,
+    "steps": 600,
+    "test_accuracy": 0.9255663156509399,
+    "test_loss": 0.1571255922317505,
+    "train_loss": 0.15469646453857422,
+    "train_seconds": 0.9268740825355053
+  },
+  {
+    "accuracy_by_snr_db": {
+      "0": 0.6957929134368896,
+      "10": 1.0,
+      "20": 1.0
+    },
+    "estimated_forward_madds": 696416,
+    "hidden_features": 32,
+    "learning_rate": 0.01,
+    "model_family": "real_stacked",
+    "parameter_count": 5603,
+    "seed": 1,
+    "steps": 600,
+    "test_accuracy": 0.8985975980758667,
+    "test_loss": 0.21780943870544434,
+    "train_loss": 0.16526776552200317,
+    "train_seconds": 0.8862232565879822
+  },
+  {
+    "accuracy_by_snr_db": {
+      "0": 0.7184466123580933,
+      "10": 0.9967637658119202,
+      "20": 1.0
+    },
+    "estimated_forward_madds": 696416,
+    "hidden_features": 32,
+    "learning_rate": 0.01,
+    "model_family": "real_stacked",
+    "parameter_count": 5603,
+    "seed": 2,
+    "steps": 600,
+    "test_accuracy": 0.9050700664520264,
+    "test_loss": 0.20800213515758514,
+    "train_loss": 0.20177403092384338,
+    "train_seconds": 0.9391113705933094
+  },
+  {
+    "accuracy_by_snr_db": {
+      "0": 0.7605178356170654,
+      "10": 0.9967637658119202,
+      "20": 1.0
+    },
+    "estimated_forward_madds": 696416,
+    "hidden_features": 32,
+    "learning_rate": 0.01,
+    "model_family": "real_stacked",
+    "parameter_count": 5603,
+    "seed": 3,
+    "steps": 600,
+    "test_accuracy": 0.9190937876701355,
+    "test_loss": 0.18192048370838165,
+    "train_loss": 0.20602643489837646,
+    "train_seconds": 0.9341533910483122
+  },
+  {
+    "accuracy_by_snr_db": {
+      "0": 0.7346278429031372,
+      "10": 0.9935275316238403,
+      "20": 0.9935275316238403
+    },
+    "estimated_forward_madds": 696416,
+    "hidden_features": 32,
+    "learning_rate": 0.01,
+    "model_family": "real_stacked",
+    "parameter_count": 5603,
+    "seed": 4,
+    "steps": 600,
+    "test_accuracy": 0.9072275757789612,
+    "test_loss": 0.22248944640159607,
+    "train_loss": 0.2211548238992691,
+    "train_seconds": 1.36125467158854
+  }
+]

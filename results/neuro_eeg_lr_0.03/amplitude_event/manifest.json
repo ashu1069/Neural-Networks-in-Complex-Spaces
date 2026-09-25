@@ -1,0 +1,548 @@
+{
+  "artifacts": {
+    "accuracy_bar": "results/neuro_eeg_lr_0.03/amplitude_event/accuracy_bar.png",
+    "raw_runs": "results/neuro_eeg_lr_0.03/amplitude_event/raw_runs.json",
+    "summary_json": "results/neuro_eeg_lr_0.03/amplitude_event/summary.json",
+    "summary_markdown": "results/neuro_eeg_lr_0.03/amplitude_event/summary.md"
+  },
+  "config": {
+    "condition": {
+      "condition_id": "amplitude_event",
+      "expected_signal": "magnitude, polar, Cartesian, and complex views should learn; phase-only should remain near chance.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "question": "Can models classify which sensor carries an amplitude burst when phase is independent of the label?",
+      "task": "amplitude_event",
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    "run_config": {
+      "activation": "crelu",
+      "architecture": "mlp",
+      "batch_size": 128,
+      "bootstrap_samples": 1000,
+      "confidence": 0.95,
+      "device": "cuda",
+      "dtype": "complex64",
+      "examples_per_class": 128,
+      "hidden_features": 24,
+      "kernel_size": 5,
+      "learning_rate": 0.03,
+      "n_channels": 4,
+      "observation_noise_std": 0.03,
+      "preset": "standard",
+      "progress": true,
+      "real_activation": "relu",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "time_steps": 64,
+      "train_fraction": 0.8,
+      "train_steps": 120
+    }
+  },
+  "created_at": "2026-09-16T23:11:46.226740+00:00",
+  "dataset": {
+    "description": "synthetic complex analytic EEG signals for phase locking, amplitude events, and phase-amplitude coupling",
+    "name": "eeg_analytic_signal_pilot",
+    "version": "0.1.0"
+  },
+  "environment": {
+    "cuda_available": true,
+    "cuda_device": "NVIDIA GeForce RTX 3060",
+    "cuda_version": "12.6",
+    "device": "cuda",
+    "dtype": "complex64",
+    "git_commit": "86def29793fdb159737867f67d565508a6bfcd4e",
+    "git_dirty": true,
+    "macos": null,
+    "mps_available": false,
+    "platform": "Linux-6.8.0-124-generic-x86_64-with-glibc2.35",
+    "python": "3.12.12",
+    "torch": "2.9.1+cu126"
+  },
+  "metrics": {
+    "condition": {
+      "condition_id": "amplitude_event",
+      "expected_signal": "magnitude, polar, Cartesian, and complex views should learn; phase-only should remain near chance.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "question": "Can models classify which sensor carries an amplitude burst when phase is independent of the label?",
+      "task": "amplitude_event",
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    "config": {
+      "activation": "crelu",
+      "architecture": "mlp",
+      "batch_size": 128,
+      "bootstrap_samples": 1000,
+      "confidence": 0.95,
+      "device": "cuda",
+      "dtype": "complex64",
+      "examples_per_class": 128,
+      "hidden_features": 24,
+      "kernel_size": 5,
+      "learning_rate": 0.03,
+      "n_channels": 4,
+      "observation_noise_std": 0.03,
+      "preset": "standard",
+      "progress": true,
+      "real_activation": "relu",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "time_steps": 64,
+      "train_fraction": 0.8,
+      "train_steps": 120
+    },
+    "raw_runs": [
+      {
+        "accuracy_by_class": {
+          "burst_ch0": 0.6538462042808533,
+          "burst_ch1": 0.5384615659713745,
+          "burst_ch2": 0.23076924681663513,
+          "burst_ch3": 0.46153849363327026
+        },
+        "condition_id": "amplitude_event",
+        "estimated_forward_madds": 27264,
+        "hidden_features": 24,
+        "learning_rate": 0.03,
+        "model_family": "complex",
+        "parameter_count": 13736,
+        "seed": 0,
+        "steps": 120,
+        "task": "amplitude_event",
+        "test_accuracy": 0.4711538553237915,
+        "test_loss": 8.052159309387207,
+        "train_loss": 0.46923190355300903,
+        "train_seconds": 0.340277262032032
+      },
+      {
+        "accuracy_by_class": {
+          "burst_ch0": 0.42307692766189575,
+          "burst_ch1": 0.42307692766189575,
+          "burst_ch2": 0.1538461595773697,
+          "burst_ch3": 0.3461538553237915
+        },
+        "condition_id": "amplitude_event",
+        "estimated_forward_madds": 27264,
+        "hidden_features": 24,
+        "learning_rate": 0.03,
+        "model_family": "complex",
+        "parameter_count": 13736,
+        "seed": 1,
+        "steps": 120,
+        "task": "amplitude_event",
+        "test_accuracy": 0.3365384638309479,
+        "test_loss": 8.794970512390137,
+        "train_loss": 0.06573379784822464,
+        "train_seconds": 0.2505112085491419
+      },
+      {
+        "accuracy_by_class": {
+          "burst_ch0": 0.3461538553237915,
+          "burst_ch1": 0.3076923191547394,
+          "burst_ch2": 0.26923078298568726,
+          "burst_ch3": 0.42307692766189575
+        },
+        "condition_id": "amplitude_event",
+        "estimated_forward_madds": 27264,
+        "hidden_features": 24,
+        "learning_rate": 0.03,
+        "model_family": "complex",
+        "parameter_count": 13736,
+        "seed": 2,
+        "steps": 120,
+        "task": "amplitude_event",
+        "test_accuracy": 0.3365384638309479,
+        "test_loss": 9.837420463562012,
+        "train_loss": 0.24065200984477997,
+        "train_seconds": 0.25548817589879036
+      },
+      {
+        "accuracy_by_class": {
+          "burst_ch0": 0.23076924681663513,
+          "burst_ch1": 0.3461538553237915,
+          "burst_ch2": 0.38461539149284363,
+          "burst_ch3": 0.3076923191547394
+        },
+        "condition_id": "amplitude_event",
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "learning_rate": 0.03,
+        "model_family": "real_stacked",
+        "parameter_count": 13012,
+        "seed": 0,
+        "steps": 120,
+        "task": "amplitude_event",
+        "test_accuracy": 0.317307710647583,
+        "test_loss": 9.539063453674316,
+        "train_loss": 0.04084254056215286,
+        "train_seconds": 0.2853445690125227
+      },
+      {
+        "accuracy_by_class": {
+          "burst_ch0": 0.5,
+          "burst_ch1": 0.5384615659713745,
+          "burst_ch2": 0.3076923191547394,
+          "burst_ch3": 0.26923078298568726
+        },
+        "condition_id": "amplitude_event",
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "learning_rate": 0.03,
+        "model_family": "real_stacked",
+        "parameter_count": 13012,
+        "seed": 1,
+        "steps": 120,
+        "task": "amplitude_event",
+        "test_accuracy": 0.4038461744785309,
+        "test_loss": 7.169116497039795,
+        "train_loss": 0.23144705593585968,
+        "train_seconds": 0.2378103081136942
+      },
+      {
+        "accuracy_by_class": {
+          "burst_ch0": 0.3076923191547394,
+          "burst_ch1": 0.3461538553237915,
+          "burst_ch2": 0.42307692766189575,
+          "burst_ch3": 0.26923078298568726
+        },
+        "condition_id": "amplitude_event",
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "learning_rate": 0.03,
+        "model_family": "real_stacked",
+        "parameter_count": 13012,
+        "seed": 2,
+        "steps": 120,
+        "task": "amplitude_event",
+        "test_accuracy": 0.3365384638309479,
+        "test_loss": 6.792507648468018,
+        "train_loss": 0.11247518658638,
+        "train_seconds": 0.23912902548909187
+      },
+      {
+        "accuracy_by_class": {
+          "burst_ch0": 1.0,
+          "burst_ch1": 0.9615384936332703,
+          "burst_ch2": 0.7307692766189575,
+          "burst_ch3": 0.9615384936332703
+        },
+        "condition_id": "amplitude_event",
+        "estimated_forward_madds": 19104,
+        "hidden_features": 24,
+        "learning_rate": 0.03,
+        "model_family": "real_polar",
+        "parameter_count": 19156,
+        "seed": 0,
+        "steps": 120,
+        "task": "amplitude_event",
+        "test_accuracy": 0.9134615659713745,
+        "test_loss": 0.34825748205184937,
+        "train_loss": 0.0009072499233298004,
+        "train_seconds": 0.2408823687583208
+      },
+      {
+        "accuracy_by_class": {
+          "burst_ch0": 0.8461538553237915,
+          "burst_ch1": 0.8461538553237915,
+          "burst_ch2": 0.8461538553237915,
+          "burst_ch3": 0.9615384936332703
+        },
+        "condition_id": "amplitude_event",
+        "estimated_forward_madds": 19104,
+        "hidden_features": 24,
+        "learning_rate": 0.03,
+        "model_family": "real_polar",
+        "parameter_count": 19156,
+        "seed": 1,
+        "steps": 120,
+        "task": "amplitude_event",
+        "test_accuracy": 0.8750000596046448,
+        "test_loss": 0.4793127477169037,
+        "train_loss": 0.07943948358297348,
+        "train_seconds": 0.10758495144546032
+      },
+      {
+        "accuracy_by_class": {
+          "burst_ch0": 0.5769230723381042,
+          "burst_ch1": 0.8076923489570618,
+          "burst_ch2": 0.8076923489570618,
+          "burst_ch3": 0.6153846383094788
+        },
+        "condition_id": "amplitude_event",
+        "estimated_forward_madds": 19104,
+        "hidden_features": 24,
+        "learning_rate": 0.03,
+        "model_family": "real_polar",
+        "parameter_count": 19156,
+        "seed": 2,
+        "steps": 120,
+        "task": "amplitude_event",
+        "test_accuracy": 0.701923131942749,
+        "test_loss": 0.804009199142456,
+        "train_loss": 0.22266927361488342,
+        "train_seconds": 0.07849663123488426
+      },
+      {
+        "accuracy_by_class": {
+          "burst_ch0": 0.1538461595773697,
+          "burst_ch1": 0.26923078298568726,
+          "burst_ch2": 0.23076924681663513,
+          "burst_ch3": 0.19230769574642181
+        },
+        "condition_id": "amplitude_event",
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "learning_rate": 0.03,
+        "model_family": "real_phase",
+        "parameter_count": 13012,
+        "seed": 0,
+        "steps": 120,
+        "task": "amplitude_event",
+        "test_accuracy": 0.21153846383094788,
+        "test_loss": 10.6612548828125,
+        "train_loss": 0.18427476286888123,
+        "train_seconds": 0.2246161326766014
+      },
+      {
+        "accuracy_by_class": {
+          "burst_ch0": 0.3076923191547394,
+          "burst_ch1": 0.26923078298568726,
+          "burst_ch2": 0.19230769574642181,
+          "burst_ch3": 0.1538461595773697
+        },
+        "condition_id": "amplitude_event",
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "learning_rate": 0.03,
+        "model_family": "real_phase",
+        "parameter_count": 13012,
+        "seed": 1,
+        "steps": 120,
+        "task": "amplitude_event",
+        "test_accuracy": 0.23076924681663513,
+        "test_loss": 13.368452072143555,
+        "train_loss": 0.08447140455245972,
+        "train_seconds": 0.21216225810348988
+      },
+      {
+        "accuracy_by_class": {
+          "burst_ch0": 0.3076923191547394,
+          "burst_ch1": 0.3461538553237915,
+          "burst_ch2": 0.38461539149284363,
+          "burst_ch3": 0.3076923191547394
+        },
+        "condition_id": "amplitude_event",
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "learning_rate": 0.03,
+        "model_family": "real_phase",
+        "parameter_count": 13012,
+        "seed": 2,
+        "steps": 120,
+        "task": "amplitude_event",
+        "test_accuracy": 0.3365384638309479,
+        "test_loss": 8.764925003051758,
+        "train_loss": 0.1871681958436966,
+        "train_seconds": 0.23562812060117722
+      },
+      {
+        "accuracy_by_class": {
+          "burst_ch0": 1.0,
+          "burst_ch1": 1.0,
+          "burst_ch2": 0.9615384936332703,
+          "burst_ch3": 1.0
+        },
+        "condition_id": "amplitude_event",
+        "estimated_forward_madds": 6816,
+        "hidden_features": 24,
+        "learning_rate": 0.03,
+        "model_family": "real_magnitude",
+        "parameter_count": 6868,
+        "seed": 0,
+        "steps": 120,
+        "task": "amplitude_event",
+        "test_accuracy": 0.9903846383094788,
+        "test_loss": 0.012364324182271957,
+        "train_loss": 0.0030877955723553896,
+        "train_seconds": 0.2369900494813919
+      },
+      {
+        "accuracy_by_class": {
+          "burst_ch0": 0.9615384936332703,
+          "burst_ch1": 1.0,
+          "burst_ch2": 1.0,
+          "burst_ch3": 1.0
+        },
+        "condition_id": "amplitude_event",
+        "estimated_forward_madds": 6816,
+        "hidden_features": 24,
+        "learning_rate": 0.03,
+        "model_family": "real_magnitude",
+        "parameter_count": 6868,
+        "seed": 1,
+        "steps": 120,
+        "task": "amplitude_event",
+        "test_accuracy": 0.9903846383094788,
+        "test_loss": 0.032841503620147705,
+        "train_loss": 0.014952059835195541,
+        "train_seconds": 0.18467681482434273
+      },
+      {
+        "accuracy_by_class": {
+          "burst_ch0": 0.7307692766189575,
+          "burst_ch1": 0.0,
+          "burst_ch2": 0.9615384936332703,
+          "burst_ch3": 0.7692307829856873
+        },
+        "condition_id": "amplitude_event",
+        "estimated_forward_madds": 6816,
+        "hidden_features": 24,
+        "learning_rate": 0.03,
+        "model_family": "real_magnitude",
+        "parameter_count": 6868,
+        "seed": 2,
+        "steps": 120,
+        "task": "amplitude_event",
+        "test_accuracy": 0.6153846383094788,
+        "test_loss": 0.7114695906639099,
+        "train_loss": 0.5905978679656982,
+        "train_seconds": 0.13952600210905075
+      }
+    ],
+    "summaries": [
+      {
+        "accuracy_by_class_mean": {
+          "burst_ch0": 0.4743589957555135,
+          "burst_ch1": 0.42307693759600323,
+          "burst_ch2": 0.21794872979323068,
+          "burst_ch3": 0.4102564255396525
+        },
+        "estimated_forward_madds": 27264,
+        "hidden_features": 24,
+        "model_family": "complex",
+        "n_runs": 3,
+        "parameter_count": 13736,
+        "test_accuracy_ci_high": 0.4711538553237915,
+        "test_accuracy_ci_low": 0.3365384638309479,
+        "test_accuracy_mean": 0.38141026099522907,
+        "test_accuracy_std": 0.07772023251546013,
+        "test_loss_mean": 8.894850095113119,
+        "train_seconds_mean": 0.2820922154933214
+      },
+      {
+        "accuracy_by_class_mean": {
+          "burst_ch0": 0.3461538553237915,
+          "burst_ch1": 0.4102564255396525,
+          "burst_ch2": 0.3717948794364929,
+          "burst_ch3": 0.28205129504203796
+        },
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "model_family": "real_stacked",
+        "n_runs": 3,
+        "parameter_count": 13012,
+        "test_accuracy_ci_high": 0.4038461744785309,
+        "test_accuracy_ci_low": 0.317307710647583,
+        "test_accuracy_mean": 0.35256411631902057,
+        "test_accuracy_std": 0.045440538991152184,
+        "test_loss_mean": 7.83356253306071,
+        "train_seconds_mean": 0.2540946342051029
+      },
+      {
+        "accuracy_by_class_mean": {
+          "burst_ch0": 0.807692309220632,
+          "burst_ch1": 0.8717948993047079,
+          "burst_ch2": 0.7948718269666036,
+          "burst_ch3": 0.8461538751920065
+        },
+        "estimated_forward_madds": 19104,
+        "hidden_features": 24,
+        "model_family": "real_polar",
+        "n_runs": 3,
+        "parameter_count": 19156,
+        "test_accuracy_ci_high": 0.9134615659713745,
+        "test_accuracy_ci_low": 0.701923131942749,
+        "test_accuracy_mean": 0.8301282525062561,
+        "test_accuracy_std": 0.11268201529981188,
+        "test_loss_mean": 0.5438598096370697,
+        "train_seconds_mean": 0.1423213171462218
+      },
+      {
+        "accuracy_by_class_mean": {
+          "burst_ch0": 0.25641026596228284,
+          "burst_ch1": 0.29487180709838867,
+          "burst_ch2": 0.26923077801863354,
+          "burst_ch3": 0.21794872482617697
+        },
+        "estimated_forward_madds": 12960,
+        "hidden_features": 24,
+        "model_family": "real_phase",
+        "n_runs": 3,
+        "parameter_count": 13012,
+        "test_accuracy_ci_high": 0.3365384638309479,
+        "test_accuracy_ci_low": 0.21153846383094788,
+        "test_accuracy_mean": 0.25961539149284363,
+        "test_accuracy_std": 0.06730768936021028,
+        "test_loss_mean": 10.931543986002604,
+        "train_seconds_mean": 0.22413550379375616
+      },
+      {
+        "accuracy_by_class_mean": {
+          "burst_ch0": 0.8974359234174093,
+          "burst_ch1": 0.6666666666666666,
+          "burst_ch2": 0.9743589957555135,
+          "burst_ch3": 0.9230769276618958
+        },
+        "estimated_forward_madds": 6816,
+        "hidden_features": 24,
+        "model_family": "real_magnitude",
+        "n_runs": 3,
+        "parameter_count": 6868,
+        "test_accuracy_ci_high": 0.9903846383094788,
+        "test_accuracy_ci_low": 0.6153846383094788,
+        "test_accuracy_mean": 0.8653846383094788,
+        "test_accuracy_std": 0.21650635094610965,
+        "test_loss_mean": 0.2522251394887765,
+        "train_seconds_mean": 0.18706428880492845
+      }
+    ]
+  },
+  "notes": null,
+  "run_id": "eeg-analytic-signal-amplitude_event",
+  "schema_version": "0.1.0",
+  "seeds": [
+    0,
+    1,
+    2
+  ]
+}

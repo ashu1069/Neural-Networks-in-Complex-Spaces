@@ -1,0 +1,176 @@
+{
+  "artifacts": {
+    "accuracy_heatmap": "results/physics_quantum_activation_siglog/accuracy_heatmap.png",
+    "best_accuracy_by_condition": "results/physics_quantum_activation_siglog/best_accuracy_by_condition.png",
+    "index_json": "results/physics_quantum_activation_siglog/index.json",
+    "index_markdown": "results/physics_quantum_activation_siglog/index.md"
+  },
+  "config": {
+    "activation": "siglog",
+    "architecture": "conv",
+    "batch_size": 256,
+    "bootstrap_samples": 2000,
+    "confidence": 0.95,
+    "device": "cuda",
+    "dtype": "complex64",
+    "evolution_dt": 0.03,
+    "evolution_steps": 80,
+    "examples_per_class": 512,
+    "grid_size": 128,
+    "hidden_features": 32,
+    "kernel_size": 5,
+    "learning_rate": 0.01,
+    "observation_noise_std": 0.0,
+    "preset": "full",
+    "progress": true,
+    "real_activation": "relu",
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "train_fraction": 0.8,
+    "train_steps": 400,
+    "x_max": 8.0,
+    "x_min": -8.0
+  },
+  "created_at": "2026-09-16T23:55:19.991924+00:00",
+  "dataset": {
+    "description": "sequential quantum-wavefunction representation pilot",
+    "name": "quantum_wavefunction_pilot",
+    "version": "0.1.0"
+  },
+  "environment": {
+    "cuda_available": true,
+    "cuda_device": "NVIDIA GeForce RTX 3060",
+    "cuda_version": "12.6",
+    "device": "cuda",
+    "dtype": "complex64",
+    "git_commit": "86def29793fdb159737867f67d565508a6bfcd4e",
+    "git_dirty": true,
+    "macos": null,
+    "mps_available": false,
+    "platform": "Linux-6.8.0-124-generic-x86_64-with-glibc2.35",
+    "python": "3.12.12",
+    "torch": "2.9.1+cu126"
+  },
+  "metrics": {
+    "conditions": [
+      {
+        "condition_id": "potential_inverse",
+        "expected_signal": "full complex/Cartesian/polar inputs should outperform phase-only or density-only views when both amplitude and phase carry scattering information.",
+        "model_families": [
+          "complex",
+          "real_stacked",
+          "real_polar",
+          "real_phase",
+          "real_magnitude"
+        ],
+        "question": "Can models infer which potential generated the observed final wavefunction after 1D Schrodinger evolution?",
+        "task": "potential_inverse",
+        "test_transform": {
+          "name": "none",
+          "rotation_radians": 0.0
+        },
+        "train_transform": {
+          "name": "none",
+          "rotation_radians": 0.0
+        }
+      },
+      {
+        "condition_id": "global_phase_shift",
+        "expected_signal": "coordinate-dependent models may degrade under an unseen global phase; magnitude-only is invariant but information-poor.",
+        "model_families": [
+          "complex",
+          "real_stacked",
+          "real_polar",
+          "real_phase",
+          "real_magnitude"
+        ],
+        "question": "Do models trained in one global-phase convention respect the physical invariance psi -> exp(i theta) psi?",
+        "task": "potential_inverse",
+        "test_transform": {
+          "name": "fixed_global_phase",
+          "rotation_radians": 1.5707963267948966
+        },
+        "train_transform": {
+          "name": "none",
+          "rotation_radians": 0.0
+        }
+      }
+    ],
+    "config": {
+      "activation": "siglog",
+      "architecture": "conv",
+      "batch_size": 256,
+      "bootstrap_samples": 2000,
+      "confidence": 0.95,
+      "device": "cuda",
+      "dtype": "complex64",
+      "evolution_dt": 0.03,
+      "evolution_steps": 80,
+      "examples_per_class": 512,
+      "grid_size": 128,
+      "hidden_features": 32,
+      "kernel_size": 5,
+      "learning_rate": 0.01,
+      "observation_noise_std": 0.0,
+      "preset": "full",
+      "progress": true,
+      "real_activation": "relu",
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "train_fraction": 0.8,
+      "train_steps": 400,
+      "x_max": 8.0,
+      "x_min": -8.0
+    },
+    "results": [
+      {
+        "best_accuracy": 0.9231373071670532,
+        "best_model": "real_polar",
+        "complex_accuracy": 0.8466667175292969,
+        "condition_id": "potential_inverse",
+        "expected_signal": "full complex/Cartesian/polar inputs should outperform phase-only or density-only views when both amplitude and phase carry scattering information.",
+        "question": "Can models infer which potential generated the observed final wavefunction after 1D Schrodinger evolution?",
+        "real_magnitude_accuracy": 0.6745098471641541,
+        "real_phase_accuracy": 0.8788235902786254,
+        "real_polar_accuracy": 0.9231373071670532,
+        "real_stacked_accuracy": 0.888235354423523,
+        "summary_markdown": "results/physics_quantum_activation_siglog/potential_inverse/summary.md",
+        "task": "potential_inverse"
+      },
+      {
+        "best_accuracy": 0.879607892036438,
+        "best_model": "real_polar",
+        "complex_accuracy": 0.7639216184616089,
+        "condition_id": "global_phase_shift",
+        "expected_signal": "coordinate-dependent models may degrade under an unseen global phase; magnitude-only is invariant but information-poor.",
+        "question": "Do models trained in one global-phase convention respect the physical invariance psi -> exp(i theta) psi?",
+        "real_magnitude_accuracy": 0.6741176843643188,
+        "real_phase_accuracy": 0.8325490713119507,
+        "real_polar_accuracy": 0.879607892036438,
+        "real_stacked_accuracy": 0.8439216136932373,
+        "summary_markdown": "results/physics_quantum_activation_siglog/global_phase_shift/summary.md",
+        "task": "potential_inverse"
+      }
+    ]
+  },
+  "notes": null,
+  "run_id": "quantum-wavefunction-pilot-suite",
+  "schema_version": "0.1.0",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ]
+}

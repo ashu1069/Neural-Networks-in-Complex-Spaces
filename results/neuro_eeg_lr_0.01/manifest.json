@@ -1,0 +1,164 @@
+{
+  "artifacts": {
+    "accuracy_heatmap": "results/neuro_eeg_lr_0.01/accuracy_heatmap.png",
+    "best_accuracy_by_condition": "results/neuro_eeg_lr_0.01/best_accuracy_by_condition.png",
+    "index_json": "results/neuro_eeg_lr_0.01/index.json",
+    "index_markdown": "results/neuro_eeg_lr_0.01/index.md"
+  },
+  "config": {
+    "activation": "crelu",
+    "architecture": "mlp",
+    "batch_size": 128,
+    "bootstrap_samples": 1000,
+    "confidence": 0.95,
+    "device": "cuda",
+    "dtype": "complex64",
+    "examples_per_class": 128,
+    "hidden_features": 24,
+    "kernel_size": 5,
+    "learning_rate": 0.01,
+    "n_channels": 4,
+    "observation_noise_std": 0.03,
+    "preset": "standard",
+    "progress": true,
+    "real_activation": "relu",
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "time_steps": 64,
+    "train_fraction": 0.8,
+    "train_steps": 120
+  },
+  "created_at": "2026-09-16T23:11:40.547984+00:00",
+  "dataset": {
+    "description": "sequential EEG analytic-signal representation pilot",
+    "name": "eeg_analytic_signal_pilot",
+    "version": "0.1.0"
+  },
+  "environment": {
+    "cuda_available": true,
+    "cuda_device": "NVIDIA GeForce RTX 3060",
+    "cuda_version": "12.6",
+    "device": "cuda",
+    "dtype": "complex64",
+    "git_commit": "86def29793fdb159737867f67d565508a6bfcd4e",
+    "git_dirty": true,
+    "macos": null,
+    "mps_available": false,
+    "platform": "Linux-6.8.0-124-generic-x86_64-with-glibc2.35",
+    "python": "3.12.12",
+    "torch": "2.9.1+cu126"
+  },
+  "metrics": {
+    "conditions": [
+      {
+        "condition_id": "amplitude_event",
+        "expected_signal": "magnitude, polar, Cartesian, and complex views should learn; phase-only should remain near chance.",
+        "model_families": [
+          "complex",
+          "real_stacked",
+          "real_polar",
+          "real_phase",
+          "real_magnitude"
+        ],
+        "question": "Can models classify which sensor carries an amplitude burst when phase is independent of the label?",
+        "task": "amplitude_event",
+        "test_transform": {
+          "name": "none",
+          "rotation_radians": 0.0
+        },
+        "train_transform": {
+          "name": "none",
+          "rotation_radians": 0.0
+        }
+      },
+      {
+        "condition_id": "phase_amplitude_coupling",
+        "expected_signal": "full complex/Cartesian/polar views should outperform pure phase or pure magnitude because the label is relational.",
+        "model_families": [
+          "complex",
+          "real_stacked",
+          "real_polar",
+          "real_phase",
+          "real_magnitude"
+        ],
+        "question": "Can models detect phase-amplitude coupling when the high-band amplitude is locked to a low-band phase offset?",
+        "task": "phase_amplitude_coupling",
+        "test_transform": {
+          "name": "none",
+          "rotation_radians": 0.0
+        },
+        "train_transform": {
+          "name": "none",
+          "rotation_radians": 0.0
+        }
+      }
+    ],
+    "config": {
+      "activation": "crelu",
+      "architecture": "mlp",
+      "batch_size": 128,
+      "bootstrap_samples": 1000,
+      "confidence": 0.95,
+      "device": "cuda",
+      "dtype": "complex64",
+      "examples_per_class": 128,
+      "hidden_features": 24,
+      "kernel_size": 5,
+      "learning_rate": 0.01,
+      "n_channels": 4,
+      "observation_noise_std": 0.03,
+      "preset": "standard",
+      "progress": true,
+      "real_activation": "relu",
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "time_steps": 64,
+      "train_fraction": 0.8,
+      "train_steps": 120
+    },
+    "results": [
+      {
+        "best_accuracy": 0.9455128709475199,
+        "best_model": "real_polar",
+        "complex_accuracy": 0.3878205219904582,
+        "condition_id": "amplitude_event",
+        "expected_signal": "magnitude, polar, Cartesian, and complex views should learn; phase-only should remain near chance.",
+        "question": "Can models classify which sensor carries an amplitude burst when phase is independent of the label?",
+        "real_magnitude_accuracy": 0.75,
+        "real_phase_accuracy": 0.27243590354919434,
+        "real_polar_accuracy": 0.9455128709475199,
+        "real_stacked_accuracy": 0.3301282227039337,
+        "summary_markdown": "results/neuro_eeg_lr_0.01/amplitude_event/summary.md",
+        "task": "amplitude_event"
+      },
+      {
+        "best_accuracy": 0.9583333730697632,
+        "best_model": "real_polar",
+        "complex_accuracy": 0.33974360426266986,
+        "condition_id": "phase_amplitude_coupling",
+        "expected_signal": "full complex/Cartesian/polar views should outperform pure phase or pure magnitude because the label is relational.",
+        "question": "Can models detect phase-amplitude coupling when the high-band amplitude is locked to a low-band phase offset?",
+        "real_magnitude_accuracy": 0.25320513049761456,
+        "real_phase_accuracy": 0.25641027092933655,
+        "real_polar_accuracy": 0.9583333730697632,
+        "real_stacked_accuracy": 0.29487180213133496,
+        "summary_markdown": "results/neuro_eeg_lr_0.01/phase_amplitude_coupling/summary.md",
+        "task": "phase_amplitude_coupling"
+      }
+    ]
+  },
+  "notes": null,
+  "run_id": "eeg-analytic-signal-pilot-suite",
+  "schema_version": "0.1.0",
+  "seeds": [
+    0,
+    1,
+    2
+  ]
+}

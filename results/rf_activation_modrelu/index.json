@@ -1,0 +1,219 @@
+{
+  "conditions": [
+    {
+      "activation": "modrelu",
+      "condition_id": "qam_representation",
+      "contradiction_signal": "magnitude-only becomes competitive, or phase-only collapses relative to Cartesian/polar.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_matched_params",
+        "real_matched_flops",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "modulations": [
+        "qam16",
+        "qam64"
+      ],
+      "question": "Does amplitude structure change the story on QAM-only data?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    {
+      "activation": "modrelu",
+      "condition_id": "mixed_representation",
+      "contradiction_signal": "a hand-chosen real coordinate system matches or beats the complex model over mixed modulation families.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_matched_params",
+        "real_matched_flops",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk",
+        "qam16",
+        "qam64"
+      ],
+      "question": "Does the representation conclusion survive PSK+QAM together?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    {
+      "activation": "modrelu",
+      "condition_id": "unit_power_mixed",
+      "contradiction_signal": "rankings change substantially, suggesting models were using energy/SNR scale rather than modulation geometry.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk",
+        "qam16",
+        "qam64"
+      ],
+      "question": "Does per-example energy normalization change the ranking?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "unit_power",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "unit_power",
+        "rotation_radians": 0.0
+      }
+    },
+    {
+      "activation": "modrelu",
+      "condition_id": "psk_representation",
+      "contradiction_signal": "magnitude-only approaches phase/Cartesian accuracy, or real encodings consistently beat complex.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_matched_params",
+        "real_matched_flops",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "modulations": [
+        "bpsk",
+        "qpsk",
+        "8psk"
+      ],
+      "question": "Do phase-aware encodings explain PSK-family performance?",
+      "real_activation": "relu",
+      "snr_db_levels": [
+        0,
+        10,
+        20
+      ],
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    }
+  ],
+  "config": {
+    "architecture": "conv",
+    "batch_size": 256,
+    "bootstrap_samples": 2000,
+    "confidence": 0.95,
+    "device": "cuda",
+    "dtype": "complex64",
+    "hidden_features": 32,
+    "kernel_size": 5,
+    "learning_rate": 0.01,
+    "n_per_class_per_snr": 512,
+    "preset": "full",
+    "progress": true,
+    "sample_length": 128,
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "steps": 600,
+    "train_fraction": 0.8
+  },
+  "results": [
+    {
+      "best_accuracy": 0.593203890323639,
+      "best_model": "real_magnitude",
+      "complex_accuracy": 0.5032362520694733,
+      "condition_id": "qam_representation",
+      "contradiction_signal": "magnitude-only becomes competitive, or phase-only collapses relative to Cartesian/polar.",
+      "question": "Does amplitude structure change the story on QAM-only data?",
+      "real_magnitude_accuracy": 0.593203890323639,
+      "real_phase_accuracy": 0.5019417583942414,
+      "real_polar_accuracy": 0.5129449963569641,
+      "real_stacked_accuracy": 0.5000000119209289,
+      "summary_markdown": "results/rf_activation_modrelu/qam_representation/summary.md"
+    },
+    {
+      "best_accuracy": 0.6921682596206665,
+      "best_model": "real_polar",
+      "complex_accuracy": 0.6638187408447266,
+      "condition_id": "mixed_representation",
+      "contradiction_signal": "a hand-chosen real coordinate system matches or beats the complex model over mixed modulation families.",
+      "question": "Does the representation conclusion survive PSK+QAM together?",
+      "real_magnitude_accuracy": 0.38032361268997195,
+      "real_phase_accuracy": 0.5577993273735047,
+      "real_polar_accuracy": 0.6921682596206665,
+      "real_stacked_accuracy": 0.656051754951477,
+      "summary_markdown": "results/rf_activation_modrelu/mixed_representation/summary.md"
+    },
+    {
+      "best_accuracy": 0.6353397727012634,
+      "best_model": "complex",
+      "complex_accuracy": 0.6353397727012634,
+      "condition_id": "unit_power_mixed",
+      "contradiction_signal": "rankings change substantially, suggesting models were using energy/SNR scale rather than modulation geometry.",
+      "question": "Does per-example energy normalization change the ranking?",
+      "real_magnitude_accuracy": 0.3434304058551788,
+      "real_phase_accuracy": 0.5611650228500367,
+      "real_polar_accuracy": 0.6022006273269653,
+      "real_stacked_accuracy": 0.6076375126838685,
+      "summary_markdown": "results/rf_activation_modrelu/unit_power_mixed/summary.md"
+    },
+    {
+      "best_accuracy": 0.9132685661315918,
+      "best_model": "real_matched_flops",
+      "complex_accuracy": 0.8916936039924621,
+      "condition_id": "psk_representation",
+      "contradiction_signal": "magnitude-only approaches phase/Cartesian accuracy, or real encodings consistently beat complex.",
+      "question": "Do phase-aware encodings explain PSK-family performance?",
+      "real_magnitude_accuracy": 0.3300970733165741,
+      "real_phase_accuracy": 0.8722761273384094,
+      "real_polar_accuracy": 0.8912620902061462,
+      "real_stacked_accuracy": 0.9115425705909729,
+      "summary_markdown": "results/rf_activation_modrelu/psk_representation/summary.md"
+    }
+  ]
+}

@@ -1,0 +1,801 @@
+{
+  "artifacts": {
+    "accuracy_bar": "results/physics_quantum_activation_cardioid/potential_inverse/accuracy_bar.png",
+    "accuracy_by_class": "results/physics_quantum_activation_cardioid/potential_inverse/accuracy_by_class.png",
+    "raw_runs": "results/physics_quantum_activation_cardioid/potential_inverse/raw_runs.json",
+    "summary_json": "results/physics_quantum_activation_cardioid/potential_inverse/summary.json",
+    "summary_markdown": "results/physics_quantum_activation_cardioid/potential_inverse/summary.md"
+  },
+  "config": {
+    "condition": {
+      "condition_id": "potential_inverse",
+      "expected_signal": "full complex/Cartesian/polar inputs should outperform phase-only or density-only views when both amplitude and phase carry scattering information.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "question": "Can models infer which potential generated the observed final wavefunction after 1D Schrodinger evolution?",
+      "task": "potential_inverse",
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    "run_config": {
+      "activation": "cardioid",
+      "architecture": "conv",
+      "batch_size": 256,
+      "bootstrap_samples": 2000,
+      "confidence": 0.95,
+      "device": "cuda",
+      "dtype": "complex64",
+      "evolution_dt": 0.03,
+      "evolution_steps": 80,
+      "examples_per_class": 512,
+      "grid_size": 128,
+      "hidden_features": 32,
+      "kernel_size": 5,
+      "learning_rate": 0.01,
+      "observation_noise_std": 0.0,
+      "preset": "full",
+      "progress": true,
+      "real_activation": "relu",
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "train_fraction": 0.8,
+      "train_steps": 400,
+      "x_max": 8.0,
+      "x_min": -8.0
+    }
+  },
+  "created_at": "2026-09-16T23:52:58.701770+00:00",
+  "dataset": {
+    "description": "1D complex wavefunctions for phase-gradient and Schrodinger potential-inverse pilot tasks",
+    "name": "quantum_wavefunction_pilot",
+    "version": "0.1.0"
+  },
+  "environment": {
+    "cuda_available": true,
+    "cuda_device": "NVIDIA GeForce RTX 3060",
+    "cuda_version": "12.6",
+    "device": "cuda",
+    "dtype": "complex64",
+    "git_commit": "86def29793fdb159737867f67d565508a6bfcd4e",
+    "git_dirty": true,
+    "macos": null,
+    "mps_available": false,
+    "platform": "Linux-6.8.0-124-generic-x86_64-with-glibc2.35",
+    "python": "3.12.12",
+    "torch": "2.9.1+cu126"
+  },
+  "metrics": {
+    "condition": {
+      "condition_id": "potential_inverse",
+      "expected_signal": "full complex/Cartesian/polar inputs should outperform phase-only or density-only views when both amplitude and phase carry scattering information.",
+      "model_families": [
+        "complex",
+        "real_stacked",
+        "real_polar",
+        "real_phase",
+        "real_magnitude"
+      ],
+      "question": "Can models infer which potential generated the observed final wavefunction after 1D Schrodinger evolution?",
+      "task": "potential_inverse",
+      "test_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      },
+      "train_transform": {
+        "name": "none",
+        "rotation_radians": 0.0
+      }
+    },
+    "config": {
+      "activation": "cardioid",
+      "architecture": "conv",
+      "batch_size": 256,
+      "bootstrap_samples": 2000,
+      "confidence": 0.95,
+      "device": "cuda",
+      "dtype": "complex64",
+      "evolution_dt": 0.03,
+      "evolution_steps": 80,
+      "examples_per_class": 512,
+      "grid_size": 128,
+      "hidden_features": 32,
+      "kernel_size": 5,
+      "learning_rate": 0.01,
+      "observation_noise_std": 0.0,
+      "preset": "full",
+      "progress": true,
+      "real_activation": "relu",
+      "seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "train_fraction": 0.8,
+      "train_steps": 400,
+      "x_max": 8.0,
+      "x_min": -8.0
+    },
+    "raw_runs": [
+      {
+        "accuracy_by_class": {
+          "barrier": 0.9901961088180542,
+          "double_barrier": 0.9411765336990356,
+          "free": 0.7549020051956177,
+          "harmonic": 0.9509804248809814,
+          "well": 1.0
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 2704000,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 11018,
+        "seed": 0,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.9274510145187378,
+        "test_loss": 0.21023066341876984,
+        "train_loss": 0.15422466397285461,
+        "train_seconds": 5.265031220391393
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.9803922176361084,
+          "double_barrier": 0.9509804248809814,
+          "free": 0.7156863212585449,
+          "harmonic": 0.9901961088180542,
+          "well": 0.9705882668495178
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 2704000,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 11018,
+        "seed": 1,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.9215686917304993,
+        "test_loss": 0.17522664368152618,
+        "train_loss": 0.13727684319019318,
+        "train_seconds": 4.320852216333151
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.9509804248809814,
+          "double_barrier": 0.960784375667572,
+          "free": 1.0,
+          "harmonic": 0.7843137383460999,
+          "well": 0.9705882668495178
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 2704000,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 11018,
+        "seed": 2,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.9333333969116211,
+        "test_loss": 0.2107081264257431,
+        "train_loss": 0.19164681434631348,
+        "train_seconds": 3.296993164345622
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.9803922176361084,
+          "double_barrier": 0.9509804248809814,
+          "free": 0.7647058963775635,
+          "harmonic": 0.960784375667572,
+          "well": 0.9705882668495178
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 2704000,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 11018,
+        "seed": 3,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.9254902601242065,
+        "test_loss": 0.19606122374534607,
+        "train_loss": 0.21565280854701996,
+        "train_seconds": 3.1973014641553164
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 1.0,
+          "double_barrier": 0.9705882668495178,
+          "free": 0.6274510025978088,
+          "harmonic": 0.9803922176361084,
+          "well": 1.0
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 2704000,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "complex",
+        "parameter_count": 11018,
+        "seed": 4,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.915686309337616,
+        "test_loss": 0.17844258248806,
+        "train_loss": 0.24641364812850952,
+        "train_seconds": 3.161629466339946
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.7647058963775635,
+          "double_barrier": 0.8823529481887817,
+          "free": 0.9803922176361084,
+          "harmonic": 0.843137264251709,
+          "well": 0.9901961088180542
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 696480,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 5669,
+        "seed": 0,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.8921568989753723,
+        "test_loss": 0.3158809244632721,
+        "train_loss": 0.2626276910305023,
+        "train_seconds": 0.8641157429665327
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.9313725829124451,
+          "double_barrier": 0.9019607901573181,
+          "free": 0.9313725829124451,
+          "harmonic": 0.9313725829124451,
+          "well": 0.960784375667572
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 696480,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 5669,
+        "seed": 1,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.9313725829124451,
+        "test_loss": 0.23717358708381653,
+        "train_loss": 0.2392542064189911,
+        "train_seconds": 0.8728558886796236
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.9901961088180542,
+          "double_barrier": 0.8529412150382996,
+          "free": 0.8627451062202454,
+          "harmonic": 0.6960784792900085,
+          "well": 0.9901961088180542
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 696480,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 5669,
+        "seed": 2,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.8784314393997192,
+        "test_loss": 0.34246012568473816,
+        "train_loss": 0.2681618928909302,
+        "train_seconds": 0.8560834731906652
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.8823529481887817,
+          "double_barrier": 0.8333333730697632,
+          "free": 0.960784375667572,
+          "harmonic": 0.9215686321258545,
+          "well": 0.9803922176361084
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 696480,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 5669,
+        "seed": 3,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.915686309337616,
+        "test_loss": 0.2852116525173187,
+        "train_loss": 0.28722667694091797,
+        "train_seconds": 0.8586409129202366
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.7254902124404907,
+          "double_barrier": 0.8823529481887817,
+          "free": 0.9019607901573181,
+          "harmonic": 0.9509804248809814,
+          "well": 0.9117647409439087
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 696480,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_stacked",
+        "parameter_count": 5669,
+        "seed": 4,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.874509871006012,
+        "test_loss": 0.31475070118904114,
+        "train_loss": 0.408524751663208,
+        "train_seconds": 0.8512190822511911
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.7254902124404907,
+          "double_barrier": 0.9313725829124451,
+          "free": 1.0,
+          "harmonic": 0.960784375667572,
+          "well": 0.8529412150382996
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 716960,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_polar",
+        "parameter_count": 5829,
+        "seed": 0,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.8941177129745483,
+        "test_loss": 0.2504473328590393,
+        "train_loss": 0.23383092880249023,
+        "train_seconds": 0.8482804447412491
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.8921568989753723,
+          "double_barrier": 0.8627451062202454,
+          "free": 0.9019607901573181,
+          "harmonic": 0.9509804248809814,
+          "well": 0.9117647409439087
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 716960,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_polar",
+        "parameter_count": 5829,
+        "seed": 1,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.9039216041564941,
+        "test_loss": 0.26410219073295593,
+        "train_loss": 0.28219568729400635,
+        "train_seconds": 0.8199267350137234
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.8823529481887817,
+          "double_barrier": 0.8137255311012268,
+          "free": 1.0,
+          "harmonic": 0.9803922176361084,
+          "well": 0.9117647409439087
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 716960,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_polar",
+        "parameter_count": 5829,
+        "seed": 2,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.917647123336792,
+        "test_loss": 0.19512668251991272,
+        "train_loss": 0.2010156214237213,
+        "train_seconds": 0.8872402440756559
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.9117647409439087,
+          "double_barrier": 0.8921568989753723,
+          "free": 0.9901961088180542,
+          "harmonic": 0.9901961088180542,
+          "well": 0.9803922176361084
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 716960,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_polar",
+        "parameter_count": 5829,
+        "seed": 3,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.9529412388801575,
+        "test_loss": 0.18549543619155884,
+        "train_loss": 0.20800748467445374,
+        "train_seconds": 1.0565783735364676
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.7549020051956177,
+          "double_barrier": 0.9901961088180542,
+          "free": 0.9901961088180542,
+          "harmonic": 1.0,
+          "well": 0.9901961088180542
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 716960,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_polar",
+        "parameter_count": 5829,
+        "seed": 4,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.9450981020927429,
+        "test_loss": 0.20251217484474182,
+        "train_loss": 0.2682061791419983,
+        "train_seconds": 1.053907498717308
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.7352941632270813,
+          "double_barrier": 0.7843137383460999,
+          "free": 0.9509804248809814,
+          "harmonic": 0.9509804248809814,
+          "well": 0.9313725829124451
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 696480,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_phase",
+        "parameter_count": 5669,
+        "seed": 0,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.8705883026123047,
+        "test_loss": 0.31674033403396606,
+        "train_loss": 0.2871561050415039,
+        "train_seconds": 1.0793966706842184
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.9019607901573181,
+          "double_barrier": 0.6960784792900085,
+          "free": 1.0,
+          "harmonic": 1.0,
+          "well": 0.8529412150382996
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 696480,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_phase",
+        "parameter_count": 5669,
+        "seed": 1,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.8901961445808411,
+        "test_loss": 0.28617405891418457,
+        "train_loss": 0.2870154082775116,
+        "train_seconds": 1.0802124124020338
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.9313725829124451,
+          "double_barrier": 0.7647058963775635,
+          "free": 0.9901961088180542,
+          "harmonic": 1.0,
+          "well": 0.9215686321258545
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 696480,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_phase",
+        "parameter_count": 5669,
+        "seed": 2,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.9215686917304993,
+        "test_loss": 0.24406157433986664,
+        "train_loss": 0.2139998972415924,
+        "train_seconds": 0.9705143366008997
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.7843137383460999,
+          "double_barrier": 0.7941176891326904,
+          "free": 0.9803922176361084,
+          "harmonic": 0.9803922176361084,
+          "well": 0.960784375667572
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 696480,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_phase",
+        "parameter_count": 5669,
+        "seed": 3,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.9000000357627869,
+        "test_loss": 0.2843974828720093,
+        "train_loss": 0.3070946931838989,
+        "train_seconds": 0.9788435827940702
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.27450981736183167,
+          "double_barrier": 0.9509804248809814,
+          "free": 1.0,
+          "harmonic": 0.9705882668495178,
+          "well": 0.8627451062202454
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 696480,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_phase",
+        "parameter_count": 5669,
+        "seed": 4,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.8117647767066956,
+        "test_loss": 0.3662216067314148,
+        "train_loss": 0.3659668564796448,
+        "train_seconds": 0.894568482413888
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.8823529481887817,
+          "double_barrier": 0.343137264251709,
+          "free": 0.4117647111415863,
+          "harmonic": 0.7254902124404907,
+          "well": 0.9509804248809814
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 676000,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_magnitude",
+        "parameter_count": 5509,
+        "seed": 0,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.6627451181411743,
+        "test_loss": 0.7291847467422485,
+        "train_loss": 0.6825944185256958,
+        "train_seconds": 0.9204820897430182
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.7941176891326904,
+          "double_barrier": 0.4901961088180542,
+          "free": 0.36274510622024536,
+          "harmonic": 0.6960784792900085,
+          "well": 0.6666666865348816
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 676000,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_magnitude",
+        "parameter_count": 5509,
+        "seed": 1,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.6019608378410339,
+        "test_loss": 0.8960080146789551,
+        "train_loss": 0.917458176612854,
+        "train_seconds": 0.9649829007685184
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.686274528503418,
+          "double_barrier": 0.5980392098426819,
+          "free": 0.45098039507865906,
+          "harmonic": 0.6764706373214722,
+          "well": 0.9509804248809814
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 676000,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_magnitude",
+        "parameter_count": 5509,
+        "seed": 2,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.6725490689277649,
+        "test_loss": 0.6675546765327454,
+        "train_loss": 0.70797199010849,
+        "train_seconds": 0.9084357544779778
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.8137255311012268,
+          "double_barrier": 0.6470588445663452,
+          "free": 0.5686274766921997,
+          "harmonic": 0.6274510025978088,
+          "well": 0.9705882668495178
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 676000,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_magnitude",
+        "parameter_count": 5509,
+        "seed": 3,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.7254902124404907,
+        "test_loss": 0.5979651212692261,
+        "train_loss": 0.6135732531547546,
+        "train_seconds": 0.9211748205125332
+      },
+      {
+        "accuracy_by_class": {
+          "barrier": 0.7450980544090271,
+          "double_barrier": 0.6568627953529358,
+          "free": 0.6274510025978088,
+          "harmonic": 0.5980392098426819,
+          "well": 0.9803922176361084
+        },
+        "condition_id": "potential_inverse",
+        "estimated_forward_madds": 676000,
+        "hidden_features": 32,
+        "learning_rate": 0.01,
+        "model_family": "real_magnitude",
+        "parameter_count": 5509,
+        "seed": 4,
+        "steps": 400,
+        "task": "potential_inverse",
+        "test_accuracy": 0.7215686440467834,
+        "test_loss": 0.6773210167884827,
+        "train_loss": 0.6971145272254944,
+        "train_seconds": 0.9830317553132772
+      }
+    ],
+    "summaries": [
+      {
+        "accuracy_by_class_mean": {
+          "barrier": 0.9803921937942505,
+          "double_barrier": 0.9549020051956176,
+          "free": 0.7725490450859069,
+          "harmonic": 0.9333333730697632,
+          "well": 0.9823529601097107
+        },
+        "estimated_forward_madds": 2704000,
+        "hidden_features": 32,
+        "model_family": "complex",
+        "n_runs": 5,
+        "parameter_count": 11018,
+        "test_accuracy_ci_high": 0.9298039674758911,
+        "test_accuracy_ci_low": 0.919215726852417,
+        "test_accuracy_mean": 0.9247059345245361,
+        "test_accuracy_std": 0.0065912758424050795,
+        "test_loss_mean": 0.19413384795188904,
+        "train_seconds_mean": 3.8483615063130854
+      },
+      {
+        "accuracy_by_class_mean": {
+          "barrier": 0.858823549747467,
+          "double_barrier": 0.8705882549285888,
+          "free": 0.9274510145187378,
+          "harmonic": 0.8686274766921998,
+          "well": 0.9666667103767395
+        },
+        "estimated_forward_madds": 696480,
+        "hidden_features": 32,
+        "model_family": "real_stacked",
+        "n_runs": 5,
+        "parameter_count": 5669,
+        "test_accuracy_ci_high": 0.9176470994949341,
+        "test_accuracy_ci_low": 0.8803922176361084,
+        "test_accuracy_mean": 0.8984314203262329,
+        "test_accuracy_std": 0.024466613805599922,
+        "test_loss_mean": 0.2990953981876373,
+        "train_seconds_mean": 0.8605830200016499
+      },
+      {
+        "accuracy_by_class_mean": {
+          "barrier": 0.8333333611488343,
+          "double_barrier": 0.8980392456054688,
+          "free": 0.9764706015586853,
+          "harmonic": 0.9764706254005432,
+          "well": 0.9294118046760559
+        },
+        "estimated_forward_madds": 716960,
+        "hidden_features": 32,
+        "model_family": "real_polar",
+        "n_runs": 5,
+        "parameter_count": 5829,
+        "test_accuracy_ci_high": 0.9427451610565185,
+        "test_accuracy_ci_low": 0.9035294771194458,
+        "test_accuracy_mean": 0.922745156288147,
+        "test_accuracy_std": 0.025550460639419886,
+        "test_loss_mean": 0.21953676342964173,
+        "train_seconds_mean": 0.9331866592168808
+      },
+      {
+        "accuracy_by_class_mean": {
+          "barrier": 0.7254902184009552,
+          "double_barrier": 0.7980392456054688,
+          "free": 0.9843137502670288,
+          "harmonic": 0.9803921818733216,
+          "well": 0.9058823823928833
+        },
+        "estimated_forward_madds": 696480,
+        "hidden_features": 32,
+        "model_family": "real_phase",
+        "n_runs": 5,
+        "parameter_count": 5669,
+        "test_accuracy_ci_high": 0.9086274981498719,
+        "test_accuracy_ci_low": 0.8411765336990357,
+        "test_accuracy_mean": 0.8788235902786254,
+        "test_accuracy_std": 0.04174213989918758,
+        "test_loss_mean": 0.2995190113782883,
+        "train_seconds_mean": 1.000707096979022
+      },
+      {
+        "accuracy_by_class_mean": {
+          "barrier": 0.7843137502670288,
+          "double_barrier": 0.5470588445663452,
+          "free": 0.48431373834609986,
+          "harmonic": 0.6647059082984924,
+          "well": 0.9039216041564941
+        },
+        "estimated_forward_madds": 676000,
+        "hidden_features": 32,
+        "model_family": "real_magnitude",
+        "n_runs": 5,
+        "parameter_count": 5509,
+        "test_accuracy_ci_high": 0.7133333563804627,
+        "test_accuracy_ci_low": 0.6384314060211181,
+        "test_accuracy_mean": 0.6768627762794495,
+        "test_accuracy_std": 0.05047637785312024,
+        "test_loss_mean": 0.7136067152023315,
+        "train_seconds_mean": 0.9396214641630649
+      }
+    ]
+  },
+  "notes": null,
+  "run_id": "quantum-wavefunction-potential_inverse",
+  "schema_version": "0.1.0",
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ]
+}
